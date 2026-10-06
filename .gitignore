@@ -1,0 +1,17 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.local
+
+# Database local data & logs
+docker/local_pgdata/
+docker/*.log
+

@@ -1,0 +1,83 @@
+# ShiftOps
+
+> Staff Operations Platform for small businesses
+
+ShiftOps centralizes daily operational workflows — shifts, attendance, tasks, issue tracking, and shift handovers — replacing fragmented chat messages and spreadsheets.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Backend | Java 21 + Spring Boot 3.4 |
+| Security | Spring Security + JWT |
+| Database | PostgreSQL 16 (Docker) |
+| Migrations | Flyway |
+| Frontend | React 18 + TypeScript + Vite |
+| State Management | TanStack Query |
+| API Docs | SpringDoc OpenAPI |
+
+## Prerequisites
+
+- Java 21 (JDK)
+- Node.js 20+
+- Docker & Docker Compose
+
+## Quick Start
+
+### 1. Start PostgreSQL
+
+```bash
+cd docker
+docker compose up -d
+```
+
+### 2. Start Backend
+
+```bash
+cd backend
+./gradlew bootRun
+```
+
+Backend runs at `http://localhost:8080/api`
+
+- Health check: `GET http://localhost:8080/api/v1/health`
+- Swagger UI: `http://localhost:8080/api/swagger-ui.html`
+
+### 3. Start Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs at `http://localhost:5173`
+
+## Project Structure
+
+```
+shiftops/
+├── backend/          # Spring Boot application
+├── frontend/         # React + TypeScript application
+├── docker/           # Docker Compose for infrastructure
+├── docs/             # Documentation
+└── README.md
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Backend (requires Docker for Testcontainers)
+cd backend
+./gradlew test
+
+# Frontend
+cd frontend
+npm run lint
+```
+
+## License
+
+Proprietary — All rights reserved.

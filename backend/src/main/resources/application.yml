@@ -2,7 +2,7 @@ spring:
   application:
     name: shiftops
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/shiftops}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/shiftops}
     username: ${SPRING_DATASOURCE_USERNAME:shiftops}
     password: ${SPRING_DATASOURCE_PASSWORD:shiftops_dev}
     driver-class-name: org.postgresql.Driver

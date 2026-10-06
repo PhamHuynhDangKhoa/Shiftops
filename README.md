@@ -24,12 +24,14 @@ ShiftOps centralizes daily operational workflows — shifts, attendance, tasks, 
 
 ## Quick Start
 
-### 1. Start PostgreSQL
+### 1. Start PostgreSQL via Docker Compose
 
 ```bash
 cd docker
 docker compose up -d
 ```
+
+This starts a PostgreSQL 16 container (`shiftops-postgres`) exposed on host port `5433` (mapped to container port `5432` to avoid host database conflicts). The container includes healthchecks and initializes the `shiftops` database for user `shiftops`.
 
 ### 2. Start Backend
 

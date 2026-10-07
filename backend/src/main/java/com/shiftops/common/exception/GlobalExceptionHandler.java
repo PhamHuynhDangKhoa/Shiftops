@@ -63,6 +63,31 @@ public class GlobalExceptionHandler {
                                 .build()));
     }
 
+    @ExceptionHandler({
+            org.springframework.security.access.AccessDeniedException.class,
+            com.shiftops.common.exception.AccessDeniedException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(Exception ex) {
+        log.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage(),
+                        ApiResponse.ErrorDetail.builder()
+                                .code("FORBIDDEN")
+                                .message(ex.getMessage())
+                                .build()));
+    }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthentication(org.springframework.security.core.AuthenticationException ex) {
+        log.warn("Authentication failed: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error("Authentication failed: " + ex.getMessage(),
+                        ApiResponse.ErrorDetail.builder()
+                                .code("UNAUTHORIZED")
+                                .message(ex.getMessage())
+                                .build()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
         log.error("Unexpected error", ex);

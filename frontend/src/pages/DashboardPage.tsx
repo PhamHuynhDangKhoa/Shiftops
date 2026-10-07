@@ -99,6 +99,20 @@ export const DashboardPage: React.FC = () => {
               </Link>
             )}
             <Link
+              to="/attendance"
+              style={{
+                padding: '0.6rem 1.1rem',
+                borderRadius: '6px',
+                backgroundColor: '#059669',
+                color: '#ffffff',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+              }}
+            >
+              ⏱️ Attendance
+            </Link>
+            <Link
               to="/profile"
               style={{
                 padding: '0.6rem 1.1rem',
@@ -184,8 +198,10 @@ export const DashboardPage: React.FC = () => {
         <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 600 }}>ShiftOps Modules Status</h3>
         <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem' }}>
           • <strong>Phase 1:</strong> Authentication & Core Entities (Complete ✅)<br />
-          • <strong>Phase 2:</strong> Branch & Staff Management (Complete & Verified ✅)<br />
-          • <strong>Phase 3:</strong> Shift Scheduling & Conflict Engine (Upcoming in next phase 🔒)
+          • <strong>Phase 2:</strong> Branch & Staff Management (Complete ✅)<br />
+          • <strong>Phase 3:</strong> Shift Scheduling & Concurrency Engine (Complete ✅)<br />
+          • <strong>Phase 4:</strong> Attendance & Punctuality Engine (Active & Verified ✅)<br />
+          • <strong>Phase 5:</strong> Task Assignment & Templates (Upcoming 🔒)
         </p>
       </div>
     </div>

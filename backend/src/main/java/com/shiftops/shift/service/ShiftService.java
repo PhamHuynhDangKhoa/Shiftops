@@ -260,8 +260,8 @@ public class ShiftService {
             throw new BusinessRuleException("SHIFT_CANCELLED", "Cannot assign staff to a cancelled shift");
         }
 
-        // 1. Fetch target user
-        User targetUser = userRepository.findById(userId)
+        // 1. Fetch target user with lock to prevent concurrent overlapping assignments
+        User targetUser = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
         if (!targetUser.isActive()) {

@@ -16,4 +16,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true)
                 .maxAge(3600);
     }
+
+    @org.springframework.context.annotation.Bean
+    public java.time.Clock clock() {
+        return java.time.Clock.systemUTC();
+    }
 }

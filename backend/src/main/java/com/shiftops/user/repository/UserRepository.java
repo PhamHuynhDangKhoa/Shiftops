@@ -17,9 +17,8 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT u FROM User u WHERE u.id = :id")
-    Optional<User> findByIdWithPessimisticLock(@Param("id") UUID id);
+    @Query(value = "SELECT * FROM users WHERE id = :id FOR UPDATE", nativeQuery = true)
+    Optional<User> findByIdForUpdate(@Param("id") UUID id);
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.primaryBranch WHERE LOWER(u.email) = LOWER(:email)")
     Optional<User> findByEmailIgnoreCaseWithBranch(@Param("email") String email);

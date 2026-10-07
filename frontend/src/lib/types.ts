@@ -97,3 +97,28 @@ export interface Shift {
   createdAt: string;
   updatedAt: string;
 }
+
+export type AttendanceStatus = 'PRESENT' | 'LATE' | 'COMPLETED' | 'ABSENT';
+
+export interface Attendance {
+  id: string;
+  shiftAssignmentId: string;
+  shiftId: string;
+  shiftName?: string;
+  branchId: string;
+  branchName: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  shiftStartTime: string;
+  shiftEndTime: string;
+  checkInAt?: string;
+  checkOutAt?: string;
+  status: AttendanceStatus;
+  late: boolean;
+  overnight: boolean;
+  notes?: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}

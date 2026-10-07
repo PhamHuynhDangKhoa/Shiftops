@@ -219,7 +219,7 @@ class ShiftServiceTest {
         shift.setId(UUID.randomUUID());
 
         when(shiftRepository.findByIdWithDetails(shift.getId())).thenReturn(Optional.of(shift));
-        when(userRepository.findById(staffA.getId())).thenReturn(Optional.of(staffA));
+        when(userRepository.findByIdForUpdate(staffA.getId())).thenReturn(Optional.of(staffA));
         when(shiftAssignmentRepository.existsByShiftIdAndUserId(shift.getId(), staffA.getId())).thenReturn(false);
         when(shiftAssignmentRepository.countOverlappingAssignments(staffA.getId(), shift.getId(), start, end)).thenReturn(0L);
         when(userRepository.getReferenceById(managerAPrincipal.getId())).thenReturn(managerA);
@@ -245,7 +245,7 @@ class ShiftServiceTest {
         shift.setId(UUID.randomUUID());
 
         when(shiftRepository.findByIdWithDetails(shift.getId())).thenReturn(Optional.of(shift));
-        when(userRepository.findById(staffA.getId())).thenReturn(Optional.of(staffA));
+        when(userRepository.findByIdForUpdate(staffA.getId())).thenReturn(Optional.of(staffA));
         when(shiftAssignmentRepository.existsByShiftIdAndUserId(shift.getId(), staffA.getId())).thenReturn(false);
         when(shiftAssignmentRepository.countOverlappingAssignments(staffA.getId(), shift.getId(), start, end)).thenReturn(1L);
 
@@ -266,7 +266,7 @@ class ShiftServiceTest {
         shift.setId(UUID.randomUUID());
 
         when(shiftRepository.findByIdWithDetails(shift.getId())).thenReturn(Optional.of(shift));
-        when(userRepository.findById(staffA.getId())).thenReturn(Optional.of(staffA));
+        when(userRepository.findByIdForUpdate(staffA.getId())).thenReturn(Optional.of(staffA));
         when(shiftAssignmentRepository.existsByShiftIdAndUserId(shift.getId(), staffA.getId())).thenReturn(true);
 
         assertThatThrownBy(() -> shiftService.assignStaff(shift.getId(), staffA.getId(), managerAPrincipal))

@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,4 +32,20 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
             @Param("shiftId") UUID shiftId,
             @Param("newStartTime") Instant newStartTime,
             @Param("newEndTime") Instant newEndTime);
+
+    @Query("SELECT sa FROM ShiftAssignment sa " +
+           "JOIN FETCH sa.shift s " +
+           "JOIN FETCH s.branch " +
+           "JOIN FETCH sa.user u " +
+           "WHERE sa.id = :id")
+    Optional<ShiftAssignment> findByIdWithDetails(@Param("id") UUID id);
+
+    @Query("SELECT sa FROM ShiftAssignment sa " +
+           "JOIN FETCH sa.shift s " +
+           "JOIN FETCH s.branch " +
+           "JOIN FETCH sa.user u " +
+           "WHERE s.status = com.shiftops.shift.entity.ShiftStatus.PUBLISHED " +
+           "AND s.endTime <= :cutoff " +
+           "AND NOT EXISTS (SELECT a FROM Attendance a WHERE a.shiftAssignment.id = sa.id)")
+    List<ShiftAssignment> findUnattendedAssignmentsPastCutoff(@Param("cutoff") Instant cutoff);
 }

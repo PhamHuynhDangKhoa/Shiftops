@@ -7,6 +7,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { BranchesPage } from './pages/BranchesPage';
 import { StaffPage } from './pages/StaffPage';
 import { ShiftsPage } from './pages/ShiftsPage';
+import { AttendancePage } from './pages/AttendancePage';
 import { ProfilePage } from './pages/ProfilePage';
 import HealthPage from './pages/HealthPage';
 
@@ -56,6 +57,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ShiftsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/attendance"
+            element={
+              <ProtectedRoute>
+                <AttendancePage />
               </ProtectedRoute>
             }
           />

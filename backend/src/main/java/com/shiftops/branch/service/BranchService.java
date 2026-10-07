@@ -1,6 +1,7 @@
 package com.shiftops.branch.service;
 
 import com.shiftops.branch.dto.BranchResponse;
+import com.shiftops.branch.dto.BranchSummaryResponse;
 import com.shiftops.branch.dto.CreateBranchRequest;
 import com.shiftops.branch.dto.UpdateBranchRequest;
 import com.shiftops.branch.entity.Branch;
@@ -8,6 +9,8 @@ import com.shiftops.branch.repository.BranchRepository;
 import com.shiftops.common.exception.ConflictException;
 import com.shiftops.common.exception.ResourceNotFoundException;
 import com.shiftops.common.security.UserPrincipal;
+import com.shiftops.user.entity.Role;
+import com.shiftops.user.repository.UserRepository;
 import com.shiftops.user.service.BranchAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +25,7 @@ import java.util.UUID;
 public class BranchService {
 
     private final BranchRepository branchRepository;
+    private final UserRepository userRepository;
     private final BranchAccessService branchAccessService;
 
     @Transactional
@@ -93,5 +97,35 @@ public class BranchService {
 
         Branch updated = branchRepository.save(branch);
         return BranchResponse.fromEntity(updated);
+    }
+
+    @Transactional
+    public BranchResponse updateBranchStatus(UUID id, boolean active) {
+        Branch branch = branchRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Branch", "id", id));
+
+        branch.setActive(active);
+        Branch updated = branchRepository.save(branch);
+        return BranchResponse.fromEntity(updated);
+    }
+
+    @Transactional(readOnly = true)
+    public BranchSummaryResponse getBranchSummary(UUID id, UserPrincipal principal) {
+        branchAccessService.validateBranchAccess(principal, id);
+
+        Branch branch = branchRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Branch", "id", id));
+
+        long totalStaff = userRepository.countByPrimaryBranchId(id);
+        long activeStaff = userRepository.countByPrimaryBranchIdAndIsActiveTrue(id);
+        long managerCount = userRepository.countByPrimaryBranchIdAndRole(id, Role.MANAGER);
+
+        return BranchSummaryResponse.builder()
+                .branchId(branch.getId())
+                .branchName(branch.getName())
+                .totalStaff(totalStaff)
+                .activeStaff(activeStaff)
+                .managerCount(managerCount)
+                .build();
     }
 }

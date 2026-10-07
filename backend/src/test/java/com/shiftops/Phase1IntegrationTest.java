@@ -45,6 +45,12 @@ class Phase1IntegrationTest {
     private BranchRepository branchRepository;
 
     @Autowired
+    private com.shiftops.shift.repository.ShiftAssignmentRepository shiftAssignmentRepository;
+
+    @Autowired
+    private com.shiftops.shift.repository.ShiftRepository shiftRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -61,6 +67,8 @@ class Phase1IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        shiftAssignmentRepository.deleteAll();
+        shiftRepository.deleteAll();
         userRepository.deleteAll();
         branchRepository.deleteAll();
 

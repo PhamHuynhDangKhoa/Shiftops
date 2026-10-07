@@ -1,8 +1,10 @@
 package com.shiftops.branch.controller;
 
 import com.shiftops.branch.dto.BranchResponse;
+import com.shiftops.branch.dto.BranchSummaryResponse;
 import com.shiftops.branch.dto.CreateBranchRequest;
 import com.shiftops.branch.dto.UpdateBranchRequest;
+import com.shiftops.branch.dto.UpdateBranchStatusRequest;
 import com.shiftops.branch.service.BranchService;
 import com.shiftops.common.dto.ApiResponse;
 import com.shiftops.common.security.UserPrincipal;
@@ -55,5 +57,23 @@ public class BranchController {
             @Valid @RequestBody UpdateBranchRequest request) {
         BranchResponse response = branchService.updateBranch(id, request);
         return ResponseEntity.ok(ApiResponse.success(response, "Branch updated successfully"));
+    }
+
+    @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ApiResponse<BranchResponse>> updateBranchStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateBranchStatusRequest request) {
+        BranchResponse response = branchService.updateBranchStatus(id, request.getActive());
+        return ResponseEntity.ok(ApiResponse.success(response, "Branch status updated successfully"));
+    }
+
+    @GetMapping("/{id}/summary")
+    @PreAuthorize("hasAnyRole('OWNER', 'MANAGER')")
+    public ResponseEntity<ApiResponse<BranchSummaryResponse>> getBranchSummary(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        BranchSummaryResponse response = branchService.getBranchSummary(id, principal);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

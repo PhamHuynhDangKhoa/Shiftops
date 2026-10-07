@@ -1,36 +1,51 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #213547;
-  background-color: #ffffff;
+  color: #1f2937;
+  background-color: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #f8fafc;
 }
 
-.app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+.nav-link {
+  color: #4b5563;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
 }
 
-.app-header {
-  text-align: center;
-  margin-bottom: 2rem;
+.nav-link:hover {
+  color: #111827;
+  background-color: #f3f4f6;
 }
 
-.app-header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.25rem;
+.nav-link.active {
+  color: #2563eb;
+  background-color: #eff6ff;
+  font-weight: 600;
 }
 
-.app-header p {
-  color: #666;
-  margin-top: 0;
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+button {
+  font-family: inherit;
 }
 
 .health-page {
@@ -39,6 +54,7 @@ body {
   padding: 2rem;
   border-radius: 8px;
   border: 1px solid #e0e0e0;
+  background: #ffffff;
 }
 
 .health-success {
@@ -54,7 +70,6 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
 }
 
 td {

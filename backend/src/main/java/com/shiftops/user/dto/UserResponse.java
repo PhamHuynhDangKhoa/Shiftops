@@ -10,10 +10,13 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
     private UUID id;
     private String email;
@@ -24,6 +27,7 @@ public class UserResponse {
     private String primaryBranchName;
     private boolean active;
     private boolean mustChangePassword;
+    private String temporaryPassword;
     private Instant createdAt;
     private Instant updatedAt;
 

@@ -17,6 +17,9 @@ import com.shiftops.user.entity.Role;
 import com.shiftops.user.entity.User;
 import com.shiftops.user.repository.UserRepository;
 import com.shiftops.user.service.BranchAccessService;
+import com.shiftops.task.entity.Task;
+import com.shiftops.task.entity.TaskStatus;
+import com.shiftops.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +40,7 @@ public class ShiftService {
     private final BranchRepository branchRepository;
     private final UserRepository userRepository;
     private final BranchAccessService branchAccessService;
+    private final TaskRepository taskRepository;
 
     @Transactional
     public ShiftResponse createShift(UUID branchId, CreateShiftRequest request, UserPrincipal principal) {
@@ -239,6 +243,16 @@ public class ShiftService {
 
         shift.setStatus(targetStatus);
         Shift updated = shiftRepository.save(shift);
+
+        if (targetStatus == ShiftStatus.CANCELLED) {
+            List<Task> incomplete = taskRepository.findByShiftIdAndStatusIn(
+                    shiftId, List.of(TaskStatus.TODO, TaskStatus.IN_PROGRESS));
+            for (Task t : incomplete) {
+                t.setStatus(TaskStatus.CANCELLED);
+                taskRepository.save(t);
+            }
+        }
+
         return ShiftResponse.fromEntity(updated);
     }
 
@@ -325,6 +339,13 @@ public class ShiftService {
 
         ShiftAssignment assignment = shiftAssignmentRepository.findByShiftIdAndUserId(shiftId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("ShiftAssignment", "userId", userId));
+
+        long completedTasksCount = taskRepository.countByShiftAssignmentIdAndStatus(assignment.getId(), TaskStatus.COMPLETED);
+        if (completedTasksCount > 0) {
+            throw new BusinessRuleException(
+                    "CANNOT_REMOVE_ASSIGNMENT_WITH_COMPLETED_TASKS",
+                    "Cannot remove staff assignment with completed tasks");
+        }
 
         shift.getAssignments().remove(assignment);
         shiftAssignmentRepository.delete(assignment);

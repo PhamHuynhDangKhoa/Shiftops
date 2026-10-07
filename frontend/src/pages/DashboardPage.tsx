@@ -113,6 +113,20 @@ export const DashboardPage: React.FC = () => {
               ⏱️ Attendance
             </Link>
             <Link
+              to="/tasks"
+              style={{
+                padding: '0.6rem 1.1rem',
+                borderRadius: '6px',
+                backgroundColor: '#2563eb',
+                color: '#ffffff',
+                textDecoration: 'none',
+                fontWeight: 600,
+                fontSize: '0.875rem',
+              }}
+            >
+              📋 Tasks
+            </Link>
+            <Link
               to="/profile"
               style={{
                 padding: '0.6rem 1.1rem',
@@ -200,8 +214,8 @@ export const DashboardPage: React.FC = () => {
           • <strong>Phase 1:</strong> Authentication & Core Entities (Complete ✅)<br />
           • <strong>Phase 2:</strong> Branch & Staff Management (Complete ✅)<br />
           • <strong>Phase 3:</strong> Shift Scheduling & Concurrency Engine (Complete ✅)<br />
-          • <strong>Phase 4:</strong> Attendance & Punctuality Engine (Active & Verified ✅)<br />
-          • <strong>Phase 5:</strong> Task Assignment & Templates (Upcoming 🔒)
+          • <strong>Phase 4:</strong> Attendance & Punctuality Engine (Complete ✅)<br />
+          • <strong>Phase 5:</strong> Task Assignment & Templates (Active & Verified ✅)
         </p>
       </div>
     </div>

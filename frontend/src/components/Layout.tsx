@@ -105,6 +105,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 </NavLink>
 
                 <NavLink
+                  to="/tasks"
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  Tasks
+                </NavLink>
+
+                <NavLink
                   to="/profile"
                   className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
                 >

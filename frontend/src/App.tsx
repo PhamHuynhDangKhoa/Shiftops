@@ -9,6 +9,7 @@ import { StaffPage } from './pages/StaffPage';
 import { ShiftsPage } from './pages/ShiftsPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { ProfilePage } from './pages/ProfilePage';
+import { TasksPage } from './pages/TasksPage';
 import HealthPage from './pages/HealthPage';
 
 function App() {
@@ -65,6 +66,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AttendancePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <TasksPage />
               </ProtectedRoute>
             }
           />

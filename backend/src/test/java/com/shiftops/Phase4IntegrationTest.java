@@ -69,6 +69,12 @@ class Phase4IntegrationTest {
     private AttendanceRepository attendanceRepository;
 
     @Autowired
+    private com.shiftops.task.repository.TaskRepository taskRepository;
+
+    @Autowired
+    private com.shiftops.task.repository.TaskTemplateRepository taskTemplateRepository;
+
+    @Autowired
     private AttendanceService attendanceService;
 
     @Autowired
@@ -118,6 +124,8 @@ class Phase4IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        taskRepository.deleteAll();
+        taskTemplateRepository.deleteAll();
         attendanceRepository.deleteAll();
         shiftAssignmentRepository.deleteAll();
         shiftRepository.deleteAll();

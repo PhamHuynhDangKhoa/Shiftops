@@ -52,6 +52,9 @@ class ShiftServiceTest {
     @Mock
     private BranchAccessService branchAccessService;
 
+    @Mock
+    private com.shiftops.task.repository.TaskRepository taskRepository;
+
     @InjectMocks
     private ShiftService shiftService;
 

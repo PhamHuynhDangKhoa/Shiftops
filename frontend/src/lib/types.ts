@@ -122,3 +122,53 @@ export interface Attendance {
   createdAt: string;
   updatedAt: string;
 }
+
+export type TaskPriority = 'LOW' | 'NORMAL' | 'HIGH';
+export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+export interface TaskTemplateItem {
+  id: string;
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  orderIndex: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TaskTemplate {
+  id: string;
+  branchId: string;
+  branchName: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  items: TaskTemplateItem[];
+  itemCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Task {
+  id: string;
+  shiftAssignmentId: string;
+  shiftId: string;
+  shiftName?: string;
+  branchId: string;
+  branchName: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  templateItemId?: string;
+  title: string;
+  description?: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dueTime?: string;
+  completedAt?: string;
+  completedById?: string;
+  completedByName?: string;
+  createdAt: string;
+  updatedAt: string;
+  version: number;
+}

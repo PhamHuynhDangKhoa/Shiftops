@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { BranchesPage } from './pages/BranchesPage';
 import { StaffPage } from './pages/StaffPage';
+import { ShiftsPage } from './pages/ShiftsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import HealthPage from './pages/HealthPage';
 
@@ -47,6 +48,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
                 <StaffPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/shifts"
+            element={
+              <ProtectedRoute>
+                <ShiftsPage />
               </ProtectedRoute>
             }
           />

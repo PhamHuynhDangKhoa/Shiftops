@@ -68,3 +68,32 @@ export interface ResetPasswordResponse {
   temporaryPassword: string;
   message: string;
 }
+
+export type ShiftStatus = 'DRAFT' | 'PUBLISHED' | 'COMPLETED' | 'CANCELLED';
+
+export interface ShiftAssignment {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userRole: Role;
+  assignedById: string;
+  assignedByName: string;
+  assignedAt: string;
+}
+
+export interface Shift {
+  id: string;
+  branchId: string;
+  branchName: string;
+  name?: string;
+  startTime: string;
+  endTime: string;
+  overnight: boolean;
+  status: ShiftStatus;
+  notes?: string;
+  assignments: ShiftAssignment[];
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}

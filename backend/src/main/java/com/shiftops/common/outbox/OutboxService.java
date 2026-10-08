@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -51,17 +52,49 @@ public class OutboxService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public boolean markProcessing(UUID eventId) {
-        return outboxRepository.findById(eventId)
-                .map(event -> {
-                    if (event.getStatus() == OutboxStatus.PENDING ||
-                            (event.getStatus() == OutboxStatus.FAILED && event.getRetryCount() < event.getMaxRetries())) {
-                        event.setStatus(OutboxStatus.PROCESSING);
-                        outboxRepository.save(event);
-                        return true;
-                    }
-                    return false;
-                })
-                .orElse(false);
+        try {
+            Instant now = clock.instant();
+            int updated = outboxRepository.claimEventAtomically(eventId, now);
+            return updated > 0;
+        } catch (org.springframework.dao.OptimisticLockingFailureException | org.hibernate.StaleStateException ex) {
+            log.debug("Optimistic lock conflict when claiming outbox event {}: {}", eventId, ex.getMessage());
+            return false;
+        } catch (Exception ex) {
+            log.warn("Error claiming outbox event {}: {}", eventId, ex.getMessage());
+            return false;
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public int recoverStaleEvents(Duration staleThresholdDuration) {
+        Instant staleThreshold = clock.instant().minus(staleThresholdDuration);
+        List<OutboxEvent> staleEvents = outboxRepository.findStaleProcessingEvents(
+                staleThreshold, org.springframework.data.domain.PageRequest.of(0, 50));
+        int recovered = 0;
+        for (OutboxEvent event : staleEvents) {
+            try {
+                int newRetryCount = event.getRetryCount() + 1;
+                event.setRetryCount(newRetryCount);
+                if (newRetryCount >= event.getMaxRetries()) {
+                    event.setStatus(OutboxStatus.FAILED);
+                    event.setErrorMessage("Stale PROCESSING recovery: exceeded max retries (" + event.getMaxRetries() + ")");
+                    log.warn("Stale outbox event {} permanently FAILED after {} attempts", event.getId(), newRetryCount);
+                } else {
+                    long delaySeconds = (long) (Math.pow(2, Math.max(0, newRetryCount - 1)) * 5);
+                    event.setScheduledAt(clock.instant().plus(Duration.ofSeconds(delaySeconds)));
+                    event.setStatus(OutboxStatus.PENDING);
+                    event.setErrorMessage("Stale PROCESSING recovery: rescheduled retry #" + newRetryCount);
+                    log.info("Stale outbox event {} recovered to PENDING for retry #{}", event.getId(), newRetryCount);
+                }
+                outboxRepository.saveAndFlush(event);
+                recovered++;
+            } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
+                log.debug("Concurrent modification while recovering stale event {}: {}", event.getId(), ex.getMessage());
+            } catch (Exception ex) {
+                log.warn("Failed to recover stale outbox event {}: {}", event.getId(), ex.getMessage());
+            }
+        }
+        return recovered;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -86,8 +119,8 @@ public class OutboxService {
                 event.setStatus(OutboxStatus.FAILED);
                 log.warn("Outbox event {} permanently FAILED after {} attempts: {}", eventId, newRetryCount, errorMessage);
             } else {
-                // Exponential backoff: 5s, 10s, 20s
-                long delaySeconds = (long) (Math.pow(2, newRetryCount) * 5);
+                // Exponential backoff: 5s, 10s, 20s (5 * 2^(retry-1))
+                long delaySeconds = (long) (Math.pow(2, Math.max(0, newRetryCount - 1)) * 5);
                 event.setScheduledAt(clock.instant().plus(Duration.ofSeconds(delaySeconds)));
                 event.setStatus(OutboxStatus.PENDING);
                 log.info("Outbox event {} scheduled for retry #{} in {}s: {}", eventId, newRetryCount, delaySeconds, errorMessage);

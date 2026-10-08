@@ -46,6 +46,6 @@ ENV SPRING_PROFILES_ACTIVE="prod"
 
 # Health check using Spring Boot Actuator
 HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8080/actuator/health || exit 1
+  CMD curl -f http://localhost:8080/api/actuator/health || exit 1
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

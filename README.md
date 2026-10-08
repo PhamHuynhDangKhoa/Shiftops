@@ -2,7 +2,7 @@
 
 > A production-grade, modular monolith designed for centralized shift scheduling, attendance tracking, task delegation, issue management, shift handovers, and real-time operations.
 
-[![CI](https://github.com/shiftops/shiftops/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![CI](https://github.com/PhamHuynhDangKhoa/Shiftops/actions/workflows/ci.yml/badge.svg)](https://github.com/PhamHuynhDangKhoa/Shiftops/actions/workflows/ci.yml)
 [![Java](https://img.shields.io/badge/Java-21-blue.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
@@ -63,7 +63,7 @@ graph TD
 | **Shift Handover** | End-of-shift operational state transfer (completed/pending items, unresolved issues, notes) with manager sign-off and state immutability. |
 | **Announcements** | Target-scoped operational alerts (all staff, branch-specific, shift-specific) with priority tagging (`URGENT`, `NORMAL`). |
 | **Realtime STOMP** | Sub-second state dissemination to active dashboards (check-ins, task completion, issue updates) via authenticated WebSockets. |
-| **Hardened Outbox** | Transactional Outbox pattern guaranteeing at-least-once domain event delivery with exponential backoff retry. |
+| **Hardened Outbox** | Transactional Outbox pattern providing at-least-once domain event delivery with exponential backoff retry. |
 
 ---
 
@@ -86,7 +86,7 @@ Domain events (`ShiftPublishedEvent`, `TaskAssignedEvent`, `HandoverSubmittedEve
 Notifications feature multi-layer deduplication:
 1. **Application Layer:** Fast pre-check against `idempotencyKey` and `(recipient_id, type, reference_id)`.
 2. **Database Layer:** Partial unique indexes (`uq_notifications_idempotency_key`, `uq_notifications_recipient_type_ref`) that reject concurrent duplicate insertions.
-3. **Graceful Degradation:** `DataIntegrityViolationException` is captured and suppressed at runtime to guarantee zero duplicate alerts even under multi-thread contention.
+3. **Graceful Degradation:** `DataIntegrityViolationException` is captured and suppressed at runtime, preventing duplicate alerts even under multi-thread contention.
 
 ### 4.3 Defense-in-Depth File Storage
 Attachment uploads are restricted to an explicit whitelist (`.jpg`, `.jpeg`, `.png`, `.webp`, `.pdf`). Filenames are scrubbed against path traversal attempts (`../`), stored under UUID aliases, and served with `Content-Disposition: attachment; filename="..."` alongside `X-Content-Type-Options: nosniff` headers to mitigate MIME-confusion attacks.
@@ -120,7 +120,7 @@ cd backend
 ```
 - API Base: `http://localhost:8080/api`
 - Swagger OpenAPI: `http://localhost:8080/api/swagger-ui.html`
-- Health Probe: `http://localhost:8080/actuator/health`
+- Health Probe: `http://localhost:8080/api/actuator/health`
 
 ### 3. Start Frontend SPA
 ```bash
@@ -159,18 +159,20 @@ ShiftOps enforces a strict, multi-tiered test verification suite:
 ```bash
 cd backend
 
-# 1. Run unit & MockMvc integration tests (288 tests, 100% green, no Docker required)
+# 1. Run unit & MockMvc integration tests (no Docker daemon required)
 ./gradlew test
+# Or explicitly:
+./gradlew unitTest
 
 # 2. Run Testcontainers PostgreSQL 16 integration tests (Docker daemon required)
 ./gradlew integrationTest
 
-# 3. Run real-time latency and throughput performance benchmark
+# 3. Run application-layer performance microbenchmark
 ./gradlew test --tests com.shiftops.Phase10PerformanceBenchmarkTest
 ```
 
-### Measured Benchmark Evidence (Zero Fabricated Metrics)
-Verified via `Phase10PerformanceBenchmarkTest` with nanosecond precision:
+### Measured In-Process Benchmark Baseline
+Verified via `Phase10PerformanceBenchmarkTest` with nanosecond precision (in-process MockMvc regression benchmark under `test` profile with H2 in PostgreSQL compatibility mode; does not replace production network capacity testing):
 
 | Endpoint | Method | Passes | p50 Latency | p95 Latency | Throughput |
 |---|---|:---:|:---:|:---:|:---:|
@@ -183,6 +185,9 @@ Verified via `Phase10PerformanceBenchmarkTest` with nanosecond precision:
 ### Frontend Code Verification
 ```bash
 cd frontend
+
+# Run ESLint validation
+npm run lint
 
 # Verify TypeScript compilation & production bundle
 npm run build

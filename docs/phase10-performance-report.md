@@ -6,6 +6,13 @@
 **Verification Target:** Core REST Endpoints, Authentication, Aggregations, Health Probes  
 **Methodology:** Automated warm-up (5 warmup cycles) followed by 50 timed iterations per endpoint using monotonic nanosecond precision timers (`System.nanoTime()`).
 
+> [!NOTE]
+> **Scope & Nature of Benchmark:**
+> The metrics below are **in-process application-layer regression microbenchmarks** executed via Spring Boot MockMvc under the `test` profile using an in-memory engine (H2 in PostgreSQL compatibility mode).
+> - **Purpose:** To verify dispatch latency, JSON serialization, security filter overhead, and query construction efficiency across development iterations.
+> - **Limitations:** These tests execute within the same JVM process without network interface transit, reverse proxy hops, TLS termination, or production PostgreSQL I/O.
+> - **Interpretation:** These figures serve as architectural regression baselines, **not** as production capacity guarantees or multi-user throughput bounds.
+
 ---
 
 ## 1. Measured Performance Results

@@ -1,0 +1,12 @@
+# ==============================================================================
+# ShiftOps Production Profile Configuration
+# Fails fast on startup if mandatory secrets are omitted.
+# ==============================================================================
+
+spring:
+  datasource:
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}

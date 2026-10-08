@@ -330,6 +330,7 @@ public class Phase10IntegrationTest {
     @Test
     @DisplayName("Transactional Outbox: Failure triggers retry count and exponential backoff")
     void testOutbox_FailureAndExponentialBackoff() {
+        Instant beforeRun = Instant.now();
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
         UUID outboxId = tx.execute(status -> {
             OutboxEvent event = OutboxEvent.builder()
@@ -340,7 +341,7 @@ public class Phase10IntegrationTest {
                     .status(OutboxStatus.PENDING)
                     .retryCount(0)
                     .maxRetries(3)
-                    .scheduledAt(Instant.now().minusSeconds(1))
+                    .scheduledAt(beforeRun.minusSeconds(1))
                     .build();
             return outboxRepository.save(event).getId();
         });
@@ -352,7 +353,156 @@ public class Phase10IntegrationTest {
         assertThat(failedEvent.getRetryCount()).isEqualTo(1);
         assertThat(failedEvent.getErrorMessage()).isNotEmpty();
         assertThat(failedEvent.getStatus()).isEqualTo(OutboxStatus.PENDING); // Rescheduled for retry
-        assertThat(failedEvent.getScheduledAt()).isAfter(Instant.now());
+        // Backoff formula 5 * 2^(1-1) = 5 seconds
+        assertThat(failedEvent.getScheduledAt()).isAfterOrEqualTo(beforeRun.plusSeconds(4))
+                .isBeforeOrEqualTo(beforeRun.plusSeconds(8));
+    }
+
+    @Test
+    @DisplayName("Transactional Outbox: Full retry lifecycle 5s -> 10s -> 20s and final FAILED state")
+    void testOutbox_FullRetryCycleToPermanentlyFailed() {
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        UUID outboxId = tx.execute(status -> {
+            OutboxEvent event = OutboxEvent.builder()
+                    .eventType("SHIFT_PUBLISHED")
+                    .aggregateType("SHIFT")
+                    .aggregateId(UUID.randomUUID())
+                    .payload("{malformed-json")
+                    .status(OutboxStatus.PENDING)
+                    .retryCount(0)
+                    .maxRetries(3)
+                    .scheduledAt(Instant.now().minusSeconds(1))
+                    .build();
+            return outboxRepository.save(event).getId();
+        });
+
+        // --- Attempt 1: fails -> retry 1, backoff 5s ---
+        outboxProcessor.processPendingEvents();
+        OutboxEvent attempt1 = outboxRepository.findById(outboxId).orElseThrow();
+        assertThat(attempt1.getRetryCount()).isEqualTo(1);
+        assertThat(attempt1.getStatus()).isEqualTo(OutboxStatus.PENDING);
+
+        // --- Attempt 2: reschedule to past, process -> retry 2, backoff 10s ---
+        tx.executeWithoutResult(status -> {
+            OutboxEvent ev = outboxRepository.findById(outboxId).orElseThrow();
+            ev.setScheduledAt(Instant.now().minusSeconds(1));
+            outboxRepository.save(ev);
+        });
+        Instant beforeAttempt2 = Instant.now();
+        outboxProcessor.processPendingEvents();
+        OutboxEvent attempt2 = outboxRepository.findById(outboxId).orElseThrow();
+        assertThat(attempt2.getRetryCount()).isEqualTo(2);
+        assertThat(attempt2.getStatus()).isEqualTo(OutboxStatus.PENDING);
+        // Backoff formula 5 * 2^(2-1) = 10s
+        assertThat(attempt2.getScheduledAt()).isAfterOrEqualTo(beforeAttempt2.plusSeconds(8))
+                .isBeforeOrEqualTo(beforeAttempt2.plusSeconds(13));
+
+        // --- Attempt 3: reschedule to past, process -> retry 3 = maxRetries -> FAILED ---
+        tx.executeWithoutResult(status -> {
+            OutboxEvent ev = outboxRepository.findById(outboxId).orElseThrow();
+            ev.setScheduledAt(Instant.now().minusSeconds(1));
+            outboxRepository.save(ev);
+        });
+        outboxProcessor.processPendingEvents();
+        OutboxEvent attempt3 = outboxRepository.findById(outboxId).orElseThrow();
+        assertThat(attempt3.getRetryCount()).isEqualTo(3);
+        assertThat(attempt3.getStatus()).isEqualTo(OutboxStatus.FAILED);
+    }
+
+    @Test
+    @DisplayName("Transactional Outbox: Stale PROCESSING events are recovered and retried")
+    void testOutbox_StaleProcessingEventRecovery() {
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        UUID shiftId = UUID.randomUUID();
+        UUID staleEventId = tx.execute(status -> {
+            OutboxEvent event = OutboxEvent.builder()
+                    .eventType("SHIFT_PUBLISHED")
+                    .aggregateType("SHIFT")
+                    .aggregateId(shiftId)
+                    .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Recovered Shift\",\"staffUserIds\":[\"%s\"]}",
+                            shiftId, staffUser.getId()))
+                    .status(OutboxStatus.PROCESSING)
+                    .retryCount(0)
+                    .maxRetries(3)
+                    .scheduledAt(Instant.now().minusSeconds(600))
+                    .build();
+            OutboxEvent saved = outboxRepository.save(event);
+            outboxRepository.forceUpdatedAt(saved.getId(), Instant.now().minus(Duration.ofMinutes(10)));
+            return saved.getId();
+        });
+
+        // Run processor: stale event (>300s) will be recovered to PENDING with retryCount=1
+        outboxProcessor.setStaleThresholdSeconds(60);
+        int processed = outboxProcessor.processPendingEvents();
+
+        // The recovered event was scheduled for retry (now + 5s), so it was reset to PENDING
+        OutboxEvent recovered = outboxRepository.findById(staleEventId).orElseThrow();
+        assertThat(recovered.getRetryCount()).isEqualTo(1);
+        assertThat(recovered.getStatus()).isEqualTo(OutboxStatus.PENDING);
+        assertThat(recovered.getErrorMessage()).contains("Stale PROCESSING recovery");
+    }
+
+    @Test
+    @DisplayName("Transactional Outbox: Concurrent worker claiming does not duplicate processing")
+    void testOutbox_ConcurrentClaimingSafety() throws Exception {
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        int eventCount = 5;
+        List<UUID> eventIds = new ArrayList<>();
+
+        tx.executeWithoutResult(status -> {
+            for (int i = 0; i < eventCount; i++) {
+                UUID shiftId = UUID.randomUUID();
+                OutboxEvent event = OutboxEvent.builder()
+                        .eventType("SHIFT_PUBLISHED")
+                        .aggregateType("SHIFT")
+                        .aggregateId(shiftId)
+                        .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Concurrent Shift %d\",\"staffUserIds\":[\"%s\"]}",
+                                shiftId, i, staffUser.getId()))
+                        .status(OutboxStatus.PENDING)
+                        .retryCount(0)
+                        .maxRetries(3)
+                        .scheduledAt(Instant.now().minusSeconds(1))
+                        .build();
+                eventIds.add(outboxRepository.save(event).getId());
+            }
+        });
+
+        int threadCount = 4;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+        AtomicInteger totalProcessed = new AtomicInteger(0);
+
+        for (int i = 0; i < threadCount; i++) {
+            executor.submit(() -> {
+                try {
+                    startLatch.await();
+                    int count = outboxProcessor.processPendingEvents();
+                    totalProcessed.addAndGet(count);
+                } catch (Exception e) {
+                    // Ignore concurrency conflicts
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        startLatch.countDown();
+        boolean finished = doneLatch.await(10, TimeUnit.SECONDS);
+        executor.shutdown();
+
+        assertThat(finished).isTrue();
+        assertThat(totalProcessed.get()).isEqualTo(eventCount);
+
+        List<OutboxEvent> allEvents = outboxRepository.findAll();
+        assertThat(allEvents).hasSize(eventCount);
+        for (OutboxEvent event : allEvents) {
+            assertThat(event.getStatus()).isEqualTo(OutboxStatus.PROCESSED);
+        }
+
+        // Each shift published notification was created exactly once
+        List<Notification> notifications = notificationRepository.findAll();
+        assertThat(notifications).hasSize(eventCount);
     }
 
     // =========================================================================

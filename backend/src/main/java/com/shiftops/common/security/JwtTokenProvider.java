@@ -23,6 +23,9 @@ public class JwtTokenProvider {
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.expiration-ms}") long expirationMs) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT secret configuration ('app.jwt.secret') must not be blank.");
+        }
         this.expirationMs = expirationMs;
         byte[] keyBytes;
         try {
@@ -31,10 +34,9 @@ public class JwtTokenProvider {
             keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         }
         if (keyBytes.length < 32) {
-            // Ensure minimum key length for HMAC-SHA256
-            byte[] padded = new byte[32];
-            System.arraycopy(keyBytes, 0, padded, 0, Math.min(keyBytes.length, 32));
-            keyBytes = padded;
+            throw new IllegalArgumentException(
+                    "JWT secret must be at least 256 bits (32 bytes). Current key length is " + (keyBytes.length * 8) + " bits."
+            );
         }
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }

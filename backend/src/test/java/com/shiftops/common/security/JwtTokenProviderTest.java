@@ -67,4 +67,15 @@ class JwtTokenProviderTest {
     void shouldRejectInvalidToken() {
         assertFalse(tokenProvider.validateToken("invalid.token.here"));
     }
+
+    @Test
+    void shouldRejectBlankSecret() {
+        assertThrows(IllegalStateException.class, () -> new JwtTokenProvider("", expirationMs));
+        assertThrows(IllegalStateException.class, () -> new JwtTokenProvider(null, expirationMs));
+    }
+
+    @Test
+    void shouldRejectShortSecret() {
+        assertThrows(IllegalArgumentException.class, () -> new JwtTokenProvider("short-secret-under-32-bytes", expirationMs));
+    }
 }

@@ -1,8 +1,19 @@
+# ==============================================================================
+# ShiftOps Local Development Profile Configuration
+# Provides safe local developer defaults for database and JWT secrets.
+# ==============================================================================
+
 spring:
+  datasource:
+    password: ${SPRING_DATASOURCE_PASSWORD:shiftops_dev}
   jpa:
     show-sql: true
   flyway:
     clean-disabled: false
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-local-secret-do-not-use-in-production-min-256-bits!}
 
 logging:
   level:

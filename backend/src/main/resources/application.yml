@@ -1,10 +1,12 @@
 spring:
+  profiles:
+    default: dev
   application:
     name: shiftops
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/shiftops}
     username: ${SPRING_DATASOURCE_USERNAME:shiftops}
-    password: ${SPRING_DATASOURCE_PASSWORD:shiftops_dev}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -39,7 +41,7 @@ springdoc:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+    secret: ${JWT_SECRET:}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   storage:
     upload-dir: ${UPLOAD_DIR:./uploads}

@@ -119,6 +119,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 </NavLink>
 
                 <NavLink
+                  to="/handovers"
+                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                >
+                  Handover
+                </NavLink>
+
+                <NavLink
                   to="/profile"
                   className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
                 >

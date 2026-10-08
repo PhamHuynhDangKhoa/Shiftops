@@ -70,14 +70,34 @@ shiftops/
 
 ### Running Tests
 
-```bash
-# Backend (requires Docker for Testcontainers)
-cd backend
-./gradlew test
+#### Backend Testing
 
-# Frontend
+The backend test suite is partitioned into fast unit/mock tests and full PostgreSQL container integration tests:
+
+```bash
+cd backend
+
+# Run fast unit & MockMvc tests (no Docker required)
+./gradlew test
+# or explicitly:
+./gradlew unitTest
+
+# Run PostgreSQL 16 Testcontainers integration tests (requires Docker daemon)
+./gradlew integrationTest
+```
+
+> **Note on Testcontainers:** The `integrationTest` task genuinely boots a PostgreSQL 16 container, applies Flyway migrations (`V1`–`V6`), and validates JPA entity schema against real PostgreSQL. It strictly requires Docker. If Docker is offline, `integrationTest` fails immediately and explicitly with `IllegalStateException` (no silent fallback).
+
+#### Frontend Testing & Verification
+
+```bash
 cd frontend
+
+# Run ESLint (0 errors enforced)
 npm run lint
+
+# Run TypeScript check & Vite production build
+npm run build
 ```
 
 ## License

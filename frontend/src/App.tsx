@@ -11,6 +11,7 @@ import { AttendancePage } from './pages/AttendancePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { TasksPage } from './pages/TasksPage';
 import { IssuesPage } from './pages/IssuesPage';
+import { HandoversPage } from './pages/HandoversPage';
 import HealthPage from './pages/HealthPage';
 
 function App() {
@@ -83,6 +84,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <IssuesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/handovers"
+            element={
+              <ProtectedRoute>
+                <HandoversPage />
               </ProtectedRoute>
             }
           />

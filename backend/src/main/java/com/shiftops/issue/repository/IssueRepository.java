@@ -58,5 +58,7 @@ public interface IssueRepository extends JpaRepository<Issue, UUID>, JpaSpecific
 
     long countByBranchIdAndStatus(UUID branchId, IssueStatus status);
 
+    long countByBranchIdAndStatusIn(UUID branchId, java.util.Collection<IssueStatus> statuses);
+
     long countByBranchIdAndPriority(UUID branchId, IssuePriority priority);
 }

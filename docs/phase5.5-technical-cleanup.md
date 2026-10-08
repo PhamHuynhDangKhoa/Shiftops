@@ -81,10 +81,13 @@ All simple, immutable request and response DTOs across the entire project were c
 - **Dependencies Added:**
   - `org.testcontainers:junit-jupiter:1.20.4`
   - `org.testcontainers:postgresql:1.20.4`
-- **Container Configuration:**
-  - Created `PostgresIntegrationTest.java` configuring `PostgreSQLContainer("postgres:16-alpine")`.
-  - Configured `@Testcontainers(disabledWithoutDocker = true)` and `@EnabledIf("isDockerAvailable")` to enable full PostgreSQL 16 schema validation when Docker is running, while safely skipping without build failure in environments where the Docker daemon is offline.
-  - Integrates with Flyway migrations (`spring.flyway.enabled: true`) and validates entity mappings (`spring.jpa.hibernate.ddl-auto: validate`).
+- **Strict Verification (No Silent Fallback):**
+  - Configured `PostgresIntegrationTest.java` targeting `PostgreSQLContainer("postgres:16-alpine")`.
+  - Removed silent fallback/skipping: `PostgresIntegrationTest` strictly requires Docker and applies Flyway migrations (`spring.flyway.enabled: true`) and JPA schema validation (`spring.jpa.hibernate.ddl-auto: validate`).
+  - If Docker is offline, running PostgreSQL integration tests fails loudly and explicitly with `IllegalStateException` (no fake green tests).
+- **Gradle Task Partitioning:**
+  - `./gradlew test` / `./gradlew unitTest`: Fast execution of all unit and MockMvc tests (169 tests) without Docker dependency.
+  - `./gradlew integrationTest`: Runs the PostgreSQL Testcontainers integration test against real PostgreSQL 16.
 
 ---
 

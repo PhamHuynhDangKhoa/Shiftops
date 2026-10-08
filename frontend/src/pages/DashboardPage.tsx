@@ -94,6 +94,12 @@ export const DashboardPage: React.FC = () => {
               ⚠️ Issues
             </Link>
             <Link
+              to="/handovers"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
+            >
+              🤝 Handover
+            </Link>
+            <Link
               to="/profile"
               className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 text-sm font-semibold rounded-lg shadow-sm transition-colors"
             >

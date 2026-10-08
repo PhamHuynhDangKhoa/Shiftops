@@ -54,3 +54,24 @@ tasks.withType<Test> {
     useJUnitPlatform()
     systemProperty("user.timezone", "UTC")
 }
+
+tasks.named<Test>("test") {
+    description = "Runs unit and MockMvc tests (excluding Testcontainers PostgreSQL)."
+    exclude("**/PostgresIntegrationTest*")
+}
+
+val unitTest = tasks.register<Test>("unitTest") {
+    description = "Runs unit and MockMvc tests without requiring Docker or Testcontainers."
+    group = "verification"
+    useJUnitPlatform()
+    systemProperty("user.timezone", "UTC")
+    exclude("**/PostgresIntegrationTest*")
+}
+
+val integrationTest = tasks.register<Test>("integrationTest") {
+    description = "Runs PostgreSQL integration tests using Testcontainers (requires Docker)."
+    group = "verification"
+    useJUnitPlatform()
+    systemProperty("user.timezone", "UTC")
+    include("**/PostgresIntegrationTest*")
+}

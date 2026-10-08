@@ -244,3 +244,74 @@ export interface IssueSummary {
   createdAt: string;
   updatedAt: string;
 }
+
+export type HandoverStatus = 'DRAFT' | 'SUBMITTED' | 'ACKNOWLEDGED';
+export type HandoverItemType = 'COMPLETED' | 'PENDING' | 'ISSUE' | 'NOTE';
+
+export interface HandoverDerivedSummary {
+  totalTasks: number;
+  completedTasks: number;
+  pendingTasks: number;
+  openBranchIssues: number;
+  staffAssignedCount: number;
+}
+
+export interface HandoverItem {
+  id: string;
+  handoverId?: string;
+  type: HandoverItemType;
+  content: string;
+  issueId?: string;
+  issueTitle?: string;
+  issueStatus?: IssueStatus;
+  orderIndex: number;
+  createdAt: string;
+}
+
+export interface ShiftHandover {
+  id: string;
+  shiftId: string;
+  shiftName?: string;
+  shiftStartTime: string;
+  shiftEndTime: string;
+  branchId: string;
+  branchName: string;
+  status: HandoverStatus;
+  notes?: string;
+  submittedById?: string;
+  submittedByName?: string;
+  submittedAt?: string;
+  acknowledgedById?: string;
+  acknowledgedByName?: string;
+  acknowledgedAt?: string;
+  acknowledgementNotes?: string;
+  items: HandoverItem[];
+  summary: HandoverDerivedSummary;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateHandoverRequest {
+  notes?: string;
+  items?: {
+    type: HandoverItemType;
+    content: string;
+    issueId?: string;
+    orderIndex: number;
+  }[];
+}
+
+export interface UpdateHandoverRequest {
+  notes?: string;
+  items?: {
+    type: HandoverItemType;
+    content: string;
+    issueId?: string;
+    orderIndex: number;
+  }[];
+}
+
+export interface AcknowledgeHandoverRequest {
+  notes?: string;
+}

@@ -1,13 +1,11 @@
 package com.shiftops;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -15,8 +13,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@Testcontainers(disabledWithoutDocker = true)
-@EnabledIf("isDockerAvailable")
+@Testcontainers
 public class PostgresIntegrationTest {
 
     @Container
@@ -25,26 +22,16 @@ public class PostgresIntegrationTest {
             .withUsername("shiftops")
             .withPassword("shiftops");
 
-    static boolean isDockerAvailable() {
-        try {
-            return DockerClientFactory.instance().isDockerAvailable();
-        } catch (Throwable t) {
-            return false;
-        }
-    }
-
     @DynamicPropertySource
     static void configureProperties(DynamicPropertyRegistry registry) {
-        if (isDockerAvailable()) {
-            registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-            registry.add("spring.datasource.username", POSTGRES::getUsername);
-            registry.add("spring.datasource.password", POSTGRES::getPassword);
-            registry.add("spring.flyway.enabled", () -> "true");
-            registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
-        }
+        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRES::getUsername);
+        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("spring.flyway.enabled", () -> "true");
+        registry.add("spring.jpa.hibernate.ddl-auto", () -> "validate");
     }
 
-    @Autowired(required = false)
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Test

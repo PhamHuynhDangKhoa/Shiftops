@@ -64,6 +64,9 @@ class TaskServiceTest {
     @Mock
     private Clock clock;
 
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private TaskService taskService;
 

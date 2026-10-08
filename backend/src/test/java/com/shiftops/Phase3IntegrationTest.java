@@ -65,6 +65,12 @@ class Phase3IntegrationTest {
     private com.shiftops.attendance.repository.AttendanceRepository attendanceRepository;
 
     @Autowired
+    private com.shiftops.notification.repository.NotificationRepository notificationRepository;
+
+    @Autowired
+    private com.shiftops.announcement.repository.AnnouncementRepository announcementRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
@@ -84,6 +90,8 @@ class Phase3IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        notificationRepository.deleteAll();
+        announcementRepository.deleteAll();
         taskRepository.deleteAll();
         taskTemplateRepository.deleteAll();
         attendanceRepository.deleteAll();

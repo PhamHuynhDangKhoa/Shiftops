@@ -82,6 +82,10 @@ public class Phase6IntegrationTest {
     private UserRepository userRepository;
     @Autowired
     private BranchRepository branchRepository;
+    @Autowired
+    private com.shiftops.notification.repository.NotificationRepository notificationRepository;
+    @Autowired
+    private com.shiftops.announcement.repository.AnnouncementRepository announcementRepository;
 
     private Branch branchA;
     private Branch branchB;
@@ -101,6 +105,8 @@ public class Phase6IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        notificationRepository.deleteAll();
+        announcementRepository.deleteAll();
         attachmentRepository.deleteAll();
         commentRepository.deleteAll();
         issueRepository.deleteAll();
@@ -189,6 +195,8 @@ public class Phase6IntegrationTest {
 
     @AfterEach
     void tearDown() {
+        notificationRepository.deleteAll();
+        announcementRepository.deleteAll();
         attachmentRepository.deleteAll();
         commentRepository.deleteAll();
         issueRepository.deleteAll();

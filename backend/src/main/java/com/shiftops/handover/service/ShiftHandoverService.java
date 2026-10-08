@@ -12,6 +12,8 @@ import com.shiftops.handover.repository.ShiftHandoverRepository;
 import com.shiftops.issue.entity.Issue;
 import com.shiftops.issue.entity.IssueStatus;
 import com.shiftops.issue.repository.IssueRepository;
+import com.shiftops.notification.event.HandoverAcknowledgedEvent;
+import com.shiftops.notification.event.HandoverSubmittedEvent;
 import com.shiftops.shift.entity.Shift;
 import com.shiftops.shift.entity.ShiftStatus;
 import com.shiftops.shift.repository.ShiftAssignmentRepository;
@@ -24,6 +26,7 @@ import com.shiftops.user.repository.UserRepository;
 import com.shiftops.user.service.BranchAccessService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -51,6 +54,7 @@ public class ShiftHandoverService {
     private final IssueRepository issueRepository;
     private final BranchAccessService branchAccessService;
     private final Clock clock;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ShiftHandoverResponse createOrGetDraftHandover(UUID shiftId, CreateHandoverRequest request, UserPrincipal principal) {
@@ -234,6 +238,13 @@ public class ShiftHandoverService {
         handover.setSubmittedAt(clock.instant());
 
         ShiftHandover saved = handoverRepository.save(handover);
+        eventPublisher.publishEvent(new HandoverSubmittedEvent(
+                saved.getId(),
+                saved.getShift().getId(),
+                saved.getBranch().getId(),
+                user.getId(),
+                saved.getShift().getName()
+        ));
         return ShiftHandoverResponse.fromEntity(saved, computeSummary(saved.getShift()));
     }
 
@@ -260,6 +271,15 @@ public class ShiftHandoverService {
         }
 
         ShiftHandover saved = handoverRepository.save(handover);
+        UUID submitterId = saved.getSubmittedBy() != null ? saved.getSubmittedBy().getId() : null;
+        eventPublisher.publishEvent(new HandoverAcknowledgedEvent(
+                saved.getId(),
+                saved.getShift().getId(),
+                saved.getBranch().getId(),
+                user.getId(),
+                submitterId,
+                saved.getShift().getName()
+        ));
         return ShiftHandoverResponse.fromEntity(saved, computeSummary(saved.getShift()));
     }
 

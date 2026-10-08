@@ -58,6 +58,7 @@ public class IssueService {
     private final TaskRepository taskRepository;
     private final BranchAccessService branchAccessService;
     private final StorageService storageService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Autowired(required = false)
     private Clock clock = Clock.systemUTC();
@@ -230,8 +231,9 @@ public class IssueService {
             throw new BusinessRuleException("ISSUE_CANCELLED", "Cannot reassign a cancelled issue");
         }
 
+        User targetUser = null;
         if (request.getAssignedToUserId() != null) {
-            User targetUser = userRepository.findById(request.getAssignedToUserId())
+            targetUser = userRepository.findById(request.getAssignedToUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getAssignedToUserId()));
 
             if (!targetUser.isActive()) {
@@ -275,6 +277,10 @@ public class IssueService {
 
         Issue saved = issueRepository.save(issue);
         log.info("Issue {} assignment updated by {}", issueId, principal.getUsername());
+        if (targetUser != null) {
+            eventPublisher.publishEvent(new com.shiftops.notification.event.IssueAssignedEvent(
+                    saved.getId(), saved.getBranch().getId(), targetUser.getId(), saved.getTitle()));
+        }
         return IssueResponse.fromEntity(saved, true);
     }
 
@@ -359,6 +365,15 @@ public class IssueService {
 
         Issue saved = issueRepository.save(issue);
         log.info("Issue {} transitioned: {} -> {} by {}", issueId, currentStatus, targetStatus, principal.getUsername());
+        eventPublisher.publishEvent(new com.shiftops.notification.event.IssueStatusChangedEvent(
+                saved.getId(),
+                saved.getBranch().getId(),
+                saved.getReportedBy() != null ? saved.getReportedBy().getId() : null,
+                saved.getAssignedTo() != null ? saved.getAssignedTo().getId() : null,
+                currentStatus,
+                targetStatus,
+                saved.getTitle()
+        ));
         return IssueResponse.fromEntity(saved, true);
     }
 

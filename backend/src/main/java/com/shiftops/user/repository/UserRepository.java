@@ -29,6 +29,10 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
 
     List<User> findByPrimaryBranchId(UUID branchId);
 
+    List<User> findByPrimaryBranchIdAndIsActiveTrue(UUID branchId);
+
+    List<User> findByIsActiveTrue();
+
     long countByPrimaryBranchId(UUID branchId);
 
     long countByPrimaryBranchIdAndIsActiveTrue(UUID branchId);

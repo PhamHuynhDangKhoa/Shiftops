@@ -89,6 +89,10 @@ public class Phase7IntegrationTest {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private com.shiftops.notification.repository.NotificationRepository notificationRepository;
+    @Autowired
+    private com.shiftops.announcement.repository.AnnouncementRepository announcementRepository;
+    @Autowired
     private BranchRepository branchRepository;
 
     private Branch branchA;
@@ -209,6 +213,8 @@ public class Phase7IntegrationTest {
     }
 
     private void cleanDatabase() {
+        notificationRepository.deleteAll();
+        announcementRepository.deleteAll();
         handoverItemRepository.deleteAll();
         shiftHandoverRepository.deleteAll();
         attachmentRepository.deleteAll();

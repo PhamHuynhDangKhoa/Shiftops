@@ -24,6 +24,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.context.ApplicationEventPublisher;
+import com.shiftops.notification.event.TaskAssignedEvent;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,6 +45,7 @@ public class TaskService {
     private final UserRepository userRepository;
     private final BranchAccessService branchAccessService;
     private final Clock clock;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public List<TaskResponse> generateTasksFromTemplate(
@@ -102,8 +106,10 @@ public class TaskService {
                             .dueTime(shift.getEndTime())
                             .build();
 
-                    createdTasks.add(taskRepository.save(task));
+                    Task savedTask = taskRepository.save(task);
+                    createdTasks.add(savedTask);
                     log.info("Generated task '{}' for staff {} on shift {}", task.getTitle(), sa.getUser().getEmail(), shiftId);
+                    eventPublisher.publishEvent(new TaskAssignedEvent(savedTask.getId(), shiftId, sa.getUser().getId(), savedTask.getTitle()));
                 }
             }
         }
@@ -144,6 +150,7 @@ public class TaskService {
 
         Task saved = taskRepository.save(task);
         log.info("Created ad-hoc task '{}' for staff {} on shift {}", saved.getTitle(), sa.getUser().getEmail(), shift.getId());
+        eventPublisher.publishEvent(new TaskAssignedEvent(saved.getId(), shift.getId(), sa.getUser().getId(), saved.getTitle()));
         return TaskResponse.fromEntity(saved);
     }
 

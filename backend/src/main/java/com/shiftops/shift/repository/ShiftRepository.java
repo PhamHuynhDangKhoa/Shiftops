@@ -69,4 +69,15 @@ public interface ShiftRepository extends JpaRepository<Shift, UUID> {
             @Param("status") ShiftStatus status,
             @Param("startDate") Instant startDate,
             @Param("endDate") Instant endDate);
+
+    @Query("SELECT DISTINCT s FROM Shift s " +
+           "LEFT JOIN FETCH s.branch " +
+           "LEFT JOIN FETCH s.assignments a " +
+           "LEFT JOIN FETCH a.user " +
+           "WHERE s.status = com.shiftops.shift.entity.ShiftStatus.PUBLISHED " +
+           "AND s.startTime >= :windowStart " +
+           "AND s.startTime <= :windowEnd")
+    List<Shift> findPublishedShiftsStartingBetween(
+            @Param("windowStart") Instant windowStart,
+            @Param("windowEnd") Instant windowEnd);
 }

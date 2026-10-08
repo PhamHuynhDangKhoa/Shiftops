@@ -315,3 +315,62 @@ export interface UpdateHandoverRequest {
 export interface AcknowledgeHandoverRequest {
   notes?: string;
 }
+
+export type NotificationType =
+  | 'SHIFT_PUBLISHED'
+  | 'SHIFT_CHANGED'
+  | 'TASK_ASSIGNED'
+  | 'ISSUE_ASSIGNED'
+  | 'ISSUE_UPDATED'
+  | 'HANDOVER_SUBMITTED'
+  | 'HANDOVER_ACKNOWLEDGED'
+  | 'ANNOUNCEMENT_PUBLISHED'
+  | 'SHIFT_REMINDER';
+
+export type ReferenceType = 'SHIFT' | 'TASK' | 'ISSUE' | 'HANDOVER' | 'ANNOUNCEMENT';
+
+export interface Notification {
+  id: string;
+  recipientId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  referenceType?: ReferenceType;
+  referenceId?: string;
+  readAt?: string;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface UnreadCountResponse {
+  count: number;
+}
+
+export type AnnouncementTargetType = 'BRANCH' | 'SHIFT' | 'ORGANIZATION';
+
+export interface Announcement {
+  id: string;
+  branchId?: string;
+  branchName?: string;
+  createdById: string;
+  createdByName: string;
+  title: string;
+  content: string;
+  targetType: AnnouncementTargetType;
+  targetShiftId?: string;
+  targetShiftName?: string;
+  publishedAt?: string;
+  published: boolean;
+  expiresAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateAnnouncementRequest {
+  title: string;
+  content: string;
+  targetType?: AnnouncementTargetType;
+  targetShiftId?: string;
+  expiresAt?: string;
+  publishImmediately?: boolean;
+}

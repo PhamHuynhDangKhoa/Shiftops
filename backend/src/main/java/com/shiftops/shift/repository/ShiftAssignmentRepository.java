@@ -18,6 +18,8 @@ public interface ShiftAssignmentRepository extends JpaRepository<ShiftAssignment
 
     long countByShiftId(UUID shiftId);
 
+    List<ShiftAssignment> findByShiftId(UUID shiftId);
+
     Optional<ShiftAssignment> findByShiftIdAndUserId(UUID shiftId, UUID userId);
 
     void deleteByShiftIdAndUserId(UUID shiftId, UUID userId);

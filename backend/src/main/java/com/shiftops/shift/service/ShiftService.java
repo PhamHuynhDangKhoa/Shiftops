@@ -17,11 +17,14 @@ import com.shiftops.user.entity.Role;
 import com.shiftops.user.entity.User;
 import com.shiftops.user.repository.UserRepository;
 import com.shiftops.user.service.BranchAccessService;
+import com.shiftops.notification.event.ShiftChangedEvent;
+import com.shiftops.notification.event.ShiftPublishedEvent;
 import com.shiftops.task.entity.Task;
 import com.shiftops.task.entity.TaskStatus;
 import com.shiftops.task.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +44,7 @@ public class ShiftService {
     private final UserRepository userRepository;
     private final BranchAccessService branchAccessService;
     private final TaskRepository taskRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public ShiftResponse createShift(UUID branchId, CreateShiftRequest request, UserPrincipal principal) {
@@ -208,6 +212,22 @@ public class ShiftService {
         }
 
         Shift updated = shiftRepository.save(shift);
+
+        if (updated.getStatus() == ShiftStatus.PUBLISHED && (request.getName() != null || request.getNotes() != null)) {
+            List<UUID> staffIds = updated.getAssignments() != null
+                    ? updated.getAssignments().stream().map(a -> a.getUser().getId()).toList()
+                    : List.of();
+            if (!staffIds.isEmpty()) {
+                eventPublisher.publishEvent(new ShiftChangedEvent(
+                        updated.getId(),
+                        updated.getBranch().getId(),
+                        staffIds,
+                        updated.getName(),
+                        "Shift details have been updated"
+                ));
+            }
+        }
+
         return ShiftResponse.fromEntity(updated);
     }
 
@@ -250,6 +270,35 @@ public class ShiftService {
             for (Task t : incomplete) {
                 t.setStatus(TaskStatus.CANCELLED);
                 taskRepository.save(t);
+            }
+
+            if (currentStatus == ShiftStatus.PUBLISHED) {
+                List<UUID> staffIds = updated.getAssignments() != null
+                        ? updated.getAssignments().stream().map(a -> a.getUser().getId()).toList()
+                        : List.of();
+                if (!staffIds.isEmpty()) {
+                    eventPublisher.publishEvent(new ShiftChangedEvent(
+                            updated.getId(),
+                            updated.getBranch().getId(),
+                            staffIds,
+                            updated.getName(),
+                            "Shift has been cancelled"
+                    ));
+                }
+            }
+        } else if (targetStatus == ShiftStatus.PUBLISHED) {
+            List<UUID> staffIds = updated.getAssignments() != null
+                    ? updated.getAssignments().stream().map(a -> a.getUser().getId()).toList()
+                    : List.of();
+            if (!staffIds.isEmpty()) {
+                eventPublisher.publishEvent(new ShiftPublishedEvent(
+                        updated.getId(),
+                        updated.getBranch().getId(),
+                        staffIds,
+                        updated.getName(),
+                        updated.getStartTime(),
+                        updated.getEndTime()
+                ));
             }
         }
 
@@ -318,6 +367,17 @@ public class ShiftService {
 
         shift.getAssignments().add(assignment);
         Shift saved = shiftRepository.save(shift);
+
+        if (saved.getStatus() == ShiftStatus.PUBLISHED) {
+            eventPublisher.publishEvent(new ShiftPublishedEvent(
+                    saved.getId(),
+                    saved.getBranch().getId(),
+                    List.of(targetUser.getId()),
+                    saved.getName(),
+                    saved.getStartTime(),
+                    saved.getEndTime()
+            ));
+        }
 
         return ShiftResponse.fromEntity(saved);
     }

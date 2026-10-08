@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { NotificationBell } from './NotificationBell';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -138,6 +139,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {isAuthenticated && user ? (
               <>
+                <NotificationBell />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.875rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontWeight: 600, color: '#1f2937' }}>{user.fullName}</span>

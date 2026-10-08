@@ -57,6 +57,8 @@ class IssueServiceTest {
     private BranchAccessService branchAccessService;
     @Mock
     private StorageService storageService;
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     private IssueService issueService;

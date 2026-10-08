@@ -55,6 +55,9 @@ class ShiftServiceTest {
     @Mock
     private com.shiftops.task.repository.TaskRepository taskRepository;
 
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private ShiftService shiftService;
 

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { ApiResponse, Branch } from '../lib/types';
-import { Card, Badge } from '../components/ui';
+import { ApiResponse, Branch, Announcement, AnnouncementTargetType } from '../lib/types';
+import { Card, Badge, Button, Modal, Input } from '../components/ui';
 
 interface HealthData {
   status: string;
@@ -16,6 +17,14 @@ export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const isOwner = user?.role === 'OWNER';
   const isManager = user?.role === 'MANAGER';
+
+  // Broadcast modal state
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastContent, setBroadcastContent] = useState('');
+  const [broadcastTargetType, setBroadcastTargetType] = useState<AnnouncementTargetType>('BRANCH');
+  const [broadcastBranchId, setBroadcastBranchId] = useState(user?.primaryBranchId || '');
+  const [broadcastError, setBroadcastError] = useState<string | null>(null);
 
   // Health check query
   const { data: health } = useQuery<HealthData>({
@@ -36,6 +45,62 @@ export const DashboardPage: React.FC = () => {
     },
     enabled: isOwner || isManager,
   });
+
+  // Announcements query
+  const { data: announcements, refetch: refetchAnnouncements } = useQuery<Announcement[]>({
+    queryKey: ['announcements', 'my'],
+    queryFn: async () => {
+      const res = await api.get<ApiResponse<Announcement[]>>('/announcements/my');
+      return res.data.data;
+    },
+    refetchInterval: 30000,
+  });
+
+  // Create announcement mutation
+  const broadcastMutation = useMutation({
+    mutationFn: async () => {
+      const targetBranch = broadcastTargetType === 'ORGANIZATION'
+        ? (broadcastBranchId || branches?.[0]?.id || user?.primaryBranchId)
+        : (broadcastBranchId || user?.primaryBranchId || branches?.[0]?.id);
+
+      if (!targetBranch && broadcastTargetType !== 'ORGANIZATION') {
+        throw new Error('Please select a branch');
+      }
+
+      await api.post(`/branches/${targetBranch}/announcements`, {
+        title: broadcastTitle,
+        content: broadcastContent,
+        targetType: broadcastTargetType,
+        publishImmediately: true,
+      });
+    },
+    onSuccess: () => {
+      setIsBroadcastModalOpen(false);
+      setBroadcastTitle('');
+      setBroadcastContent('');
+      setBroadcastError(null);
+      refetchAnnouncements();
+    },
+    onError: (err: unknown) => {
+      let msg = 'Failed to create announcement';
+      if (axios.isAxiosError(err)) {
+        msg = err.response?.data?.error?.message || err.response?.data?.message || err.message || msg;
+      } else if (err instanceof Error) {
+        msg = err.message;
+      }
+      setBroadcastError(msg);
+    },
+  });
+
+  const handleBroadcastSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!broadcastTitle.trim() || !broadcastContent.trim()) {
+      setBroadcastError('Title and content are required.');
+      return;
+    }
+    setBroadcastError(null);
+    broadcastMutation.mutate();
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -59,6 +124,22 @@ export const DashboardPage: React.FC = () => {
 
           {/* Quick Action Navigation Buttons */}
           <div className="flex items-center gap-2.5 flex-wrap">
+            {(isOwner || isManager) && (
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  setBroadcastTitle('');
+                  setBroadcastContent('');
+                  setBroadcastTargetType('BRANCH');
+                  setBroadcastBranchId(user?.primaryBranchId || branches?.[0]?.id || '');
+                  setBroadcastError(null);
+                  setIsBroadcastModalOpen(true);
+                }}
+              >
+                📢 Broadcast
+              </Button>
+            )}
             {(isOwner || isManager) && (
               <Link
                 to="/staff"
@@ -108,6 +189,72 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      {/* Active Operational Announcements */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              📢 Active Announcements
+            </h2>
+            {announcements && announcements.length > 0 && (
+              <Badge variant="brand">{announcements.length}</Badge>
+            )}
+          </div>
+          {(isOwner || isManager) && (
+            <button
+              onClick={() => {
+                setBroadcastTitle('');
+                setBroadcastContent('');
+                setBroadcastTargetType('BRANCH');
+                setBroadcastBranchId(user?.primaryBranchId || branches?.[0]?.id || '');
+                setBroadcastError(null);
+                setIsBroadcastModalOpen(true);
+              }}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+            >
+              + Post New Announcement
+            </button>
+          )}
+        </div>
+
+        {announcements && announcements.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {announcements.map((ann) => (
+              <Card key={ann.id} className="p-5 border-l-4 border-l-blue-600 space-y-3 shadow-xs">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-gray-900 text-base truncate">{ann.title}</h3>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                      <span>By {ann.createdByName}</span>
+                      <span>•</span>
+                      <span>{new Date(ann.publishedAt || ann.createdAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <Badge variant={ann.targetType === 'ORGANIZATION' ? 'urgent' : 'normal'}>
+                    {ann.targetType === 'ORGANIZATION'
+                      ? 'Org-Wide'
+                      : ann.branchName || 'Branch'}
+                  </Badge>
+                </div>
+                <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                  {ann.content}
+                </p>
+                {ann.targetShiftName && (
+                  <div className="text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded-md inline-block font-medium">
+                    Target Shift: {ann.targetShiftName}
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="p-6 text-center text-gray-500 text-sm">
+            <span className="text-2xl block mb-1">📣</span>
+            No active announcements. Operations are running normally.
+          </Card>
+        )}
+      </div>
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -169,10 +316,96 @@ export const DashboardPage: React.FC = () => {
           • <strong>Phase 3:</strong> Shift Scheduling & Concurrency Engine (Complete ✅)<br />
           • <strong>Phase 4:</strong> Attendance & Punctuality Engine (Complete ✅)<br />
           • <strong>Phase 5:</strong> Task Assignment & Templates (Complete ✅)<br />
-          • <strong>Phase 5.5:</strong> Technical Cleanup & Architecture Hardening (In Progress ⚡)<br />
-          • <strong>Phase 6:</strong> Issue Management & Resolution (Scheduled ⏳)
+          • <strong>Phase 5.5:</strong> Technical Cleanup & Architecture Hardening (Complete ✅)<br />
+          • <strong>Phase 6:</strong> Issue Management & Resolution (Complete ✅)<br />
+          • <strong>Phase 7:</strong> Shift Handover & Operations Continuity (Complete ✅)<br />
+          • <strong>Phase 8:</strong> Announcements & Notifications (Complete ✅)
         </p>
       </Card>
+
+      {/* Broadcast Announcement Modal */}
+      <Modal
+        isOpen={isBroadcastModalOpen}
+        onClose={() => setIsBroadcastModalOpen(false)}
+        title="Broadcast Announcement"
+      >
+        <form onSubmit={handleBroadcastSubmit} className="space-y-4">
+          {broadcastError && (
+            <div className="p-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg">
+              {broadcastError}
+            </div>
+          )}
+
+          <Input
+            label="Title"
+            value={broadcastTitle}
+            onChange={(e) => setBroadcastTitle(e.target.value)}
+            placeholder="e.g. Health Inspection Tomorrow Morning"
+            maxLength={150}
+            required
+          />
+
+          {isOwner && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-700">Target Audience</label>
+              <select
+                className="w-full px-3.5 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={broadcastTargetType}
+                onChange={(e) => setBroadcastTargetType(e.target.value as AnnouncementTargetType)}
+              >
+                <option value="BRANCH">Specific Branch</option>
+                <option value="ORGANIZATION">Organization-Wide (All Branches)</option>
+              </select>
+            </div>
+          )}
+
+          {broadcastTargetType === 'BRANCH' && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-700">Branch</label>
+              <select
+                className="w-full px-3.5 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={broadcastBranchId}
+                onChange={(e) => setBroadcastBranchId(e.target.value)}
+                disabled={!isOwner && !!user?.primaryBranchId}
+              >
+                {branches?.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-700">Content</label>
+            <textarea
+              className="w-full px-3.5 py-2 text-sm rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[100px]"
+              value={broadcastContent}
+              onChange={(e) => setBroadcastContent(e.target.value)}
+              placeholder="Write announcement details..."
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsBroadcastModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              isLoading={broadcastMutation.isPending}
+            >
+              Publish Now
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 };

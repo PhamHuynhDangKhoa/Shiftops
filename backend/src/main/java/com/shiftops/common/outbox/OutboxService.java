@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class OutboxService {
 
     private final OutboxRepository outboxRepository;
+    private final OutboxProperties outboxProperties;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
@@ -41,7 +44,7 @@ public class OutboxService {
                 .payload(jsonPayload)
                 .status(OutboxStatus.PENDING)
                 .retryCount(0)
-                .maxRetries(3)
+                .maxRetries(outboxProperties.getMaxRetries())
                 .scheduledAt(now)
                 .build();
 
@@ -51,43 +54,105 @@ public class OutboxService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public boolean markProcessing(UUID eventId) {
+    public Optional<UUID> claimEvent(UUID eventId) {
         try {
             Instant now = clock.instant();
-            int updated = outboxRepository.claimEventAtomically(eventId, now);
-            return updated > 0;
+            UUID claimToken = UUID.randomUUID();
+            Instant leaseExpiresAt = now.plusMillis(outboxProperties.getLeaseDurationMs());
+            int updated = outboxRepository.claimEventAtomically(eventId, claimToken, leaseExpiresAt, now);
+            if (updated > 0) {
+                log.debug("Claimed outbox event {} with token {}", eventId, claimToken);
+                return Optional.of(claimToken);
+            }
+            return Optional.empty();
         } catch (org.springframework.dao.OptimisticLockingFailureException | org.hibernate.StaleStateException ex) {
             log.debug("Optimistic lock conflict when claiming outbox event {}: {}", eventId, ex.getMessage());
-            return false;
+            return Optional.empty();
         } catch (Exception ex) {
             log.warn("Error claiming outbox event {}: {}", eventId, ex.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean markProcessed(UUID eventId, UUID claimToken) {
+        Instant now = clock.instant();
+        int updated = outboxRepository.markProcessedAtomically(eventId, claimToken, now);
+        if (updated > 0) {
+            log.debug("Outbox event marked PROCESSED: id={}, token={}", eventId, claimToken);
+            return true;
+        } else {
+            log.warn("Worker lost claim ownership for event {} (token: {}); ignoring markProcessed", eventId, claimToken);
             return false;
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean markFailed(UUID eventId, UUID claimToken, String errorMessage) {
+        Instant now = clock.instant();
+        String truncatedError = errorMessage != null && errorMessage.length() > 490 ? errorMessage.substring(0, 490) : errorMessage;
+
+        // Fetch current retry status to compute next backoff
+        Optional<OutboxEvent> optEvent = outboxRepository.findById(eventId);
+        if (optEvent.isEmpty()) {
+            return false;
+        }
+        OutboxEvent event = optEvent.get();
+        int newRetryCount = event.getRetryCount() + 1;
+
+        int updated;
+        if (newRetryCount >= event.getMaxRetries()) {
+            updated = outboxRepository.markPermanentlyFailed(eventId, claimToken, truncatedError, now);
+            if (updated > 0) {
+                log.warn("Outbox event {} permanently FAILED after {} attempts: {}", eventId, newRetryCount, errorMessage);
+            }
+        } else {
+            // Exponential backoff: baseBackoff * 2^(retry - 1)
+            long delaySeconds = (long) (Math.pow(2, Math.max(0, newRetryCount - 1)) * outboxProperties.getBaseBackoffSeconds());
+            Instant nextScheduled = now.plusSeconds(delaySeconds);
+            updated = outboxRepository.markFailedAndRescheduled(eventId, claimToken, nextScheduled, truncatedError, now);
+            if (updated > 0) {
+                log.info("Outbox event {} scheduled for retry #{} in {}s: {}", eventId, newRetryCount, delaySeconds, errorMessage);
+            }
+        }
+
+        if (updated == 0) {
+            log.warn("Worker lost claim ownership for event {} (token: {}); ignoring markFailed", eventId, claimToken);
+            return false;
+        }
+        return true;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public int recoverStaleEvents(Duration staleThresholdDuration) {
-        Instant staleThreshold = clock.instant().minus(staleThresholdDuration);
-        List<OutboxEvent> staleEvents = outboxRepository.findStaleProcessingEvents(
-                staleThreshold, org.springframework.data.domain.PageRequest.of(0, 50));
+        Instant now = clock.instant();
+        Instant staleThreshold = now.minus(staleThresholdDuration);
+        List<OutboxEvent> staleEvents = outboxRepository.findStaleProcessingEvents(now, staleThreshold, PageRequest.of(0, 50));
         int recovered = 0;
         for (OutboxEvent event : staleEvents) {
             try {
                 int newRetryCount = event.getRetryCount() + 1;
-                event.setRetryCount(newRetryCount);
+                int updated;
                 if (newRetryCount >= event.getMaxRetries()) {
-                    event.setStatus(OutboxStatus.FAILED);
-                    event.setErrorMessage("Stale PROCESSING recovery: exceeded max retries (" + event.getMaxRetries() + ")");
-                    log.warn("Stale outbox event {} permanently FAILED after {} attempts", event.getId(), newRetryCount);
+                    String err = "Stale PROCESSING lease recovery: exceeded max retries (" + event.getMaxRetries() + ")";
+                    updated = outboxRepository.recoverStaleEventToFailed(
+                            event.getId(), event.getClaimToken(), err, now, staleThreshold);
+                    if (updated > 0) {
+                        log.warn("Stale outbox event {} permanently FAILED after {} attempts", event.getId(), newRetryCount);
+                    }
                 } else {
-                    long delaySeconds = (long) (Math.pow(2, Math.max(0, newRetryCount - 1)) * 5);
-                    event.setScheduledAt(clock.instant().plus(Duration.ofSeconds(delaySeconds)));
-                    event.setStatus(OutboxStatus.PENDING);
-                    event.setErrorMessage("Stale PROCESSING recovery: rescheduled retry #" + newRetryCount);
-                    log.info("Stale outbox event {} recovered to PENDING for retry #{}", event.getId(), newRetryCount);
+                    long delaySeconds = (long) (Math.pow(2, Math.max(0, newRetryCount - 1)) * outboxProperties.getBaseBackoffSeconds());
+                    Instant nextScheduled = now.plusSeconds(delaySeconds);
+                    String err = "Stale PROCESSING lease recovery: rescheduled retry #" + newRetryCount;
+                    updated = outboxRepository.recoverStaleEventToPending(
+                            event.getId(), event.getClaimToken(), nextScheduled, err, now, staleThreshold);
+                    if (updated > 0) {
+                        log.info("Stale outbox event {} recovered to PENDING for retry #{}", event.getId(), newRetryCount);
+                    }
                 }
-                outboxRepository.saveAndFlush(event);
-                recovered++;
+                if (updated > 0) {
+                    recovered++;
+                }
             } catch (org.springframework.dao.OptimisticLockingFailureException ex) {
                 log.debug("Concurrent modification while recovering stale event {}: {}", event.getId(), ex.getMessage());
             } catch (Exception ex) {
@@ -95,37 +160,5 @@ public class OutboxService {
             }
         }
         return recovered;
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void markProcessed(UUID eventId) {
-        outboxRepository.findById(eventId).ifPresent(event -> {
-            event.setStatus(OutboxStatus.PROCESSED);
-            event.setProcessedAt(clock.instant());
-            event.setErrorMessage(null);
-            outboxRepository.save(event);
-            log.debug("Outbox event marked PROCESSED: id={}", eventId);
-        });
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void markFailed(UUID eventId, String errorMessage) {
-        outboxRepository.findById(eventId).ifPresent(event -> {
-            int newRetryCount = event.getRetryCount() + 1;
-            event.setRetryCount(newRetryCount);
-            event.setErrorMessage(errorMessage != null && errorMessage.length() > 490 ? errorMessage.substring(0, 490) : errorMessage);
-
-            if (newRetryCount >= event.getMaxRetries()) {
-                event.setStatus(OutboxStatus.FAILED);
-                log.warn("Outbox event {} permanently FAILED after {} attempts: {}", eventId, newRetryCount, errorMessage);
-            } else {
-                // Exponential backoff: 5s, 10s, 20s (5 * 2^(retry-1))
-                long delaySeconds = (long) (Math.pow(2, Math.max(0, newRetryCount - 1)) * 5);
-                event.setScheduledAt(clock.instant().plus(Duration.ofSeconds(delaySeconds)));
-                event.setStatus(OutboxStatus.PENDING);
-                log.info("Outbox event {} scheduled for retry #{} in {}s: {}", eventId, newRetryCount, delaySeconds, errorMessage);
-            }
-            outboxRepository.save(event);
-        });
     }
 }

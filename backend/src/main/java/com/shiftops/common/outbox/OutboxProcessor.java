@@ -23,29 +23,22 @@ public class OutboxProcessor {
 
     private final OutboxRepository outboxRepository;
     private final OutboxService outboxService;
+    private final OutboxProperties outboxProperties;
     private final DurableNotificationHandler durableNotificationHandler;
     private final ObjectMapper objectMapper;
     private final Clock clock;
 
-    @Value("${app.outbox.scheduler.enabled:true}")
-    private boolean schedulerEnabled = true;
-
-    @Value("${app.outbox.stale-threshold-seconds:300}")
-    private long staleThresholdSeconds = 300;
-
-    private static final int BATCH_SIZE = 25;
-
     public void setSchedulerEnabled(boolean schedulerEnabled) {
-        this.schedulerEnabled = schedulerEnabled;
+        this.outboxProperties.getScheduler().setEnabled(schedulerEnabled);
     }
 
     public void setStaleThresholdSeconds(long staleThresholdSeconds) {
-        this.staleThresholdSeconds = staleThresholdSeconds;
+        this.outboxProperties.setStaleThresholdSeconds(staleThresholdSeconds);
     }
 
     @Scheduled(fixedDelayString = "${app.outbox.fixed-delay-ms:3000}")
     public void scheduleOutboxProcessing() {
-        if (!schedulerEnabled) {
+        if (!outboxProperties.getScheduler().isEnabled()) {
             return;
         }
         processPendingEvents();
@@ -54,14 +47,14 @@ public class OutboxProcessor {
     public int processPendingEvents() {
         // 1. Recover stale processing events first
         try {
-            outboxService.recoverStaleEvents(Duration.ofSeconds(staleThresholdSeconds));
+            outboxService.recoverStaleEvents(Duration.ofSeconds(outboxProperties.getStaleThresholdSeconds()));
         } catch (Exception ex) {
             log.warn("Error running stale outbox event recovery: {}", ex.getMessage());
         }
 
         // 2. Fetch eligible events
         Instant now = clock.instant();
-        List<OutboxEvent> events = outboxRepository.findEligibleEvents(now, PageRequest.of(0, BATCH_SIZE));
+        List<OutboxEvent> events = outboxRepository.findEligibleEvents(now, PageRequest.of(0, outboxProperties.getBatchSize()));
 
         if (events.isEmpty()) {
             return 0;
@@ -69,9 +62,9 @@ public class OutboxProcessor {
 
         int processedCount = 0;
         for (OutboxEvent event : events) {
-            boolean claimed;
+            java.util.Optional<java.util.UUID> claimTokenOpt;
             try {
-                claimed = outboxService.markProcessing(event.getId());
+                claimTokenOpt = outboxService.claimEvent(event.getId());
             } catch (OptimisticLockingFailureException ex) {
                 log.debug("Event {} was claimed concurrently by another worker", event.getId());
                 continue;
@@ -80,17 +73,18 @@ public class OutboxProcessor {
                 continue;
             }
 
-            if (!claimed) {
+            if (claimTokenOpt.isEmpty()) {
                 continue;
             }
+            java.util.UUID claimToken = claimTokenOpt.get();
 
             try {
                 dispatchOutboxEvent(event);
-                outboxService.markProcessed(event.getId());
+                outboxService.markProcessed(event.getId(), claimToken);
                 processedCount++;
             } catch (Exception ex) {
                 log.error("Error processing outbox event: id={}, type={}", event.getId(), event.getEventType(), ex);
-                outboxService.markFailed(event.getId(), ex.getMessage());
+                outboxService.markFailed(event.getId(), claimToken, ex.getMessage());
             }
         }
 

@@ -47,6 +47,12 @@ public class OutboxEvent extends BaseEntity {
     @Column(name = "processed_at")
     private Instant processedAt;
 
+    @Column(name = "claim_token")
+    private UUID claimToken;
+
+    @Column(name = "lease_expires_at")
+    private Instant leaseExpiresAt;
+
     @Column(name = "error_message", length = 500)
     private String errorMessage;
 }

@@ -33,9 +33,9 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final org.springframework.transaction.PlatformTransactionManager transactionManager;
     private final Clock clock;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Optional<Notification> createNotification(
             UUID recipientId,
             NotificationType type,
@@ -46,7 +46,6 @@ public class NotificationService {
         return createNotification(recipientId, type, title, message, referenceType, referenceId, null);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Optional<Notification> createNotification(
             UUID recipientId,
             NotificationType type,
@@ -91,16 +90,34 @@ public class NotificationService {
                 .idempotencyKey(effectiveKey)
                 .build();
 
-        try {
-            Notification saved = notificationRepository.saveAndFlush(notification);
-            long unreadCount = notificationRepository.countByRecipientIdAndReadAtIsNull(recipientId);
-            eventPublisher.publishEvent(new NotificationCreatedEvent(NotificationResponse.fromEntity(saved), unreadCount));
-            return Optional.of(saved);
-        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
-            log.info("Concurrent duplicate notification suppressed by DB constraint: user={}, type={}, ref={}, key={}",
-                    recipientId, type, referenceId, effectiveKey);
-            return Optional.empty();
+        if (transactionManager != null) {
+            org.springframework.transaction.support.TransactionTemplate tx =
+                    new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+            tx.setPropagationBehavior(org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+            try {
+                return tx.execute(status -> Optional.of(doSaveAndPublish(notification, recipientId)));
+            } catch (org.springframework.dao.DataIntegrityViolationException
+                    | org.springframework.transaction.UnexpectedRollbackException
+                    | org.springframework.transaction.TransactionSystemException ex) {
+                log.info("Concurrent duplicate notification suppressed by DB constraint: user={}, type={}, ref={}, key={}",
+                        recipientId, type, referenceId, effectiveKey);
+                return Optional.empty();
+            }
+        } else {
+            try {
+                return Optional.of(doSaveAndPublish(notification, recipientId));
+            } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+                return Optional.empty();
+            }
         }
+    }
+
+    private Notification doSaveAndPublish(Notification notification, UUID recipientId) {
+        Notification saved = notificationRepository.saveAndFlush(notification);
+        long unreadCount = notificationRepository.countByRecipientIdAndReadAtIsNull(recipientId);
+        eventPublisher.publishEvent(new NotificationCreatedEvent(NotificationResponse.fromEntity(saved), unreadCount));
+        return saved;
     }
 
     @Transactional(readOnly = true)

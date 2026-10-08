@@ -7,6 +7,7 @@ import com.shiftops.common.exception.BusinessRuleException;
 import com.shiftops.common.outbox.OutboxEvent;
 import com.shiftops.common.outbox.OutboxProcessor;
 import com.shiftops.common.outbox.OutboxRepository;
+import com.shiftops.common.outbox.OutboxService;
 import com.shiftops.common.outbox.OutboxStatus;
 import com.shiftops.common.security.JwtTokenProvider;
 import com.shiftops.common.security.UserPrincipal;
@@ -72,6 +73,9 @@ public class Phase10IntegrationTest {
 
     @Autowired
     private OutboxRepository outboxRepository;
+
+    @Autowired
+    private OutboxService outboxService;
 
     @Autowired
     private OutboxProcessor outboxProcessor;
@@ -230,6 +234,7 @@ public class Phase10IntegrationTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threadCount);
         AtomicInteger successCount = new AtomicInteger(0);
+        java.util.concurrent.ConcurrentLinkedQueue<Throwable> unexpectedErrors = new java.util.concurrent.ConcurrentLinkedQueue<>();
 
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
@@ -247,7 +252,10 @@ public class Phase10IntegrationTest {
                     if (res.isPresent()) {
                         successCount.incrementAndGet();
                     }
-                } catch (Exception ignored) {
+                } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                    // Handled: race condition caught at DB uniqueness constraint
+                } catch (Throwable t) {
+                    unexpectedErrors.add(t);
                 } finally {
                     doneLatch.countDown();
                 }
@@ -259,6 +267,7 @@ public class Phase10IntegrationTest {
         executor.shutdown();
 
         assertThat(finished).isTrue();
+        assertThat(unexpectedErrors).isEmpty();
         assertThat(successCount.get()).isEqualTo(1);
         assertThat(notificationRepository.count()).isEqualTo(1);
     }
@@ -422,16 +431,19 @@ public class Phase10IntegrationTest {
                     .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Recovered Shift\",\"staffUserIds\":[\"%s\"]}",
                             shiftId, staffUser.getId()))
                     .status(OutboxStatus.PROCESSING)
+                    .claimToken(UUID.randomUUID())
                     .retryCount(0)
                     .maxRetries(3)
                     .scheduledAt(Instant.now().minusSeconds(600))
                     .build();
             OutboxEvent saved = outboxRepository.save(event);
-            outboxRepository.forceUpdatedAt(saved.getId(), Instant.now().minus(Duration.ofMinutes(10)));
+            outboxRepository.forceProcessingState(saved.getId(),
+                    Instant.now().minus(Duration.ofMinutes(10)),
+                    Instant.now().minus(Duration.ofMinutes(5)));
             return saved.getId();
         });
 
-        // Run processor: stale event (>300s) will be recovered to PENDING with retryCount=1
+        // Run processor: stale event (>60s) will be recovered to PENDING with retryCount=1
         outboxProcessor.setStaleThresholdSeconds(60);
         int processed = outboxProcessor.processPendingEvents();
 
@@ -439,7 +451,59 @@ public class Phase10IntegrationTest {
         OutboxEvent recovered = outboxRepository.findById(staleEventId).orElseThrow();
         assertThat(recovered.getRetryCount()).isEqualTo(1);
         assertThat(recovered.getStatus()).isEqualTo(OutboxStatus.PENDING);
-        assertThat(recovered.getErrorMessage()).contains("Stale PROCESSING recovery");
+        assertThat(recovered.getErrorMessage()).contains("Stale PROCESSING lease recovery");
+    }
+
+    @Test
+    @DisplayName("Transactional Outbox: Stale worker cannot markProcessed or overwrite re-claimed event")
+    void testOutbox_StaleWorkerClaimRejection() {
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        UUID shiftId = UUID.randomUUID();
+        UUID eventId = tx.execute(status -> {
+            OutboxEvent event = OutboxEvent.builder()
+                    .eventType("SHIFT_PUBLISHED")
+                    .aggregateType("SHIFT")
+                    .aggregateId(shiftId)
+                    .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Lease Shift\",\"staffUserIds\":[\"%s\"]}",
+                            shiftId, staffUser.getId()))
+                    .status(OutboxStatus.PENDING)
+                    .retryCount(0)
+                    .maxRetries(3)
+                    .scheduledAt(Instant.now().minusSeconds(1))
+                    .build();
+            return outboxRepository.save(event).getId();
+        });
+
+        // Worker A claims event
+        Optional<UUID> workerAToken = outboxService.claimEvent(eventId);
+        assertThat(workerAToken).isPresent();
+
+        // Simulate Worker A stalling and lease expiring
+        tx.executeWithoutResult(status -> {
+            outboxRepository.forceProcessingState(eventId,
+                    Instant.now().minus(Duration.ofMinutes(10)),
+                    Instant.now().minus(Duration.ofMinutes(5)));
+        });
+
+        // Stale recovery reclaims event back to PENDING
+        int recovered = outboxService.recoverStaleEvents(Duration.ofSeconds(60));
+        assertThat(recovered).isEqualTo(1);
+
+        // Worker B claims event with new token
+        Optional<UUID> workerBToken = outboxService.claimEvent(eventId);
+        assertThat(workerBToken).isPresent();
+        assertThat(workerBToken.get()).isNotEqualTo(workerAToken.get());
+
+        // Worker A finishes late and attempts to mark PROCESSED -> must be REJECTED (returns false)
+        boolean workerASucceeded = outboxService.markProcessed(eventId, workerAToken.get());
+        assertThat(workerASucceeded).isFalse();
+
+        // Worker B finishes on time and marks PROCESSED -> SUCCESS (returns true)
+        boolean workerBSucceeded = outboxService.markProcessed(eventId, workerBToken.get());
+        assertThat(workerBSucceeded).isTrue();
+
+        OutboxEvent finalEvent = outboxRepository.findById(eventId).orElseThrow();
+        assertThat(finalEvent.getStatus()).isEqualTo(OutboxStatus.PROCESSED);
     }
 
     @Test
@@ -472,6 +536,7 @@ public class Phase10IntegrationTest {
         CountDownLatch startLatch = new CountDownLatch(1);
         CountDownLatch doneLatch = new CountDownLatch(threadCount);
         AtomicInteger totalProcessed = new AtomicInteger(0);
+        java.util.concurrent.ConcurrentLinkedQueue<Throwable> workerErrors = new java.util.concurrent.ConcurrentLinkedQueue<>();
 
         for (int i = 0; i < threadCount; i++) {
             executor.submit(() -> {
@@ -479,8 +544,8 @@ public class Phase10IntegrationTest {
                     startLatch.await();
                     int count = outboxProcessor.processPendingEvents();
                     totalProcessed.addAndGet(count);
-                } catch (Exception e) {
-                    // Ignore concurrency conflicts
+                } catch (Throwable t) {
+                    workerErrors.add(t);
                 } finally {
                     doneLatch.countDown();
                 }
@@ -492,6 +557,7 @@ public class Phase10IntegrationTest {
         executor.shutdown();
 
         assertThat(finished).isTrue();
+        assertThat(workerErrors).isEmpty();
         assertThat(totalProcessed.get()).isEqualTo(eventCount);
 
         List<OutboxEvent> allEvents = outboxRepository.findAll();

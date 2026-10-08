@@ -14,7 +14,10 @@ import org.springframework.transaction.event.TransactionalEventListener;
 public class OutboxEventListener {
 
     private final OutboxService outboxService;
+    private final OutboxProperties outboxProperties;
     private final ObjectProvider<OutboxProcessor> outboxProcessorProvider;
+    @org.springframework.beans.factory.annotation.Qualifier("outboxTaskExecutor")
+    private final org.springframework.core.task.TaskExecutor outboxTaskExecutor;
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void onShiftPublished(ShiftPublishedEvent event) {
@@ -98,12 +101,20 @@ public class OutboxEventListener {
 
     private void triggerOutboxProcessing() {
         try {
-            OutboxProcessor processor = outboxProcessorProvider.getIfAvailable();
-            if (processor != null) {
-                processor.processPendingEvents();
-            }
+            outboxTaskExecutor.execute(() -> {
+                try {
+                    OutboxProcessor processor = outboxProcessorProvider.getIfAvailable();
+                    if (processor != null) {
+                        processor.processPendingEvents();
+                    }
+                } catch (Exception ex) {
+                    log.debug("Async post-commit outbox trigger will be retried by scheduled poller: {}", ex.getMessage());
+                }
+            });
+        } catch (org.springframework.core.task.TaskRejectedException ex) {
+            log.debug("Outbox async executor saturated; relying on scheduled poller: {}", ex.getMessage());
         } catch (Exception ex) {
-            log.debug("Immediate post-commit outbox trigger will be retried by scheduled poller: {}", ex.getMessage());
+            log.debug("Could not schedule async outbox processing: {}", ex.getMessage());
         }
     }
 }

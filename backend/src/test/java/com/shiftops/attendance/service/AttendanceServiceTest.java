@@ -50,6 +50,9 @@ class AttendanceServiceTest {
     @Mock
     private Clock clock;
 
+    @Mock
+    private org.springframework.context.ApplicationEventPublisher eventPublisher;
+
     @InjectMocks
     private AttendanceService attendanceService;
 

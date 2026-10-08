@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useWebSocket } from '../context/WebSocketContext';
 import {
   Branch,
   User,
@@ -16,12 +17,20 @@ import {
 
 export const IssuesPage: React.FC = () => {
   const { user } = useAuth();
+  const { subscribeToBranch } = useWebSocket();
   const queryClient = useQueryClient();
   const isStaff = user?.role === 'STAFF';
   const isOwner = user?.role === 'OWNER';
 
   // State for Branch selection (Manager / Owner)
   const [selectedBranchId, setSelectedBranchId] = useState<string>(user?.primaryBranchId || '');
+
+  // Subscribe to realtime operational branch topic for owners/managers
+  useEffect(() => {
+    if (!isStaff && selectedBranchId) {
+      return subscribeToBranch(selectedBranchId);
+    }
+  }, [isStaff, selectedBranchId, subscribeToBranch]);
 
   // Filters
   const [statusFilter, setStatusFilter] = useState<string>('ALL');

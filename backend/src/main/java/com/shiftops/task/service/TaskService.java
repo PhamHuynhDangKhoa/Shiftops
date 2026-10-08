@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.context.ApplicationEventPublisher;
 import com.shiftops.notification.event.TaskAssignedEvent;
+import com.shiftops.task.event.TaskCompletedEvent;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -216,6 +217,19 @@ public class TaskService {
 
         Task saved = taskRepository.save(task);
         log.info("Task {} status changed: {} -> {} by {}", taskId, currentStatus, targetStatus, principal.getUsername());
+
+        if (targetStatus == TaskStatus.COMPLETED) {
+            eventPublisher.publishEvent(new TaskCompletedEvent(
+                    saved.getId(),
+                    shift.getId(),
+                    shift.getBranch().getId(),
+                    sa.getUser().getId(),
+                    saved.getTitle(),
+                    principal.getId(),
+                    saved.getCompletedAt()
+            ));
+        }
+
         return TaskResponse.fromEntity(saved);
     }
 

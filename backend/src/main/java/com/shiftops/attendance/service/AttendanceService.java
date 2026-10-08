@@ -15,6 +15,9 @@ import com.shiftops.shift.entity.ShiftStatus;
 import com.shiftops.shift.repository.ShiftAssignmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.shiftops.attendance.event.StaffCheckedInEvent;
+import com.shiftops.attendance.event.StaffCheckedOutEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +36,7 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
     private final BranchAccessService branchAccessService;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     public static final Duration EARLY_ARRIVAL_WINDOW = Duration.ofMinutes(15);
@@ -112,6 +116,17 @@ public class AttendanceService {
         log.info("Staff {} checked in to assignment {}: status={}, late={}",
                 principal.getUsername(), shiftAssignmentId, status, isLate);
 
+        eventPublisher.publishEvent(new StaffCheckedInEvent(
+                saved.getId(),
+                shiftAssignmentId,
+                shift.getId(),
+                shift.getBranch().getId(),
+                assignment.getUser().getId(),
+                assignment.getUser().getFullName(),
+                saved.getCheckInAt(),
+                saved.isLate()
+        ));
+
         return AttendanceResponse.fromEntity(saved);
     }
 
@@ -151,6 +166,16 @@ public class AttendanceService {
         Attendance saved = attendanceRepository.save(attendance);
         log.info("Staff {} checked out from assignment {}: checkIn={}, checkOut={}",
                 principal.getUsername(), shiftAssignmentId, saved.getCheckInAt(), saved.getCheckOutAt());
+
+        eventPublisher.publishEvent(new StaffCheckedOutEvent(
+                saved.getId(),
+                shiftAssignmentId,
+                assignment.getShift().getId(),
+                assignment.getShift().getBranch().getId(),
+                assignment.getUser().getId(),
+                assignment.getUser().getFullName(),
+                saved.getCheckOutAt()
+        ));
 
         return AttendanceResponse.fromEntity(saved);
     }

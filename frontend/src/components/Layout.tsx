@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useWebSocket } from '../context/WebSocketContext';
 import { NotificationBell } from './NotificationBell';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { status } = useWebSocket();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -136,9 +138,47 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
             {isAuthenticated && user ? (
               <>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                    padding: '0.2rem 0.55rem',
+                    borderRadius: '9999px',
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    backgroundColor:
+                      status === 'CONNECTED' ? '#ecfdf5' : status === 'RECONNECTING' ? '#fffbeb' : '#f3f4f6',
+                    color:
+                      status === 'CONNECTED' ? '#047857' : status === 'RECONNECTING' ? '#b45309' : '#6b7280',
+                    border: `1px solid ${
+                      status === 'CONNECTED' ? '#a7f3d0' : status === 'RECONNECTING' ? '#fde68a' : '#e5e7eb'
+                    }`,
+                    transition: 'all 0.2s ease',
+                  }}
+                  title={
+                    status === 'CONNECTED'
+                      ? 'Realtime WebSocket Active'
+                      : status === 'RECONNECTING'
+                      ? 'Reconnecting to realtime broker...'
+                      : 'Realtime updates offline'
+                  }
+                >
+                  <span
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor:
+                        status === 'CONNECTED' ? '#10b981' : status === 'RECONNECTING' ? '#f59e0b' : '#9ca3af',
+                      display: 'inline-block',
+                    }}
+                  />
+                  <span>{status === 'CONNECTED' ? 'Live' : status === 'RECONNECTING' ? 'Reconnecting' : 'Offline'}</span>
+                </div>
                 <NotificationBell />
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.875rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

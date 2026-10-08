@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useWebSocket } from '../context/WebSocketContext';
 import {
   Attendance,
   AttendanceStatus,
@@ -13,11 +14,19 @@ import {
 
 export const AttendancePage: React.FC = () => {
   const { user } = useAuth();
+  const { subscribeToBranch } = useWebSocket();
   const queryClient = useQueryClient();
   const isStaff = user?.role === 'STAFF';
 
   // Branch Selection for Manager / Owner
   const [selectedBranchId, setSelectedBranchId] = useState<string>(user?.primaryBranchId || '');
+
+  // Subscribe to realtime operational branch topic for owners/managers
+  useEffect(() => {
+    if (!isStaff && selectedBranchId) {
+      return subscribeToBranch(selectedBranchId);
+    }
+  }, [isStaff, selectedBranchId, subscribeToBranch]);
 
   // Date range filters (defaults to today's date from 00:00 to 23:59:59)
   const [startDate, setStartDate] = useState<string>(() => {

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
+import { useWebSocket } from '../context/WebSocketContext';
 import {
   ShiftHandover,
   HandoverItemType,
@@ -17,6 +18,7 @@ import { Card, Badge, Button, Input, Modal } from '../components/ui';
 
 export const HandoversPage: React.FC = () => {
   const { user } = useAuth();
+  const { subscribeToBranch } = useWebSocket();
   const queryClient = useQueryClient();
   const isOwner = user?.role === 'OWNER';
   const isManager = user?.role === 'MANAGER';
@@ -24,6 +26,13 @@ export const HandoversPage: React.FC = () => {
 
   // Branch Selection
   const [selectedBranchId, setSelectedBranchId] = useState<string>(user?.primaryBranchId || '');
+
+  // Subscribe to realtime operational branch topic for owners/managers
+  useEffect(() => {
+    if (!isStaff && selectedBranchId) {
+      return subscribeToBranch(selectedBranchId);
+    }
+  }, [isStaff, selectedBranchId, subscribeToBranch]);
 
   // Modals
   const [isDebriefModalOpen, setIsDebriefModalOpen] = useState(false);

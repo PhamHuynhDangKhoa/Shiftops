@@ -4,7 +4,8 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { ApiResponse, Branch, Announcement, AnnouncementTargetType } from '../lib/types';
+import { useWebSocket } from '../context/WebSocketContext';
+import { ApiResponse, Branch, Announcement, AnnouncementTargetType, RealtimeEvent } from '../lib/types';
 import { Card, Badge, Button, Modal, Input } from '../components/ui';
 
 interface HealthData {
@@ -15,8 +16,39 @@ interface HealthData {
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
+  const { lastEvent } = useWebSocket();
   const isOwner = user?.role === 'OWNER';
   const isManager = user?.role === 'MANAGER';
+
+  // Format real-time event descriptions for dashboard activity indicator
+  const formatEventSummary = (evt: RealtimeEvent | null) => {
+    if (!evt) return '';
+    const payload = (evt.payload || {}) as Record<string, unknown>;
+    switch (evt.eventType) {
+      case 'STAFF_CHECKED_IN':
+        return `Staff checked in: ${String(payload.staffName || 'Staff Member')}`;
+      case 'STAFF_CHECKED_OUT':
+        return `Staff checked out: ${String(payload.staffName || 'Staff Member')}`;
+      case 'TASK_COMPLETED':
+        return `Task completed: ${String(payload.taskTitle || 'Task')}`;
+      case 'TASK_STATUS_CHANGED':
+        return `Task status updated: ${String(payload.taskTitle || 'Task')}`;
+      case 'ISSUE_STATUS_CHANGED':
+        return `Issue updated: ${String(payload.title || 'Issue')} (${String(payload.status || '')})`;
+      case 'HANDOVER_SUBMITTED':
+        return `Shift handover submitted for shift: ${String(payload.shiftName || '')}`;
+      case 'HANDOVER_ACKNOWLEDGED':
+        return `Shift handover acknowledged`;
+      case 'ANNOUNCEMENT_PUBLISHED':
+        return `New announcement published: ${String(payload.title || '')}`;
+      case 'NOTIFICATION_CREATED': {
+        const notif = payload.notification as { title?: string } | undefined;
+        return `New notification: ${notif?.title || ''}`;
+      }
+      default:
+        return `Operational update received: ${evt.eventType}`;
+    }
+  };
 
   // Broadcast modal state
   const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
@@ -104,6 +136,25 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Live Operational Activity Banner */}
+      {lastEvent && (
+        <div className="flex items-center justify-between p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl text-xs shadow-xs transition-all">
+          <div className="flex items-center gap-2.5">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span className="font-bold uppercase tracking-wider text-[10px] bg-emerald-200/80 text-emerald-800 px-1.5 py-0.5 rounded">
+              Live Event
+            </span>
+            <span className="font-medium text-emerald-950">{formatEventSummary(lastEvent)}</span>
+          </div>
+          <span className="text-[11px] text-emerald-600 font-mono">
+            {new Date(lastEvent.timestamp).toLocaleTimeString()}
+          </span>
+        </div>
+      )}
+
       {/* Welcome Hero Card */}
       <Card className="p-6 md:p-8 bg-gradient-to-r from-white via-white to-blue-50/30">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -319,7 +370,8 @@ export const DashboardPage: React.FC = () => {
           • <strong>Phase 5.5:</strong> Technical Cleanup & Architecture Hardening (Complete ✅)<br />
           • <strong>Phase 6:</strong> Issue Management & Resolution (Complete ✅)<br />
           • <strong>Phase 7:</strong> Shift Handover & Operations Continuity (Complete ✅)<br />
-          • <strong>Phase 8:</strong> Announcements & Notifications (Complete ✅)
+          • <strong>Phase 8:</strong> Announcements & Notifications (Complete ✅)<br />
+          • <strong>Phase 9:</strong> Realtime / WebSocket Live Engine (Complete ✅)
         </p>
       </Card>
 

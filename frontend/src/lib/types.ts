@@ -374,3 +374,17 @@ export interface CreateAnnouncementRequest {
   expiresAt?: string;
   publishImmediately?: boolean;
 }
+
+export type WebSocketConnectionStatus = 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED';
+
+export interface RealtimeEvent<T = unknown> {
+  eventType: string;
+  branchId?: string;
+  timestamp: string;
+  payload: T;
+}
+
+export interface NotificationRealtimePayload {
+  notification: Notification;
+  unreadCount: number;
+}

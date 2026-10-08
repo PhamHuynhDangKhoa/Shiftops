@@ -12,6 +12,8 @@ import com.shiftops.user.entity.User;
 import com.shiftops.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import com.shiftops.notification.event.NotificationCreatedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -30,6 +32,7 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final ApplicationEventPublisher eventPublisher;
     private final Clock clock;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -66,7 +69,11 @@ public class NotificationService {
                 .referenceId(referenceId)
                 .build();
 
-        return Optional.of(notificationRepository.save(notification));
+        Notification saved = notificationRepository.save(notification);
+        long unreadCount = notificationRepository.countByRecipientIdAndReadAtIsNull(recipientId);
+        eventPublisher.publishEvent(new NotificationCreatedEvent(NotificationResponse.fromEntity(saved), unreadCount));
+
+        return Optional.of(saved);
     }
 
     @Transactional(readOnly = true)

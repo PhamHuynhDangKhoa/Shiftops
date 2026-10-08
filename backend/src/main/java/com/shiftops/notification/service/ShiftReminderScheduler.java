@@ -34,10 +34,9 @@ public class ShiftReminderScheduler {
 
     public int sendShiftReminders() {
         Instant now = clock.instant();
-        Instant windowStart = now.plus(Duration.ofMinutes(25));
         Instant windowEnd = now.plus(Duration.ofMinutes(35));
 
-        List<Shift> upcomingShifts = shiftRepository.findPublishedShiftsStartingBetween(windowStart, windowEnd);
+        List<Shift> upcomingShifts = shiftRepository.findPublishedShiftsStartingBetween(now, windowEnd);
         int sentCount = 0;
 
         for (Shift shift : upcomingShifts) {
@@ -47,24 +46,31 @@ public class ShiftReminderScheduler {
                 User user = assignment.getUser();
                 if (user == null || !user.isActive()) continue;
 
-                boolean alreadySent = notificationRepository.existsByRecipientIdAndTypeAndReferenceId(
-                        user.getId(),
-                        NotificationType.SHIFT_REMINDER,
-                        shift.getId()
-                );
+                String idempotencyKey = "shift:" + shift.getId() + ":user:" + user.getId() + ":reminder";
+
+                boolean alreadySent = notificationRepository.existsByIdempotencyKey(idempotencyKey)
+                        || notificationRepository.existsByRecipientIdAndTypeAndReferenceId(
+                                user.getId(),
+                                NotificationType.SHIFT_REMINDER,
+                                shift.getId()
+                        );
 
                 if (!alreadySent) {
+                    long minutesUntilStart = Math.max(1, Duration.between(now, shift.getStartTime()).toMinutes());
                     String branchName = shift.getBranch() != null ? shift.getBranch().getName() : "your branch";
-                    String msg = "Your shift starts in 30 minutes at " + branchName;
-                    notificationService.createNotification(
+                    String msg = "Your shift starts in " + minutesUntilStart + " minutes at " + branchName;
+                    var result = notificationService.createNotification(
                             user.getId(),
                             NotificationType.SHIFT_REMINDER,
                             "Upcoming Shift Reminder",
                             msg,
                             ReferenceType.SHIFT,
-                            shift.getId()
+                            shift.getId(),
+                            idempotencyKey
                     );
-                    sentCount++;
+                    if (result.isPresent()) {
+                        sentCount++;
+                    }
                 }
             }
         }

@@ -43,12 +43,33 @@ public class NotificationService {
             String message,
             ReferenceType referenceType,
             UUID referenceId) {
+        return createNotification(recipientId, type, title, message, referenceType, referenceId, null);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Optional<Notification> createNotification(
+            UUID recipientId,
+            NotificationType type,
+            String title,
+            String message,
+            ReferenceType referenceType,
+            UUID referenceId,
+            String idempotencyKey) {
 
         if (recipientId == null) {
             return Optional.empty();
         }
 
-        // Deduplication check
+        String effectiveKey = idempotencyKey;
+        if (effectiveKey == null && referenceId != null) {
+            effectiveKey = recipientId + ":" + type + ":" + referenceId;
+        }
+
+        // Fast application-level deduplication check
+        if (effectiveKey != null && notificationRepository.existsByIdempotencyKey(effectiveKey)) {
+            log.debug("Skipping duplicate notification for idempotencyKey {}", effectiveKey);
+            return Optional.empty();
+        }
         if (referenceId != null && notificationRepository.existsByRecipientIdAndTypeAndReferenceId(recipientId, type, referenceId)) {
             log.debug("Skipping duplicate notification for user {}, type {}, refId {}", recipientId, type, referenceId);
             return Optional.empty();
@@ -67,13 +88,19 @@ public class NotificationService {
                 .message(message)
                 .referenceType(referenceType)
                 .referenceId(referenceId)
+                .idempotencyKey(effectiveKey)
                 .build();
 
-        Notification saved = notificationRepository.save(notification);
-        long unreadCount = notificationRepository.countByRecipientIdAndReadAtIsNull(recipientId);
-        eventPublisher.publishEvent(new NotificationCreatedEvent(NotificationResponse.fromEntity(saved), unreadCount));
-
-        return Optional.of(saved);
+        try {
+            Notification saved = notificationRepository.saveAndFlush(notification);
+            long unreadCount = notificationRepository.countByRecipientIdAndReadAtIsNull(recipientId);
+            eventPublisher.publishEvent(new NotificationCreatedEvent(NotificationResponse.fromEntity(saved), unreadCount));
+            return Optional.of(saved);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            log.info("Concurrent duplicate notification suppressed by DB constraint: user={}, type={}, ref={}, key={}",
+                    recipientId, type, referenceId, effectiveKey);
+            return Optional.empty();
+        }
     }
 
     @Transactional(readOnly = true)

@@ -23,6 +23,8 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
 
     boolean existsByRecipientIdAndTypeAndReferenceId(UUID recipientId, NotificationType type, UUID referenceId);
 
+    boolean existsByIdempotencyKey(String idempotencyKey);
+
     @Query("SELECT n FROM Notification n JOIN FETCH n.recipient WHERE n.id = :id")
     Optional<Notification> findByIdWithRecipient(@Param("id") UUID id);
 

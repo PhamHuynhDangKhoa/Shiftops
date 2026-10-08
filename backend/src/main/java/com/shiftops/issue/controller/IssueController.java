@@ -131,9 +131,11 @@ public class IssueController {
             @PathVariable UUID attachmentId,
             @AuthenticationPrincipal UserPrincipal principal) {
         IssueService.AttachmentFile file = issueService.getAttachmentFile(id, attachmentId, principal);
+        String safeFilename = file.originalFileName().replaceAll("[\\r\\n\"\\\\]", "_");
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(file.contentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + file.originalFileName() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + safeFilename + "\"")
+                .header("X-Content-Type-Options", "nosniff")
                 .body(file.resource());
     }
 }

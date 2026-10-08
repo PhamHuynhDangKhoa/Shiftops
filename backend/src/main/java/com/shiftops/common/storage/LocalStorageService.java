@@ -41,6 +41,10 @@ public class LocalStorageService implements StorageService {
         }
     }
 
+    private static final java.util.Set<String> ALLOWED_EXTENSIONS = java.util.Set.of(
+            ".jpg", ".jpeg", ".png", ".webp", ".pdf"
+    );
+
     @Override
     public String store(MultipartFile file, String subDirectory) {
         if (file.isEmpty()) {
@@ -53,7 +57,11 @@ public class LocalStorageService implements StorageService {
         String fileExtension = "";
         int extIndex = originalFilename.lastIndexOf('.');
         if (extIndex > 0) {
-            fileExtension = originalFilename.substring(extIndex);
+            fileExtension = originalFilename.substring(extIndex).toLowerCase();
+        }
+
+        if (!ALLOWED_EXTENSIONS.contains(fileExtension)) {
+            throw new BusinessRuleException("INVALID_FILE_EXTENSION", "File extension '" + fileExtension + "' is not permitted");
         }
 
         String uniqueFileName = UUID.randomUUID() + fileExtension;

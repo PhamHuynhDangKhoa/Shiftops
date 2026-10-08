@@ -43,4 +43,26 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   storage:
     upload-dir: ${UPLOAD_DIR:./uploads}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  outbox:
+    scheduler:
+      enabled: ${OUTBOX_SCHEDULER_ENABLED:true}
+    fixed-delay-ms: ${OUTBOX_FIXED_DELAY_MS:3000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{requestId}] [%X{userId}] %logger{36} - %msg%n"
+
 

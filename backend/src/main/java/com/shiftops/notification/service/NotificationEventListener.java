@@ -48,13 +48,15 @@ public class NotificationEventListener {
     public void onShiftChanged(ShiftChangedEvent event) {
         if (event.staffUserIds() == null) return;
         for (UUID staffId : event.staffUserIds()) {
+            String key = "shift:" + event.shiftId() + ":change:" + (event.changeSummary() != null ? event.changeSummary().hashCode() : "all") + ":user:" + staffId;
             notificationService.createNotification(
                     staffId,
                     NotificationType.SHIFT_CHANGED,
                     "Shift Changed",
                     "Shift update for " + event.shiftName() + ": " + event.changeSummary(),
                     ReferenceType.SHIFT,
-                    event.shiftId()
+                    event.shiftId(),
+                    key
             );
         }
     }
@@ -97,13 +99,15 @@ public class NotificationEventListener {
         }
 
         for (UUID recipientId : recipients) {
+            String key = "issue:" + event.issueId() + ":status:" + event.newStatus() + ":user:" + recipientId;
             notificationService.createNotification(
                     recipientId,
                     NotificationType.ISSUE_UPDATED,
                     "Issue Status Changed",
                     msg,
                     ReferenceType.ISSUE,
-                    event.issueId()
+                    event.issueId(),
+                    key
             );
         }
     }

@@ -104,6 +104,39 @@ public class GlobalExceptionHandler {
                                 .build()));
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error("A database conflict or constraint violation occurred.",
+                        ApiResponse.ErrorDetail.builder()
+                                .code("DATA_INTEGRITY_VIOLATION")
+                                .message("The requested operation violates a database constraint or unique constraint.")
+                                .build()));
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException ex) {
+        log.warn("Malformed JSON payload: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.error("Malformed request payload.",
+                        ApiResponse.ErrorDetail.builder()
+                                .code("MALFORMED_REQUEST")
+                                .message("Could not parse request body. Please verify JSON formatting and field types.")
+                                .build()));
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSize(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+        log.warn("Upload size exceeded: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                .body(ApiResponse.error("File upload exceeds maximum permitted size.",
+                        ApiResponse.ErrorDetail.builder()
+                                .code("FILE_TOO_LARGE")
+                                .message("The uploaded file exceeds the configured maximum upload size limit.")
+                                .build()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(Exception ex) {
         log.error("Unexpected error", ex);

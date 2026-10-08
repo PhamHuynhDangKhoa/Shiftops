@@ -9,7 +9,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "notifications")
+@Table(name = "notifications", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_notifications_idempotency_key", columnNames = {"idempotency_key"})
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,6 +39,9 @@ public class Notification extends BaseEntity {
 
     @Column(name = "reference_id")
     private UUID referenceId;
+
+    @Column(name = "idempotency_key", length = 120)
+    private String idempotencyKey;
 
     @Column(name = "read_at")
     private Instant readAt;

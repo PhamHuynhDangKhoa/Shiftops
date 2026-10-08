@@ -93,7 +93,11 @@ class NotificationServiceTest {
         when(notificationRepository.existsByRecipientIdAndTypeAndReferenceId(recipient.getId(), NotificationType.SHIFT_PUBLISHED, shiftId))
                 .thenReturn(false);
         when(userRepository.findById(recipient.getId())).thenReturn(Optional.of(recipient));
-        when(notificationRepository.save(any(Notification.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(notificationRepository.saveAndFlush(any(Notification.class))).thenAnswer(invocation -> {
+            Notification n = invocation.getArgument(0);
+            n.setId(UUID.randomUUID());
+            return n;
+        });
 
         Optional<Notification> result = notificationService.createNotification(
                 recipient.getId(),
@@ -112,7 +116,7 @@ class NotificationServiceTest {
         assertThat(n.getMessage()).isEqualTo("You are scheduled");
         assertThat(n.getReferenceType()).isEqualTo(ReferenceType.SHIFT);
         assertThat(n.getReferenceId()).isEqualTo(shiftId);
-        verify(notificationRepository).save(any(Notification.class));
+        verify(notificationRepository).saveAndFlush(any(Notification.class));
     }
 
     @Test

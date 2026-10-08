@@ -4,52 +4,45 @@ import com.shiftops.issue.entity.Issue;
 import com.shiftops.issue.entity.IssueCategory;
 import com.shiftops.issue.entity.IssuePriority;
 import com.shiftops.issue.entity.IssueStatus;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class IssueResponse {
-
-    private UUID id;
-    private UUID branchId;
-    private String branchName;
-    private UUID reportedById;
-    private String reportedByName;
-    private String reportedByEmail;
-    private UUID shiftAssignmentId;
-    private UUID taskId;
-    private String title;
-    private String description;
-    private IssueCategory category;
-    private IssuePriority priority;
-    private IssueStatus status;
-    private UUID assignedToId;
-    private String assignedToName;
-    private String assignedToEmail;
-    private Instant resolvedAt;
-    private UUID resolvedById;
-    private String resolvedByName;
-    private Instant closedAt;
-    private UUID closedById;
-    private String closedByName;
-    private int commentCount;
-    private int attachmentCount;
-    private List<IssueCommentResponse> comments;
-    private List<IssueAttachmentResponse> attachments;
-    private Long version;
-    private Instant createdAt;
-    private Instant updatedAt;
-
+public record IssueResponse(
+        UUID id,
+        UUID branchId,
+        String branchName,
+        UUID reportedById,
+        String reportedByName,
+        String reportedByEmail,
+        UUID shiftAssignmentId,
+        UUID taskId,
+        String title,
+        String description,
+        IssueCategory category,
+        IssuePriority priority,
+        IssueStatus status,
+        UUID assignedToId,
+        String assignedToName,
+        String assignedToEmail,
+        Instant resolvedAt,
+        UUID resolvedById,
+        String resolvedByName,
+        Instant closedAt,
+        UUID closedById,
+        String closedByName,
+        int commentCount,
+        int attachmentCount,
+        List<IssueCommentResponse> comments,
+        List<IssueAttachmentResponse> attachments,
+        Long version,
+        Instant createdAt,
+        Instant updatedAt
+) {
     public static IssueResponse fromEntity(Issue issue) {
         return fromEntity(issue, true);
     }
@@ -105,5 +98,121 @@ public class IssueResponse {
                 .createdAt(issue.getCreatedAt())
                 .updatedAt(issue.getUpdatedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public UUID getBranchId() {
+        return branchId();
+    }
+
+    public String getBranchName() {
+        return branchName();
+    }
+
+    public UUID getReportedById() {
+        return reportedById();
+    }
+
+    public String getReportedByName() {
+        return reportedByName();
+    }
+
+    public String getReportedByEmail() {
+        return reportedByEmail();
+    }
+
+    public UUID getShiftAssignmentId() {
+        return shiftAssignmentId();
+    }
+
+    public UUID getTaskId() {
+        return taskId();
+    }
+
+    public String getTitle() {
+        return title();
+    }
+
+    public String getDescription() {
+        return description();
+    }
+
+    public IssueCategory getCategory() {
+        return category();
+    }
+
+    public IssuePriority getPriority() {
+        return priority();
+    }
+
+    public IssueStatus getStatus() {
+        return status();
+    }
+
+    public UUID getAssignedToId() {
+        return assignedToId();
+    }
+
+    public String getAssignedToName() {
+        return assignedToName();
+    }
+
+    public String getAssignedToEmail() {
+        return assignedToEmail();
+    }
+
+    public Instant getResolvedAt() {
+        return resolvedAt();
+    }
+
+    public UUID getResolvedById() {
+        return resolvedById();
+    }
+
+    public String getResolvedByName() {
+        return resolvedByName();
+    }
+
+    public Instant getClosedAt() {
+        return closedAt();
+    }
+
+    public UUID getClosedById() {
+        return closedById();
+    }
+
+    public String getClosedByName() {
+        return closedByName();
+    }
+
+    public int getCommentCount() {
+        return commentCount();
+    }
+
+    public int getAttachmentCount() {
+        return attachmentCount();
+    }
+
+    public List<IssueCommentResponse> getComments() {
+        return comments();
+    }
+
+    public List<IssueAttachmentResponse> getAttachments() {
+        return attachments();
+    }
+
+    public Long getVersion() {
+        return version();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt();
     }
 }

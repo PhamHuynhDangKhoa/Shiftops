@@ -1,37 +1,34 @@
 package com.shiftops.user.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.shiftops.user.entity.Role;
 import com.shiftops.user.entity.User;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserResponse {
-    private UUID id;
-    private String email;
-    private String fullName;
-    private String phone;
-    private Role role;
-    private UUID primaryBranchId;
-    private String primaryBranchName;
-    private boolean active;
-    private boolean mustChangePassword;
-    private String temporaryPassword;
-    private Instant createdAt;
-    private Instant updatedAt;
-
+public record UserResponse(
+        UUID id,
+        String email,
+        String fullName,
+        String phone,
+        Role role,
+        UUID primaryBranchId,
+        String primaryBranchName,
+        boolean active,
+        boolean mustChangePassword,
+        String temporaryPassword,
+        Instant createdAt,
+        Instant updatedAt
+) {
     public static UserResponse fromEntity(User user) {
+        return fromEntity(user, null);
+    }
+
+    public static UserResponse fromEntity(User user, String temporaryPassword) {
         UUID branchId = user.getPrimaryBranch() != null ? user.getPrimaryBranch().getId() : null;
         String branchName = user.getPrimaryBranch() != null ? user.getPrimaryBranch().getName() : null;
 
@@ -45,8 +42,57 @@ public class UserResponse {
                 .primaryBranchName(branchName)
                 .active(user.isActive())
                 .mustChangePassword(user.isMustChangePassword())
+                .temporaryPassword(temporaryPassword)
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public String getEmail() {
+        return email();
+    }
+
+    public String getFullName() {
+        return fullName();
+    }
+
+    public String getPhone() {
+        return phone();
+    }
+
+    public Role getRole() {
+        return role();
+    }
+
+    public UUID getPrimaryBranchId() {
+        return primaryBranchId();
+    }
+
+    public String getPrimaryBranchName() {
+        return primaryBranchName();
+    }
+
+    public boolean isActive() {
+        return active();
+    }
+
+    public boolean isMustChangePassword() {
+        return mustChangePassword();
+    }
+
+    public String getTemporaryPassword() {
+        return temporaryPassword();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt();
     }
 }

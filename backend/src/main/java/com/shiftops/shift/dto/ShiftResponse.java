@@ -2,10 +2,7 @@ package com.shiftops.shift.dto;
 
 import com.shiftops.shift.entity.Shift;
 import com.shiftops.shift.entity.ShiftStatus;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -14,25 +11,22 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ShiftResponse {
-    private UUID id;
-    private UUID branchId;
-    private String branchName;
-    private String name;
-    private Instant startTime;
-    private Instant endTime;
-    private boolean overnight;
-    private ShiftStatus status;
-    private String notes;
-    private List<ShiftAssignmentResponse> assignments;
-    private Long version;
-    private Instant createdAt;
-    private Instant updatedAt;
-
+public record ShiftResponse(
+        UUID id,
+        UUID branchId,
+        String branchName,
+        String name,
+        Instant startTime,
+        Instant endTime,
+        boolean overnight,
+        ShiftStatus status,
+        String notes,
+        List<ShiftAssignmentResponse> assignments,
+        Long version,
+        Instant createdAt,
+        Instant updatedAt
+) {
     public static ShiftResponse fromEntity(Shift shift) {
         LocalDate startDate = shift.getStartTime().atZone(ZoneOffset.UTC).toLocalDate();
         LocalDate endDate = shift.getEndTime().atZone(ZoneOffset.UTC).toLocalDate();
@@ -59,5 +53,57 @@ public class ShiftResponse {
                 .createdAt(shift.getCreatedAt())
                 .updatedAt(shift.getUpdatedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public UUID getBranchId() {
+        return branchId();
+    }
+
+    public String getBranchName() {
+        return branchName();
+    }
+
+    public String getName() {
+        return name();
+    }
+
+    public Instant getStartTime() {
+        return startTime();
+    }
+
+    public Instant getEndTime() {
+        return endTime();
+    }
+
+    public boolean isOvernight() {
+        return overnight();
+    }
+
+    public ShiftStatus getStatus() {
+        return status();
+    }
+
+    public String getNotes() {
+        return notes();
+    }
+
+    public List<ShiftAssignmentResponse> getAssignments() {
+        return assignments();
+    }
+
+    public Long getVersion() {
+        return version();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt();
     }
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -141,8 +142,9 @@ export const AttendancePage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['my-attendance'] });
       queryClient.invalidateQueries({ queryKey: ['my-shifts-attendance'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message || err.response?.data?.error?.message || 'Check-in failed.';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.message || axiosErr.response?.data?.error?.message || 'Check-in failed.';
       setActionMessage({ type: 'error', text: msg });
     },
   });
@@ -161,8 +163,9 @@ export const AttendancePage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['my-attendance'] });
       queryClient.invalidateQueries({ queryKey: ['my-shifts-attendance'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message || err.response?.data?.error?.message || 'Check-out failed.';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.message || axiosErr.response?.data?.error?.message || 'Check-out failed.';
       setActionMessage({ type: 'error', text: msg });
     },
   });

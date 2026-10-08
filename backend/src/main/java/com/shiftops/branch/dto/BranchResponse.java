@@ -1,27 +1,21 @@
 package com.shiftops.branch.dto;
 
 import com.shiftops.branch.entity.Branch;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class BranchResponse {
-    private UUID id;
-    private String name;
-    private String address;
-    private String timezone;
-    private boolean active;
-    private Instant createdAt;
-    private Instant updatedAt;
-
+public record BranchResponse(
+        UUID id,
+        String name,
+        String address,
+        String timezone,
+        boolean active,
+        Instant createdAt,
+        Instant updatedAt
+) {
     public static BranchResponse fromEntity(Branch branch) {
         return BranchResponse.builder()
                 .id(branch.getId())
@@ -32,5 +26,33 @@ public class BranchResponse {
                 .createdAt(branch.getCreatedAt())
                 .updatedAt(branch.getUpdatedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public String getName() {
+        return name();
+    }
+
+    public String getAddress() {
+        return address();
+    }
+
+    public String getTimezone() {
+        return timezone();
+    }
+
+    public boolean isActive() {
+        return active();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt();
     }
 }

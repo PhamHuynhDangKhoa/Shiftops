@@ -2,27 +2,36 @@ package com.shiftops.shift.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CreateShiftRequest {
+public record CreateShiftRequest(
+        @Size(max = 100, message = "Shift name must not exceed 100 characters")
+        String name,
 
-    @Size(max = 100, message = "Shift name must not exceed 100 characters")
-    private String name;
+        @NotNull(message = "Start time is required")
+        Instant startTime,
 
-    @NotNull(message = "Start time is required")
-    private Instant startTime;
+        @NotNull(message = "End time is required")
+        Instant endTime,
 
-    @NotNull(message = "End time is required")
-    private Instant endTime;
+        String notes
+) {
+    public String getName() {
+        return name();
+    }
 
-    private String notes;
+    public Instant getStartTime() {
+        return startTime();
+    }
+
+    public Instant getEndTime() {
+        return endTime();
+    }
+
+    public String getNotes() {
+        return notes();
+    }
 }

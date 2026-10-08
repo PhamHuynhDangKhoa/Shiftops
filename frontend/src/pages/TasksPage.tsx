@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -155,8 +156,9 @@ export const TasksPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['my-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['branch-tasks'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Failed to update task status';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to update task status';
       setAlert({ type: 'error', message: msg });
     },
   });
@@ -175,8 +177,9 @@ export const TasksPage: React.FC = () => {
       setShowGenerateModal(false);
       queryClient.invalidateQueries({ queryKey: ['branch-tasks'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Failed to generate tasks';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to generate tasks';
       setAlert({ type: 'error', message: msg });
     },
   });
@@ -200,8 +203,9 @@ export const TasksPage: React.FC = () => {
       setAdHocDescription('');
       queryClient.invalidateQueries({ queryKey: ['branch-tasks'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Failed to create ad-hoc task';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to create ad-hoc task';
       setAlert({ type: 'error', message: msg });
     },
   });
@@ -237,8 +241,9 @@ export const TasksPage: React.FC = () => {
       setEditingTemplate(null);
       queryClient.invalidateQueries({ queryKey: ['branch-templates'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || err.response?.data?.message || 'Failed to save template';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to save template';
       setAlert({ type: 'error', message: msg });
     },
   });
@@ -252,8 +257,9 @@ export const TasksPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['branch-templates'] });
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.error?.message || 'Failed to toggle status';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to toggle status';
       setAlert({ type: 'error', message: msg });
     },
   });

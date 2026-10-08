@@ -1,31 +1,24 @@
 package com.shiftops.issue.dto;
 
 import com.shiftops.issue.entity.IssueAttachment;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class IssueAttachmentResponse {
-
-    private UUID id;
-    private UUID issueId;
-    private String fileName;
-    private String originalFileName;
-    private String contentType;
-    private long fileSize;
-    private String downloadUrl;
-    private UUID uploadedById;
-    private String uploadedByName;
-    private Instant createdAt;
-
+public record IssueAttachmentResponse(
+        UUID id,
+        UUID issueId,
+        String fileName,
+        String originalFileName,
+        String contentType,
+        long fileSize,
+        String downloadUrl,
+        UUID uploadedById,
+        String uploadedByName,
+        Instant createdAt
+) {
     public static IssueAttachmentResponse fromEntity(IssueAttachment attachment) {
         UUID issueId = attachment.getIssue() != null ? attachment.getIssue().getId() : null;
         return IssueAttachmentResponse.builder()
@@ -40,5 +33,45 @@ public class IssueAttachmentResponse {
                 .uploadedByName(attachment.getUploadedBy() != null ? attachment.getUploadedBy().getFullName() : null)
                 .createdAt(attachment.getCreatedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public UUID getIssueId() {
+        return issueId();
+    }
+
+    public String getFileName() {
+        return fileName();
+    }
+
+    public String getOriginalFileName() {
+        return originalFileName();
+    }
+
+    public String getContentType() {
+        return contentType();
+    }
+
+    public long getFileSize() {
+        return fileSize();
+    }
+
+    public String getDownloadUrl() {
+        return downloadUrl();
+    }
+
+    public UUID getUploadedById() {
+        return uploadedById();
+    }
+
+    public String getUploadedByName() {
+        return uploadedByName();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
     }
 }

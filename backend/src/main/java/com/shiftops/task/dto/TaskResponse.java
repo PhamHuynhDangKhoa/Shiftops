@@ -6,41 +6,35 @@ import com.shiftops.task.entity.Task;
 import com.shiftops.task.entity.TaskPriority;
 import com.shiftops.task.entity.TaskStatus;
 import com.shiftops.user.entity.User;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class TaskResponse {
-    private UUID id;
-    private UUID shiftAssignmentId;
-    private UUID shiftId;
-    private String shiftName;
-    private UUID branchId;
-    private String branchName;
-    private UUID userId;
-    private String userName;
-    private String userEmail;
-    private UUID templateItemId;
-    private String title;
-    private String description;
-    private TaskPriority priority;
-    private TaskStatus status;
-    private Instant dueTime;
-    private Instant completedAt;
-    private UUID completedById;
-    private String completedByName;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private Long version;
-
+public record TaskResponse(
+        UUID id,
+        UUID shiftAssignmentId,
+        UUID shiftId,
+        String shiftName,
+        UUID branchId,
+        String branchName,
+        UUID userId,
+        String userName,
+        String userEmail,
+        UUID templateItemId,
+        String title,
+        String description,
+        TaskPriority priority,
+        TaskStatus status,
+        Instant dueTime,
+        Instant completedAt,
+        UUID completedById,
+        String completedByName,
+        Instant createdAt,
+        Instant updatedAt,
+        Long version
+) {
     public static TaskResponse fromEntity(Task task) {
         ShiftAssignment sa = task.getShiftAssignment();
         Shift shift = sa.getShift();
@@ -69,5 +63,89 @@ public class TaskResponse {
                 .updatedAt(task.getUpdatedAt())
                 .version(task.getVersion())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public UUID getShiftAssignmentId() {
+        return shiftAssignmentId();
+    }
+
+    public UUID getShiftId() {
+        return shiftId();
+    }
+
+    public String getShiftName() {
+        return shiftName();
+    }
+
+    public UUID getBranchId() {
+        return branchId();
+    }
+
+    public String getBranchName() {
+        return branchName();
+    }
+
+    public UUID getUserId() {
+        return userId();
+    }
+
+    public String getUserName() {
+        return userName();
+    }
+
+    public String getUserEmail() {
+        return userEmail();
+    }
+
+    public UUID getTemplateItemId() {
+        return templateItemId();
+    }
+
+    public String getTitle() {
+        return title();
+    }
+
+    public String getDescription() {
+        return description();
+    }
+
+    public TaskPriority getPriority() {
+        return priority();
+    }
+
+    public TaskStatus getStatus() {
+        return status();
+    }
+
+    public Instant getDueTime() {
+        return dueTime();
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt();
+    }
+
+    public UUID getCompletedById() {
+        return completedById();
+    }
+
+    public String getCompletedByName() {
+        return completedByName();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt();
+    }
+
+    public Long getVersion() {
+        return version();
     }
 }

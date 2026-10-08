@@ -1,20 +1,34 @@
 package com.shiftops.branch.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class BranchSummaryResponse {
-    private UUID branchId;
-    private String branchName;
-    private long totalStaff;
-    private long activeStaff;
-    private long managerCount;
+public record BranchSummaryResponse(
+        UUID branchId,
+        String branchName,
+        long totalStaff,
+        long activeStaff,
+        long managerCount
+) {
+    public UUID getBranchId() {
+        return branchId();
+    }
+
+    public String getBranchName() {
+        return branchName();
+    }
+
+    public long getTotalStaff() {
+        return totalStaff();
+    }
+
+    public long getActiveStaff() {
+        return activeStaff();
+    }
+
+    public long getManagerCount() {
+        return managerCount();
+    }
 }

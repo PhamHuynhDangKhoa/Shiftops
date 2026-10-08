@@ -106,11 +106,7 @@ public class UserService {
                 .build();
 
         User saved = userRepository.save(user);
-        UserResponse response = UserResponse.fromEntity(saved);
-        if (temporaryPasswordToReturn != null) {
-            response.setTemporaryPassword(temporaryPasswordToReturn);
-        }
-        return response;
+        return UserResponse.fromEntity(saved, temporaryPasswordToReturn);
     }
 
     @Transactional(readOnly = true)

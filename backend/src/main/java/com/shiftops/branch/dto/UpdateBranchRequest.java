@@ -2,26 +2,35 @@ package com.shiftops.branch.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpdateBranchRequest {
+public record UpdateBranchRequest(
+        @NotBlank(message = "Branch name is required")
+        @Size(max = 100, message = "Branch name must not exceed 100 characters")
+        String name,
 
-    @NotBlank(message = "Branch name is required")
-    @Size(max = 100, message = "Branch name must not exceed 100 characters")
-    private String name;
+        @Size(max = 255, message = "Address must not exceed 255 characters")
+        String address,
 
-    @Size(max = 255, message = "Address must not exceed 255 characters")
-    private String address;
+        @Size(max = 50, message = "Timezone must not exceed 50 characters")
+        String timezone,
 
-    @Size(max = 50, message = "Timezone must not exceed 50 characters")
-    private String timezone;
+        Boolean active
+) {
+    public String getName() {
+        return name();
+    }
 
-    private Boolean active;
+    public String getAddress() {
+        return address();
+    }
+
+    public String getTimezone() {
+        return timezone();
+    }
+
+    public Boolean getActive() {
+        return active();
+    }
 }

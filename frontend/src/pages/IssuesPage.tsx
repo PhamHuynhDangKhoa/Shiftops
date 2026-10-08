@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -175,10 +176,11 @@ export const IssuesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['my-issues'] });
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
       setAlert({
         type: 'error',
-        message: err.response?.data?.message || err.message || 'Failed to report issue',
+        message: axiosErr.response?.data?.message || axiosErr.message || 'Failed to report issue',
       });
     },
   });
@@ -197,10 +199,11 @@ export const IssuesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
       queryClient.invalidateQueries({ queryKey: ['my-issues'] });
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
       setAlert({
         type: 'error',
-        message: err.response?.data?.message || 'Failed to assign issue',
+        message: axiosErr.response?.data?.message || 'Failed to assign issue',
       });
     },
   });
@@ -230,10 +233,11 @@ export const IssuesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
       queryClient.invalidateQueries({ queryKey: ['my-issues'] });
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
       setAlert({
         type: 'error',
-        message: err.response?.data?.message || 'Failed to update issue status',
+        message: axiosErr.response?.data?.message || 'Failed to update issue status',
       });
     },
   });
@@ -251,10 +255,11 @@ export const IssuesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
       setAlert({
         type: 'error',
-        message: err.response?.data?.message || 'Failed to post comment',
+        message: axiosErr.response?.data?.message || 'Failed to post comment',
       });
     },
   });
@@ -274,10 +279,11 @@ export const IssuesPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
       setAlert({
         type: 'error',
-        message: err.response?.data?.message || 'Failed to upload attachment',
+        message: axiosErr.response?.data?.message || 'Failed to upload attachment',
       });
     },
   });
@@ -290,7 +296,7 @@ export const IssuesPage: React.FC = () => {
       });
       const url = URL.createObjectURL(res.data);
       setPreviewImageUrl(url);
-    } catch (e: any) {
+    } catch {
       setAlert({ type: 'error', message: 'Failed to load attachment image' });
     }
   };

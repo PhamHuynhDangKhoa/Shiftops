@@ -5,35 +5,52 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CreateUserRequest {
+public record CreateUserRequest(
+        @NotBlank(message = "Email is required")
+        @Email(message = "Invalid email format")
+        String email,
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String email;
+        @Size(min = 8, message = "Password must be at least 8 characters if provided")
+        String password,
 
-    @Size(min = 8, message = "Password must be at least 8 characters if provided")
-    private String password;
+        @NotBlank(message = "Full name is required")
+        @Size(max = 100, message = "Full name must not exceed 100 characters")
+        String fullName,
 
-    @NotBlank(message = "Full name is required")
-    @Size(max = 100, message = "Full name must not exceed 100 characters")
-    private String fullName;
+        @Size(max = 20, message = "Phone must not exceed 20 characters")
+        String phone,
 
-    @Size(max = 20, message = "Phone must not exceed 20 characters")
-    private String phone;
+        @NotNull(message = "Role is required")
+        Role role,
 
-    @NotNull(message = "Role is required")
-    private Role role;
+        UUID primaryBranchId
+) {
+    public String getEmail() {
+        return email();
+    }
 
-    private UUID primaryBranchId;
+    public String getPassword() {
+        return password();
+    }
+
+    public String getFullName() {
+        return fullName();
+    }
+
+    public String getPhone() {
+        return phone();
+    }
+
+    public Role getRole() {
+        return role();
+    }
+
+    public UUID getPrimaryBranchId() {
+        return primaryBranchId();
+    }
 }

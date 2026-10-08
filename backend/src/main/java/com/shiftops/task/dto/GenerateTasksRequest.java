@@ -1,21 +1,22 @@
 package com.shiftops.task.dto;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class GenerateTasksRequest {
+public record GenerateTasksRequest(
+        @NotNull(message = "Template ID is required")
+        UUID templateId,
 
-    @NotNull(message = "Template ID is required")
-    private UUID templateId;
+        UUID shiftAssignmentId
+) {
+    public UUID getTemplateId() {
+        return templateId();
+    }
 
-    private UUID shiftAssignmentId;
+    public UUID getShiftAssignmentId() {
+        return shiftAssignmentId();
+    }
 }

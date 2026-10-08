@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { ApiResponse, Branch } from '../lib/types';
+import { Card, Badge } from '../components/ui';
 
 interface HealthData {
   status: string;
@@ -37,46 +38,31 @@ export const DashboardPage: React.FC = () => {
   });
 
   return (
-    <div>
-      {/* Welcome Hero */}
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #e5e7eb',
-          borderRadius: '12px',
-          padding: '2rem',
-          marginBottom: '2rem',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h1 style={{ fontSize: '1.85rem', fontWeight: 700, margin: '0 0 0.5rem 0', color: '#111827' }}>
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Welcome Hero Card */}
+      <Card className="p-6 md:p-8 bg-gradient-to-r from-white via-white to-blue-50/30">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
               Welcome back, {user?.fullName}! 👋
             </h1>
-            <p style={{ color: '#4b5563', margin: 0, fontSize: '0.95rem' }}>
-              Logged in as <strong style={{ color: '#111827' }}>{user?.role}</strong>
+            <p className="text-sm md:text-base text-gray-600 flex items-center gap-2 flex-wrap">
+              <span>Logged in as</span>
+              <Badge variant="brand">{user?.role}</Badge>
               {user?.primaryBranchName && (
-                <>
-                  {' '}at <strong>{user.primaryBranchName}</strong>
-                </>
+                <span>
+                  at <strong className="text-gray-900 font-semibold">{user.primaryBranchName}</strong>
+                </span>
               )}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          {/* Quick Action Navigation Buttons */}
+          <div className="flex items-center gap-2.5 flex-wrap">
             {(isOwner || isManager) && (
               <Link
                 to="/staff"
-                style={{
-                  padding: '0.6rem 1.1rem',
-                  borderRadius: '6px',
-                  backgroundColor: '#2563eb',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
               >
                 Manage Staff
               </Link>
@@ -84,155 +70,103 @@ export const DashboardPage: React.FC = () => {
             {(isOwner || isManager) && (
               <Link
                 to="/branches"
-                style={{
-                  padding: '0.6rem 1.1rem',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#ffffff',
-                  color: '#374151',
-                  textDecoration: 'none',
-                  fontWeight: 600,
-                  fontSize: '0.875rem',
-                }}
+                className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 text-sm font-semibold rounded-lg shadow-sm transition-colors"
               >
                 Branches
               </Link>
             )}
             <Link
               to="/attendance"
-              style={{
-                padding: '0.6rem 1.1rem',
-                borderRadius: '6px',
-                backgroundColor: '#059669',
-                color: '#ffffff',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-              }}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
             >
               ⏱️ Attendance
             </Link>
             <Link
               to="/tasks"
-              style={{
-                padding: '0.6rem 1.1rem',
-                borderRadius: '6px',
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
             >
               📋 Tasks
             </Link>
             <Link
               to="/issues"
-              style={{
-                padding: '0.6rem 1.1rem',
-                borderRadius: '6px',
-                backgroundColor: '#dc2626',
-                color: '#ffffff',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-              }}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
             >
               ⚠️ Issues
             </Link>
             <Link
               to="/profile"
-              style={{
-                padding: '0.6rem 1.1rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                backgroundColor: '#ffffff',
-                color: '#374151',
-                textDecoration: 'none',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-              }}
+              className="px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 text-sm font-semibold rounded-lg shadow-sm transition-colors"
             >
               My Profile
             </Link>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Metrics Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px',
-            padding: '1.25rem',
-          }}
-        >
-          <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500 }}>Operating Branches</span>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: '#111827', marginTop: '0.25rem' }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <Card accent="blue">
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Operating Branches
+          </span>
+          <div className="text-3xl font-extrabold text-gray-900 mt-1">
             {branches ? branches.length : '—'}
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#059669' }}>
-            {branches?.filter(b => b.active).length || 0} active locations
+          <span className="text-xs font-medium text-emerald-600 mt-1 block">
+            {branches?.filter((b) => b.active).length || 0} active locations
           </span>
-        </div>
+        </Card>
 
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px',
-            padding: '1.25rem',
-          }}
-        >
-          <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500 }}>System Status</span>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: health?.status === 'UP' ? '#059669' : '#d97706', marginTop: '0.25rem' }}>
+        <Card accent={health?.status === 'UP' ? 'green' : 'orange'}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            System Status
+          </span>
+          <div
+            className={`text-3xl font-extrabold mt-1 ${
+              health?.status === 'UP' ? 'text-emerald-600' : 'text-amber-600'
+            }`}
+          >
             {health?.status || 'Connecting...'}
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+          <span className="text-xs text-gray-500 mt-1 block">
             DB: {health?.database || 'PostgreSQL'} • API: v{health?.version || '1.0'}
           </span>
-        </div>
+        </Card>
 
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            border: '1px solid #e5e7eb',
-            borderRadius: '8px',
-            padding: '1.25rem',
-          }}
-        >
-          <span style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 500 }}>Security Status</span>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, color: user?.mustChangePassword ? '#d97706' : '#059669', marginTop: '0.25rem' }}>
+        <Card accent={user?.mustChangePassword ? 'orange' : 'green'}>
+          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Security Status
+          </span>
+          <div
+            className={`text-3xl font-extrabold mt-1 ${
+              user?.mustChangePassword ? 'text-amber-600' : 'text-emerald-600'
+            }`}
+          >
             {user?.mustChangePassword ? 'Action Required' : 'Healthy'}
           </div>
-          <span style={{ fontSize: '0.75rem', color: user?.mustChangePassword ? '#d97706' : '#6b7280' }}>
+          <span
+            className={`text-xs mt-1 block ${
+              user?.mustChangePassword ? 'text-amber-600' : 'text-gray-500'
+            }`}
+          >
             {user?.mustChangePassword ? 'Temporary password active' : 'Credentials up-to-date'}
           </span>
-        </div>
+        </Card>
       </div>
 
-      {/* Modules Roadmap Notice for Next Phases */}
-      <div
-        style={{
-          backgroundColor: '#f8fafc',
-          border: '1px solid #e2e8f0',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          color: '#334155',
-        }}
-      >
-        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 600 }}>ShiftOps Modules Status</h3>
-        <p style={{ margin: '0 0 0.75rem 0', fontSize: '0.85rem' }}>
+      {/* Modules Roadmap Notice */}
+      <Card className="bg-slate-50 border-slate-200">
+        <h3 className="text-base font-bold text-slate-800 mb-2">ShiftOps Modules Status</h3>
+        <p className="text-xs md:text-sm text-slate-600 space-y-1 leading-relaxed">
           • <strong>Phase 1:</strong> Authentication & Core Entities (Complete ✅)<br />
           • <strong>Phase 2:</strong> Branch & Staff Management (Complete ✅)<br />
           • <strong>Phase 3:</strong> Shift Scheduling & Concurrency Engine (Complete ✅)<br />
           • <strong>Phase 4:</strong> Attendance & Punctuality Engine (Complete ✅)<br />
           • <strong>Phase 5:</strong> Task Assignment & Templates (Complete ✅)<br />
-          • <strong>Phase 6:</strong> Issue Management & Resolution (Active & Verified ✅)
+          • <strong>Phase 5.5:</strong> Technical Cleanup & Architecture Hardening (In Progress ⚡)<br />
+          • <strong>Phase 6:</strong> Issue Management & Resolution (Scheduled ⏳)
         </p>
-      </div>
+      </Card>
     </div>
   );
 };

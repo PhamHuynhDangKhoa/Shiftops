@@ -2,28 +2,22 @@ package com.shiftops.shift.dto;
 
 import com.shiftops.shift.entity.ShiftAssignment;
 import com.shiftops.user.entity.Role;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ShiftAssignmentResponse {
-    private UUID id;
-    private UUID userId;
-    private String userName;
-    private String userEmail;
-    private Role userRole;
-    private UUID assignedById;
-    private String assignedByName;
-    private Instant assignedAt;
-
+public record ShiftAssignmentResponse(
+        UUID id,
+        UUID userId,
+        String userName,
+        String userEmail,
+        Role userRole,
+        UUID assignedById,
+        String assignedByName,
+        Instant assignedAt
+) {
     public static ShiftAssignmentResponse fromEntity(ShiftAssignment assignment) {
         return ShiftAssignmentResponse.builder()
                 .id(assignment.getId())
@@ -35,5 +29,37 @@ public class ShiftAssignmentResponse {
                 .assignedByName(assignment.getAssignedBy().getFullName())
                 .assignedAt(assignment.getAssignedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public UUID getUserId() {
+        return userId();
+    }
+
+    public String getUserName() {
+        return userName();
+    }
+
+    public String getUserEmail() {
+        return userEmail();
+    }
+
+    public Role getUserRole() {
+        return userRole();
+    }
+
+    public UUID getAssignedById() {
+        return assignedById();
+    }
+
+    public String getAssignedByName() {
+        return assignedByName();
+    }
+
+    public Instant getAssignedAt() {
+        return assignedAt();
     }
 }

@@ -5,42 +5,36 @@ import com.shiftops.attendance.entity.AttendanceStatus;
 import com.shiftops.shift.entity.Shift;
 import com.shiftops.shift.entity.ShiftAssignment;
 import com.shiftops.user.entity.User;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AttendanceResponse {
-    private UUID id;
-    private UUID shiftAssignmentId;
-    private UUID shiftId;
-    private String shiftName;
-    private UUID branchId;
-    private String branchName;
-    private UUID userId;
-    private String userName;
-    private String userEmail;
-    private Instant shiftStartTime;
-    private Instant shiftEndTime;
-    private Instant checkInAt;
-    private Instant checkOutAt;
-    private AttendanceStatus status;
-    private boolean late;
-    private boolean overnight;
-    private String notes;
-    private Long version;
-    private Instant createdAt;
-    private Instant updatedAt;
-
+public record AttendanceResponse(
+        UUID id,
+        UUID shiftAssignmentId,
+        UUID shiftId,
+        String shiftName,
+        UUID branchId,
+        String branchName,
+        UUID userId,
+        String userName,
+        String userEmail,
+        Instant shiftStartTime,
+        Instant shiftEndTime,
+        Instant checkInAt,
+        Instant checkOutAt,
+        AttendanceStatus status,
+        boolean late,
+        boolean overnight,
+        String notes,
+        Long version,
+        Instant createdAt,
+        Instant updatedAt
+) {
     public static AttendanceResponse fromEntity(Attendance attendance) {
         ShiftAssignment sa = attendance.getShiftAssignment();
         Shift shift = sa.getShift();
@@ -72,5 +66,85 @@ public class AttendanceResponse {
                 .createdAt(attendance.getCreatedAt())
                 .updatedAt(attendance.getUpdatedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public UUID getShiftAssignmentId() {
+        return shiftAssignmentId();
+    }
+
+    public UUID getShiftId() {
+        return shiftId();
+    }
+
+    public String getShiftName() {
+        return shiftName();
+    }
+
+    public UUID getBranchId() {
+        return branchId();
+    }
+
+    public String getBranchName() {
+        return branchName();
+    }
+
+    public UUID getUserId() {
+        return userId();
+    }
+
+    public String getUserName() {
+        return userName();
+    }
+
+    public String getUserEmail() {
+        return userEmail();
+    }
+
+    public Instant getShiftStartTime() {
+        return shiftStartTime();
+    }
+
+    public Instant getShiftEndTime() {
+        return shiftEndTime();
+    }
+
+    public Instant getCheckInAt() {
+        return checkInAt();
+    }
+
+    public Instant getCheckOutAt() {
+        return checkOutAt();
+    }
+
+    public AttendanceStatus getStatus() {
+        return status();
+    }
+
+    public boolean isLate() {
+        return late();
+    }
+
+    public boolean isOvernight() {
+        return overnight();
+    }
+
+    public String getNotes() {
+        return notes();
+    }
+
+    public Long getVersion() {
+        return version();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt();
     }
 }

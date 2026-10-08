@@ -1,29 +1,22 @@
 package com.shiftops.issue.dto;
 
 import com.shiftops.issue.entity.IssueComment;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class IssueCommentResponse {
-
-    private UUID id;
-    private UUID issueId;
-    private UUID authorId;
-    private String authorName;
-    private String authorRole;
-    private String message;
-    private boolean internal;
-    private Instant createdAt;
-
+public record IssueCommentResponse(
+        UUID id,
+        UUID issueId,
+        UUID authorId,
+        String authorName,
+        String authorRole,
+        String message,
+        boolean internal,
+        Instant createdAt
+) {
     public static IssueCommentResponse fromEntity(IssueComment comment) {
         return IssueCommentResponse.builder()
                 .id(comment.getId())
@@ -35,5 +28,37 @@ public class IssueCommentResponse {
                 .internal(comment.isInternal())
                 .createdAt(comment.getCreatedAt())
                 .build();
+    }
+
+    public UUID getId() {
+        return id();
+    }
+
+    public UUID getIssueId() {
+        return issueId();
+    }
+
+    public UUID getAuthorId() {
+        return authorId();
+    }
+
+    public String getAuthorName() {
+        return authorName();
+    }
+
+    public String getAuthorRole() {
+        return authorRole();
+    }
+
+    public String getMessage() {
+        return message();
+    }
+
+    public boolean isInternal() {
+        return internal();
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt();
     }
 }

@@ -1,19 +1,34 @@
 package com.shiftops.auth.dto;
 
 import com.shiftops.user.dto.UserResponse;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthResponse {
-    private String accessToken;
-    @Builder.Default
-    private String tokenType = "Bearer";
-    private long expiresInMs;
-    private UserResponse user;
+public record AuthResponse(
+        String accessToken,
+        String tokenType,
+        long expiresInMs,
+        UserResponse user
+) {
+    public AuthResponse {
+        if (tokenType == null) {
+            tokenType = "Bearer";
+        }
+    }
+
+    public String getAccessToken() {
+        return accessToken();
+    }
+
+    public String getTokenType() {
+        return tokenType();
+    }
+
+    public long getExpiresInMs() {
+        return expiresInMs();
+    }
+
+    public UserResponse getUser() {
+        return user();
+    }
 }

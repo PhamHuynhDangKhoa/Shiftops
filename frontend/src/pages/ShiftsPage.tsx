@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { Shift, ShiftStatus, Branch, User, ApiResponse, PagedResponse } from '../lib/types';
@@ -123,8 +124,9 @@ export const ShiftsPage: React.FC = () => {
       setIsCreateOpen(false);
       resetCreateForm();
     },
-    onError: (err: any) => {
-      const message = err.response?.data?.message || err.message || 'Failed to create shift';
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const message = axiosErr.response?.data?.message || axiosErr.message || 'Failed to create shift';
       setFormError(message);
     },
   });
@@ -139,8 +141,9 @@ export const ShiftsPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['branch-shifts'] });
       queryClient.invalidateQueries({ queryKey: ['my-shifts'] });
     },
-    onError: (err: any) => {
-      alert(err.response?.data?.message || 'Failed to update shift status');
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      alert(axiosErr.response?.data?.message || 'Failed to update shift status');
     },
   });
 
@@ -152,8 +155,9 @@ export const ShiftsPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['branch-shifts'] });
     },
-    onError: (err: any) => {
-      alert(err.response?.data?.message || 'Failed to delete shift');
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      alert(axiosErr.response?.data?.message || 'Failed to delete shift');
     },
   });
 
@@ -169,10 +173,11 @@ export const ShiftsPage: React.FC = () => {
       setSelectedStaffId('');
       setAssignError(null);
     },
-    onError: (err: any) => {
-      const detail = err.response?.data?.error?.code === 'SHIFT_OVERLAP_CONFLICT'
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { code?: string } }>;
+      const detail = axiosErr.response?.data?.error?.code === 'SHIFT_OVERLAP_CONFLICT'
         ? '⚠️ Schedule Conflict: This staff member already has an overlapping shift assignment!'
-        : err.response?.data?.message || 'Failed to assign staff';
+        : axiosErr.response?.data?.message || 'Failed to assign staff';
       setAssignError(detail);
     },
   });
@@ -185,8 +190,9 @@ export const ShiftsPage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['branch-shifts'] });
     },
-    onError: (err: any) => {
-      alert(err.response?.data?.message || 'Failed to remove staff assignment');
+    onError: (err: unknown) => {
+      const axiosErr = err as AxiosError<{ message?: string }>;
+      alert(axiosErr.response?.data?.message || 'Failed to remove staff assignment');
     },
   });
 

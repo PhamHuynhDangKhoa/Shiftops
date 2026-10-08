@@ -1,19 +1,29 @@
 package com.shiftops.user.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class ResetPasswordResponse {
-    private UUID userId;
-    private String email;
-    private String temporaryPassword;
-    private String message;
+public record ResetPasswordResponse(
+        UUID userId,
+        String email,
+        String temporaryPassword,
+        String message
+) {
+    public UUID getUserId() {
+        return userId();
+    }
+
+    public String getEmail() {
+        return email();
+    }
+
+    public String getTemporaryPassword() {
+        return temporaryPassword();
+    }
+
+    public String getMessage() {
+        return message();
+    }
 }

@@ -4,6 +4,8 @@ import com.shiftops.common.dto.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -85,6 +87,20 @@ public class GlobalExceptionHandler {
                         ApiResponse.ErrorDetail.builder()
                                 .code("UNAUTHORIZED")
                                 .message(ex.getMessage())
+                                .build()));
+    }
+
+    @ExceptionHandler({
+            ObjectOptimisticLockingFailureException.class,
+            OptimisticLockException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLockingFailure(Exception ex) {
+        log.warn("Optimistic locking conflict: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error("Concurrent update conflict. The resource was modified by another transaction.",
+                        ApiResponse.ErrorDetail.builder()
+                                .code("CONCURRENT_MODIFICATION")
+                                .message("The resource was updated concurrently by another request. Please reload and try again.")
                                 .build()));
     }
 

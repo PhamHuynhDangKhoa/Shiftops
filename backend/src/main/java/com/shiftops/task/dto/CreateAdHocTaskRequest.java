@@ -3,28 +3,42 @@ package com.shiftops.task.dto;
 import com.shiftops.task.entity.TaskPriority;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CreateAdHocTaskRequest {
+public record CreateAdHocTaskRequest(
+        @NotBlank(message = "Task title is required")
+        @Size(max = 150, message = "Task title cannot exceed 150 characters")
+        String title,
 
-    @NotBlank(message = "Task title is required")
-    @Size(max = 150, message = "Task title cannot exceed 150 characters")
-    private String title;
+        @Size(max = 500, message = "Description cannot exceed 500 characters")
+        String description,
 
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
-    private String description;
+        TaskPriority priority,
 
-    @Builder.Default
-    private TaskPriority priority = TaskPriority.NORMAL;
+        Instant dueTime
+) {
+    public CreateAdHocTaskRequest {
+        if (priority == null) {
+            priority = TaskPriority.NORMAL;
+        }
+    }
 
-    private Instant dueTime;
+    public String getTitle() {
+        return title();
+    }
+
+    public String getDescription() {
+        return description();
+    }
+
+    public TaskPriority getPriority() {
+        return priority();
+    }
+
+    public Instant getDueTime() {
+        return dueTime();
+    }
 }

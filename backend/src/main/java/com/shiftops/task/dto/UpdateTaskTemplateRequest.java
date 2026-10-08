@@ -3,28 +3,37 @@ package com.shiftops.task.dto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpdateTaskTemplateRequest {
+public record UpdateTaskTemplateRequest(
+        @NotBlank(message = "Template name is required")
+        @Size(max = 100, message = "Template name cannot exceed 100 characters")
+        String name,
 
-    @NotBlank(message = "Template name is required")
-    @Size(max = 100, message = "Template name cannot exceed 100 characters")
-    private String name;
+        @Size(max = 500, message = "Description cannot exceed 500 characters")
+        String description,
 
-    @Size(max = 500, message = "Description cannot exceed 500 characters")
-    private String description;
+        Boolean active,
 
-    private Boolean active;
+        @Valid
+        List<CreateTaskTemplateItemRequest> items
+) {
+    public String getName() {
+        return name();
+    }
 
-    @Valid
-    private List<CreateTaskTemplateItemRequest> items;
+    public String getDescription() {
+        return description();
+    }
+
+    public Boolean getActive() {
+        return active();
+    }
+
+    public List<CreateTaskTemplateItemRequest> getItems() {
+        return items();
+    }
 }

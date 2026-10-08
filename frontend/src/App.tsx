@@ -10,6 +10,7 @@ import { ShiftsPage } from './pages/ShiftsPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { TasksPage } from './pages/TasksPage';
+import { IssuesPage } from './pages/IssuesPage';
 import HealthPage from './pages/HealthPage';
 
 function App() {
@@ -74,6 +75,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <TasksPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/issues"
+            element={
+              <ProtectedRoute>
+                <IssuesPage />
               </ProtectedRoute>
             }
           />

@@ -77,4 +77,8 @@ public class UserPrincipal implements UserDetails {
     public boolean isStaff() {
         return role == Role.STAFF;
     }
+
+    public UUID getBranchId() {
+        return primaryBranchId;
+    }
 }

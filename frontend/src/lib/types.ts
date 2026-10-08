@@ -172,3 +172,75 @@ export interface Task {
   updatedAt: string;
   version: number;
 }
+
+export type IssueCategory = 'EQUIPMENT' | 'MAINTENANCE' | 'INVENTORY' | 'SAFETY' | 'FACILITY' | 'OTHER';
+export type IssuePriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+export type IssueStatus = 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED' | 'CANCELLED';
+
+export interface IssueComment {
+  id: string;
+  issueId: string;
+  authorId: string;
+  authorName: string;
+  authorRole: Role;
+  message: string;
+  systemGenerated: boolean;
+  createdAt: string;
+}
+
+export interface IssueAttachment {
+  id: string;
+  issueId: string;
+  uploaderId: string;
+  uploaderName: string;
+  originalFileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  downloadUrl: string;
+  createdAt: string;
+}
+
+export interface Issue {
+  id: string;
+  branchId: string;
+  branchName: string;
+  reportedById: string;
+  reportedByName: string;
+  reportedByRole: Role;
+  shiftAssignmentId?: string;
+  taskId?: string;
+  title: string;
+  description: string;
+  category: IssueCategory;
+  priority: IssuePriority;
+  status: IssueStatus;
+  assignedToId?: string;
+  assignedToName?: string;
+  resolvedById?: string;
+  resolvedByName?: string;
+  resolvedAt?: string;
+  closedById?: string;
+  closedByName?: string;
+  closedAt?: string;
+  comments: IssueComment[];
+  attachments: IssueAttachment[];
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IssueSummary {
+  id: string;
+  branchId: string;
+  branchName: string;
+  title: string;
+  category: IssueCategory;
+  priority: IssuePriority;
+  status: IssueStatus;
+  reportedByName: string;
+  assignedToName?: string;
+  commentCount: number;
+  attachmentCount: number;
+  createdAt: string;
+  updatedAt: string;
+}

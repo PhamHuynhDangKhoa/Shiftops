@@ -56,4 +56,69 @@ public class Task extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "completed_by_id")
     private User completedBy;
+
+    // =========================================================================
+    // Domain Business Methods (Expressive Ubiquitous Language)
+    // =========================================================================
+
+    public boolean isTodo() {
+        return status == TaskStatus.TODO;
+    }
+
+    public boolean isInProgress() {
+        return status == TaskStatus.IN_PROGRESS;
+    }
+
+    public boolean isCompleted() {
+        return status == TaskStatus.COMPLETED;
+    }
+
+    public boolean isCancelled() {
+        return status == TaskStatus.CANCELLED;
+    }
+
+    public void cancel() {
+        if (!isCompleted()) {
+            this.status = TaskStatus.CANCELLED;
+        }
+    }
+
+    public void transitionTo(TaskStatus targetStatus, User completedByUser, Instant now, boolean isStaff) {
+        if (this.status == targetStatus) {
+            return;
+        }
+
+        if (isCompleted()) {
+            throw new com.shiftops.common.exception.BusinessRuleException("TASK_ALREADY_COMPLETED", "Completed task cannot be modified");
+        }
+        if (isCancelled()) {
+            throw new com.shiftops.common.exception.BusinessRuleException("TASK_CANCELLED", "Cancelled task cannot be modified");
+        }
+
+        if (isStaff && targetStatus == TaskStatus.CANCELLED) {
+            throw new org.springframework.security.access.AccessDeniedException("Staff members cannot cancel tasks");
+        }
+
+        boolean valid = switch (this.status) {
+            case TODO -> (targetStatus == TaskStatus.IN_PROGRESS || targetStatus == TaskStatus.COMPLETED || targetStatus == TaskStatus.CANCELLED);
+            case IN_PROGRESS -> (targetStatus == TaskStatus.COMPLETED || targetStatus == TaskStatus.CANCELLED || targetStatus == TaskStatus.TODO);
+            default -> false;
+        };
+
+        if (!valid) {
+            throw new com.shiftops.common.exception.BusinessRuleException(
+                    "INVALID_TASK_TRANSITION",
+                    "Cannot transition task from " + this.status + " to " + targetStatus);
+        }
+
+        this.status = targetStatus;
+
+        if (targetStatus == TaskStatus.COMPLETED) {
+            this.completedAt = now;
+            this.completedBy = completedByUser;
+        } else {
+            this.completedAt = null;
+            this.completedBy = null;
+        }
+    }
 }

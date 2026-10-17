@@ -170,62 +170,18 @@ public class ShiftService {
 
         Instant newStart = request.getStartTime() != null ? request.getStartTime() : shift.getStartTime();
         Instant newEnd = request.getEndTime() != null ? request.getEndTime() : shift.getEndTime();
-
         boolean timesChanged = !newStart.equals(shift.getStartTime()) || !newEnd.equals(shift.getEndTime());
 
         if (timesChanged) {
-            if (shift.getStatus() == ShiftStatus.PUBLISHED) {
-                throw new BusinessRuleException(
-                        "PUBLISHED_SHIFT_IMMUTABLE_TIMES",
-                        "Cannot modify times of a published shift. Revert to DRAFT first.");
-            }
-
-            if (!newStart.isBefore(newEnd)) {
-                throw new BusinessRuleException("INVALID_TIME_RANGE", "Start time must be before end time");
-            }
-
-            // Verify no existing assignments will overlap with new times
-            if (shift.getAssignments() != null) {
-                for (ShiftAssignment assignment : shift.getAssignments()) {
-                    long overlaps = shiftAssignmentRepository.countOverlappingAssignments(
-                            assignment.getUser().getId(),
-                            shift.getId(),
-                            newStart,
-                            newEnd);
-                    if (overlaps > 0) {
-                        throw new BusinessRuleException(
-                                "SHIFT_OVERLAP_CONFLICT",
-                                "Updated shift times cause a schedule conflict for " + assignment.getUser().getFullName());
-                    }
-                }
-            }
-
-            shift.setStartTime(newStart);
-            shift.setEndTime(newEnd);
+            shift.updateSchedule(newStart, newEnd);
+            validateNoOverlapWithExistingStaff(shift, newStart, newEnd);
         }
 
-        if (request.getName() != null) {
-            shift.setName(request.getName().trim());
-        }
-        if (request.getNotes() != null) {
-            shift.setNotes(request.getNotes().trim());
-        }
-
+        shift.updateDetails(request.getName(), request.getNotes());
         Shift updated = shiftRepository.save(shift);
 
-        if (updated.getStatus() == ShiftStatus.PUBLISHED && (request.getName() != null || request.getNotes() != null)) {
-            List<UUID> staffIds = updated.getAssignments() != null
-                    ? updated.getAssignments().stream().map(a -> a.getUser().getId()).toList()
-                    : List.of();
-            if (!staffIds.isEmpty()) {
-                eventPublisher.publishEvent(new ShiftChangedEvent(
-                        updated.getId(),
-                        updated.getBranch().getId(),
-                        staffIds,
-                        updated.getName(),
-                        "Shift details have been updated"
-                ));
-            }
+        if (updated.isPublished() && (request.getName() != null || request.getNotes() != null)) {
+            notifyStaffOfShiftDetailsUpdate(updated);
         }
 
         return ShiftResponse.fromEntity(updated);
@@ -247,59 +203,17 @@ public class ShiftService {
             return ShiftResponse.fromEntity(shift);
         }
 
-        // State Machine validation
-        boolean validTransition = false;
-        switch (currentStatus) {
-            case DRAFT -> validTransition = (targetStatus == ShiftStatus.PUBLISHED || targetStatus == ShiftStatus.CANCELLED);
-            case PUBLISHED -> validTransition = (targetStatus == ShiftStatus.DRAFT || targetStatus == ShiftStatus.COMPLETED || targetStatus == ShiftStatus.CANCELLED);
-            case COMPLETED, CANCELLED -> validTransition = false;
-        }
-
-        if (!validTransition) {
-            throw new BusinessRuleException(
-                    "INVALID_STATE_TRANSITION",
-                    "Cannot transition shift from " + currentStatus + " to " + targetStatus);
-        }
-
-        shift.setStatus(targetStatus);
+        // Domain method handles valid state transition invariants
+        shift.transitionTo(targetStatus);
         Shift updated = shiftRepository.save(shift);
 
         if (targetStatus == ShiftStatus.CANCELLED) {
-            List<Task> incomplete = taskRepository.findByShiftIdAndStatusIn(
-                    shiftId, List.of(TaskStatus.TODO, TaskStatus.IN_PROGRESS));
-            for (Task t : incomplete) {
-                t.setStatus(TaskStatus.CANCELLED);
-                taskRepository.save(t);
-            }
-
+            cancelIncompleteTasks(shiftId);
             if (currentStatus == ShiftStatus.PUBLISHED) {
-                List<UUID> staffIds = updated.getAssignments() != null
-                        ? updated.getAssignments().stream().map(a -> a.getUser().getId()).toList()
-                        : List.of();
-                if (!staffIds.isEmpty()) {
-                    eventPublisher.publishEvent(new ShiftChangedEvent(
-                            updated.getId(),
-                            updated.getBranch().getId(),
-                            staffIds,
-                            updated.getName(),
-                            "Shift has been cancelled"
-                    ));
-                }
+                notifyStaffOfShiftCancellation(updated);
             }
         } else if (targetStatus == ShiftStatus.PUBLISHED) {
-            List<UUID> staffIds = updated.getAssignments() != null
-                    ? updated.getAssignments().stream().map(a -> a.getUser().getId()).toList()
-                    : List.of();
-            if (!staffIds.isEmpty()) {
-                eventPublisher.publishEvent(new ShiftPublishedEvent(
-                        updated.getId(),
-                        updated.getBranch().getId(),
-                        staffIds,
-                        updated.getName(),
-                        updated.getStartTime(),
-                        updated.getEndTime()
-                ));
-            }
+            notifyStaffOfShiftPublication(updated, updated.getAssignedStaffIds());
         }
 
         return ShiftResponse.fromEntity(updated);
@@ -316,14 +230,13 @@ public class ShiftService {
 
         branchAccessService.validateBranchAccess(principal, shift.getBranch().getId());
 
-        if (shift.getStatus() == ShiftStatus.COMPLETED) {
+        if (shift.isCompleted()) {
             throw new BusinessRuleException("SHIFT_COMPLETED", "Cannot assign staff to a completed shift");
         }
-        if (shift.getStatus() == ShiftStatus.CANCELLED) {
+        if (shift.isCancelled()) {
             throw new BusinessRuleException("SHIFT_CANCELLED", "Cannot assign staff to a cancelled shift");
         }
 
-        // 1. Fetch target user with lock to prevent concurrent overlapping assignments
         User targetUser = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
@@ -331,19 +244,16 @@ public class ShiftService {
             throw new BusinessRuleException("USER_INACTIVE", "Cannot assign an inactive staff member");
         }
 
-        // Branch boundary check: Staff must belong to the same branch as the shift (Owner role exempt)
         if (targetUser.getRole() != Role.OWNER
                 && targetUser.getPrimaryBranch() != null
                 && !targetUser.getPrimaryBranch().getId().equals(shift.getBranch().getId())) {
             throw new BusinessRuleException("BRANCH_MISMATCH", "Staff member does not belong to the shift's branch");
         }
 
-        // 2. Duplicate assignment check
         if (shiftAssignmentRepository.existsByShiftIdAndUserId(shift.getId(), targetUser.getId())) {
             throw new ConflictException("Staff member is already assigned to this shift");
         }
 
-        // 3. Overlap check: [A_start < B_end] AND [B_start < A_end]
         long overlappingCount = shiftAssignmentRepository.countOverlappingAssignments(
                 targetUser.getId(),
                 shift.getId(),
@@ -365,18 +275,11 @@ public class ShiftService {
                 .assignedAt(Instant.now())
                 .build();
 
-        shift.getAssignments().add(assignment);
+        shift.assignStaff(assignment);
         Shift saved = shiftRepository.save(shift);
 
-        if (saved.getStatus() == ShiftStatus.PUBLISHED) {
-            eventPublisher.publishEvent(new ShiftPublishedEvent(
-                    saved.getId(),
-                    saved.getBranch().getId(),
-                    List.of(targetUser.getId()),
-                    saved.getName(),
-                    saved.getStartTime(),
-                    saved.getEndTime()
-            ));
+        if (saved.isPublished()) {
+            notifyStaffOfShiftPublication(saved, List.of(targetUser.getId()));
         }
 
         return ShiftResponse.fromEntity(saved);
@@ -393,10 +296,6 @@ public class ShiftService {
 
         branchAccessService.validateBranchAccess(principal, shift.getBranch().getId());
 
-        if (shift.getStatus() == ShiftStatus.COMPLETED) {
-            throw new BusinessRuleException("SHIFT_COMPLETED", "Cannot remove assignments from a completed shift");
-        }
-
         ShiftAssignment assignment = shiftAssignmentRepository.findByShiftIdAndUserId(shiftId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("ShiftAssignment", "userId", userId));
 
@@ -407,10 +306,80 @@ public class ShiftService {
                     "Cannot remove staff assignment with completed tasks");
         }
 
-        shift.getAssignments().remove(assignment);
+        shift.removeStaff(assignment);
         shiftAssignmentRepository.delete(assignment);
 
         Shift saved = shiftRepository.save(shift);
         return ShiftResponse.fromEntity(saved);
+    }
+
+    // =========================================================================
+    // Private Helper Workflows (Readable & Intention-Revealing)
+    // =========================================================================
+
+    private void validateNoOverlapWithExistingStaff(Shift shift, Instant newStart, Instant newEnd) {
+        if (shift.getAssignments() == null) {
+            return;
+        }
+        for (ShiftAssignment assignment : shift.getAssignments()) {
+            long overlaps = shiftAssignmentRepository.countOverlappingAssignments(
+                    assignment.getUser().getId(),
+                    shift.getId(),
+                    newStart,
+                    newEnd);
+            if (overlaps > 0) {
+                throw new BusinessRuleException(
+                        "SHIFT_OVERLAP_CONFLICT",
+                        "Updated shift times cause a schedule conflict for " + assignment.getUser().getFullName());
+            }
+        }
+    }
+
+    private void cancelIncompleteTasks(UUID shiftId) {
+        List<Task> incomplete = taskRepository.findByShiftIdAndStatusIn(
+                shiftId, List.of(TaskStatus.TODO, TaskStatus.IN_PROGRESS));
+        for (Task t : incomplete) {
+            t.setStatus(TaskStatus.CANCELLED);
+            taskRepository.save(t);
+        }
+    }
+
+    private void notifyStaffOfShiftDetailsUpdate(Shift shift) {
+        List<UUID> staffIds = shift.getAssignedStaffIds();
+        if (!staffIds.isEmpty()) {
+            eventPublisher.publishEvent(new ShiftChangedEvent(
+                    shift.getId(),
+                    shift.getBranch().getId(),
+                    staffIds,
+                    shift.getName(),
+                    "Shift details have been updated"
+            ));
+        }
+    }
+
+    private void notifyStaffOfShiftCancellation(Shift shift) {
+        List<UUID> staffIds = shift.getAssignedStaffIds();
+        if (!staffIds.isEmpty()) {
+            eventPublisher.publishEvent(new ShiftChangedEvent(
+                    shift.getId(),
+                    shift.getBranch().getId(),
+                    staffIds,
+                    shift.getName(),
+                    "Shift has been cancelled"
+            ));
+        }
+    }
+
+    private void notifyStaffOfShiftPublication(Shift shift, List<UUID> staffIds) {
+        if (!staffIds.isEmpty()) {
+            eventPublisher.publishEvent(new ShiftPublishedEvent(
+                    shift.getId(),
+                    shift.getBranch().getId(),
+                    staffIds,
+                    shift.getName(),
+                    shift.getStartTime(),
+                    shift.getEndTime()
+            ));
+        }
     }
 }

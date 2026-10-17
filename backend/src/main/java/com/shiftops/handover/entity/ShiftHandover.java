@@ -77,4 +77,59 @@ public class ShiftHandover extends BaseEntity {
             removeItem(item);
         }
     }
+
+    // =========================================================================
+    // Domain Business Methods (Expressive Ubiquitous Language)
+    // =========================================================================
+
+    public boolean isDraft() {
+        return status == HandoverStatus.DRAFT;
+    }
+
+    public boolean isSubmitted() {
+        return status == HandoverStatus.SUBMITTED;
+    }
+
+    public boolean isAcknowledged() {
+        return status == HandoverStatus.ACKNOWLEDGED;
+    }
+
+    public void updateDraftNotes(String notes) {
+        if (!isDraft()) {
+            throw new com.shiftops.common.exception.BusinessRuleException("INVALID_HANDOVER_STATE",
+                    "Only draft handovers can be updated. Current status: " + this.status);
+        }
+        if (this.shift != null && this.shift.isCancelled()) {
+            throw new com.shiftops.common.exception.BusinessRuleException("SHIFT_CANCELLED",
+                    "Cannot modify handover for a cancelled shift");
+        }
+        this.notes = notes;
+    }
+
+    public void submit(User submitter, Instant submittedAt) {
+        if (this.shift != null && this.shift.isCancelled()) {
+            throw new com.shiftops.common.exception.BusinessRuleException("SHIFT_CANCELLED",
+                    "Cannot submit handover for a cancelled shift");
+        }
+        if (!isDraft()) {
+            throw new com.shiftops.common.exception.BusinessRuleException("INVALID_HANDOVER_STATE",
+                    "Cannot submit handover in status: " + this.status);
+        }
+        this.status = HandoverStatus.SUBMITTED;
+        this.submittedBy = submitter;
+        this.submittedAt = submittedAt;
+    }
+
+    public void acknowledge(User acknowledger, String notes, Instant acknowledgedAt) {
+        if (!isSubmitted()) {
+            throw new com.shiftops.common.exception.BusinessRuleException("INVALID_HANDOVER_STATE",
+                    "Cannot acknowledge handover in status: " + this.status);
+        }
+        this.status = HandoverStatus.ACKNOWLEDGED;
+        this.acknowledgedBy = acknowledger;
+        this.acknowledgedAt = acknowledgedAt;
+        if (notes != null) {
+            this.acknowledgementNotes = notes;
+        }
+    }
 }

@@ -100,21 +100,10 @@ public class AttendanceService {
                     "Shift has already ended; check-in is no longer allowed");
         }
 
-        // Punctuality determination
-        boolean isLate = now.isAfter(shift.getStartTime());
-        AttendanceStatus status = isLate ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
-
-        Attendance attendance = Attendance.builder()
-                .shiftAssignment(assignment)
-                .checkInAt(now)
-                .checkOutAt(null)
-                .status(status)
-                .isLate(isLate)
-                .build();
-
+        Attendance attendance = Attendance.recordCheckIn(assignment, now, shift.getStartTime());
         Attendance saved = attendanceRepository.save(attendance);
         log.info("Staff {} checked in to assignment {}: status={}, late={}",
-                principal.getUsername(), shiftAssignmentId, status, isLate);
+                principal.getUsername(), shiftAssignmentId, saved.getStatus(), saved.isLate());
 
         eventPublisher.publishEvent(new StaffCheckedInEvent(
                 saved.getId(),
@@ -148,20 +137,7 @@ public class AttendanceService {
                         "CHECKOUT_WITHOUT_CHECKIN",
                         "Cannot check out without checking in first"));
 
-        if (attendance.getStatus() == AttendanceStatus.COMPLETED) {
-            throw new BusinessRuleException("ATTENDANCE_ALREADY_COMPLETED", "Attendance is already completed");
-        }
-        if (attendance.getStatus() == AttendanceStatus.ABSENT) {
-            throw new BusinessRuleException("CANNOT_CHECKOUT_ABSENT", "Cannot check out from an absent attendance record");
-        }
-
-        Instant now = clock.instant();
-        if (now.isBefore(attendance.getCheckInAt())) {
-            now = attendance.getCheckInAt();
-        }
-
-        attendance.setCheckOutAt(now);
-        attendance.setStatus(AttendanceStatus.COMPLETED);
+        attendance.checkOut(clock.instant());
 
         Attendance saved = attendanceRepository.save(attendance);
         log.info("Staff {} checked out from assignment {}: checkIn={}, checkOut={}",
@@ -233,15 +209,7 @@ public class AttendanceService {
 
         for (ShiftAssignment sa : unattended) {
             if (!attendanceRepository.existsByShiftAssignmentId(sa.getId())) {
-                Attendance absent = Attendance.builder()
-                        .shiftAssignment(sa)
-                        .checkInAt(null)
-                        .checkOutAt(null)
-                        .status(AttendanceStatus.ABSENT)
-                        .isLate(false)
-                        .notes("Marked absent automatically by scheduler")
-                        .build();
-
+                Attendance absent = Attendance.recordAbsence(sa, "Marked absent automatically by scheduler");
                 attendanceRepository.save(absent);
                 markedCount++;
                 log.info("Marked shift assignment {} as ABSENT for user {}", sa.getId(), sa.getUser().getEmail());

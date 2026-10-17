@@ -36,4 +36,42 @@ public class Attendance extends BaseEntity {
 
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
+
+    // =========================================================================
+    // Domain Business Methods (Expressive Ubiquitous Language)
+    // =========================================================================
+
+    public static Attendance recordCheckIn(ShiftAssignment assignment, Instant checkInTime, Instant shiftStartTime) {
+        boolean isLate = checkInTime.isAfter(shiftStartTime);
+        AttendanceStatus status = isLate ? AttendanceStatus.LATE : AttendanceStatus.PRESENT;
+
+        return Attendance.builder()
+                .shiftAssignment(assignment)
+                .checkInAt(checkInTime)
+                .status(status)
+                .isLate(isLate)
+                .build();
+    }
+
+    public static Attendance recordAbsence(ShiftAssignment assignment, String notes) {
+        return Attendance.builder()
+                .shiftAssignment(assignment)
+                .status(AttendanceStatus.ABSENT)
+                .isLate(false)
+                .notes(notes)
+                .build();
+    }
+
+    public void checkOut(Instant checkOutTime) {
+        if (this.status == AttendanceStatus.COMPLETED) {
+            throw new com.shiftops.common.exception.BusinessRuleException("ATTENDANCE_ALREADY_COMPLETED", "Attendance is already completed");
+        }
+        if (this.status == AttendanceStatus.ABSENT) {
+            throw new com.shiftops.common.exception.BusinessRuleException("CANNOT_CHECKOUT_ABSENT", "Cannot check out from an absent attendance record");
+        }
+
+        Instant effectiveCheckOut = checkOutTime.isBefore(this.checkInAt) ? this.checkInAt : checkOutTime;
+        this.checkOutAt = effectiveCheckOut;
+        this.status = AttendanceStatus.COMPLETED;
+    }
 }

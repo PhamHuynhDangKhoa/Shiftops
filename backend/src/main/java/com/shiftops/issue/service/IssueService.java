@@ -232,6 +232,8 @@ public class IssueService {
         }
 
         User targetUser = null;
+        User currentUser = userRepository.getReferenceById(principal.getId());
+
         if (request.getAssignedToUserId() != null) {
             targetUser = userRepository.findById(request.getAssignedToUserId())
                     .orElseThrow(() -> new ResourceNotFoundException("User", "id", request.getAssignedToUserId()));
@@ -245,34 +247,9 @@ public class IssueService {
                 throw new BusinessRuleException("BRANCH_MISMATCH", "Cannot assign issue to staff from a different branch");
             }
 
-            issue.setAssignedTo(targetUser);
-            if (issue.getStatus() == IssueStatus.OPEN) {
-                issue.setStatus(IssueStatus.ASSIGNED);
-            }
-
-            // Record assignment comment in timeline
-            User currentUser = userRepository.getReferenceById(principal.getId());
-            IssueComment comment = IssueComment.builder()
-                    .issue(issue)
-                    .author(currentUser)
-                    .message("Assigned issue to " + targetUser.getFullName())
-                    .isInternal(false)
-                    .build();
-            issue.addComment(comment);
+            issue.assignStaff(targetUser, currentUser);
         } else {
-            // Unassign
-            issue.setAssignedTo(null);
-            if (issue.getStatus() == IssueStatus.ASSIGNED) {
-                issue.setStatus(IssueStatus.OPEN);
-            }
-            User currentUser = userRepository.getReferenceById(principal.getId());
-            IssueComment comment = IssueComment.builder()
-                    .issue(issue)
-                    .author(currentUser)
-                    .message("Unassigned issue")
-                    .isInternal(false)
-                    .build();
-            issue.addComment(comment);
+            issue.unassignStaff(currentUser);
         }
 
         Issue saved = issueRepository.save(issue);
@@ -296,15 +273,6 @@ public class IssueService {
             return IssueResponse.fromEntity(issue, true);
         }
 
-        // Terminal states cannot be changed
-        if (currentStatus == IssueStatus.CLOSED) {
-            throw new BusinessRuleException("ISSUE_CLOSED", "Closed issue cannot be modified");
-        }
-        if (currentStatus == IssueStatus.CANCELLED) {
-            throw new BusinessRuleException("ISSUE_CANCELLED", "Cancelled issue cannot be modified");
-        }
-
-        // Role-based restrictions
         if (principal.isStaff()) {
             if (issue.getAssignedTo() == null || !issue.getAssignedTo().getId().equals(principal.getId())) {
                 throw new AccessDeniedException("Staff can only update issues assigned to them");
@@ -316,52 +284,10 @@ public class IssueService {
             branchAccessService.validateBranchAccess(principal, issue.getBranch().getId());
         }
 
-        // State machine validation
-        boolean valid = false;
-        switch (currentStatus) {
-            case OPEN -> valid = (targetStatus == IssueStatus.ASSIGNED || targetStatus == IssueStatus.IN_PROGRESS || targetStatus == IssueStatus.CANCELLED);
-            case ASSIGNED -> valid = (targetStatus == IssueStatus.IN_PROGRESS || targetStatus == IssueStatus.CANCELLED || targetStatus == IssueStatus.OPEN);
-            case IN_PROGRESS -> valid = (targetStatus == IssueStatus.RESOLVED || targetStatus == IssueStatus.ASSIGNED || targetStatus == IssueStatus.CANCELLED);
-            case RESOLVED -> {
-                // Manager/Owner can close or reopen to IN_PROGRESS
-                if (!principal.isStaff()) {
-                    valid = (targetStatus == IssueStatus.CLOSED || targetStatus == IssueStatus.IN_PROGRESS);
-                }
-            }
-            default -> valid = false;
-        }
-
-        if (!valid) {
-            throw new BusinessRuleException(
-                    "INVALID_STATE_TRANSITION",
-                    "Cannot transition issue from " + currentStatus + " to " + targetStatus);
-        }
-
         User currentUser = userRepository.getReferenceById(principal.getId());
 
-        issue.setStatus(targetStatus);
-
-        if (targetStatus == IssueStatus.RESOLVED) {
-            issue.setResolvedAt(clock.instant());
-            issue.setResolvedBy(currentUser);
-        } else if (targetStatus == IssueStatus.CLOSED) {
-            issue.setClosedAt(clock.instant());
-            issue.setClosedBy(currentUser);
-        } else if (currentStatus == IssueStatus.RESOLVED && targetStatus == IssueStatus.IN_PROGRESS) {
-            // Reopening
-            issue.setResolvedAt(null);
-            issue.setResolvedBy(null);
-        }
-
-        if (request.getComment() != null && !request.getComment().isBlank()) {
-            IssueComment comment = IssueComment.builder()
-                    .issue(issue)
-                    .author(currentUser)
-                    .message(request.getComment().trim())
-                    .isInternal(false)
-                    .build();
-            issue.addComment(comment);
-        }
+        // Domain method encapsulates state transitions, role invariants, timestamps, and timeline comment
+        issue.transitionTo(targetStatus, currentUser, request.getComment(), clock.instant(), principal.isStaff());
 
         Issue saved = issueRepository.save(issue);
         log.info("Issue {} transitioned: {} -> {} by {}", issueId, currentStatus, targetStatus, principal.getUsername());

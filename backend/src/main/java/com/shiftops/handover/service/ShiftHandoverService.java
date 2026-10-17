@@ -183,7 +183,7 @@ public class ShiftHandoverService {
             }
         }
 
-        handover.setNotes(request.notes());
+        handover.updateDraftNotes(request.notes());
         handover.clearItems();
 
         if (request.items() != null) {
@@ -214,13 +214,12 @@ public class ShiftHandoverService {
 
         branchAccessService.validateBranchAccess(principal, handover.getBranch().getId());
 
-        if (handover.getShift().getStatus() == ShiftStatus.CANCELLED) {
+        if (handover.getShift() != null && handover.getShift().isCancelled()) {
             throw new BusinessRuleException("SHIFT_CANCELLED", "Cannot submit handover for a cancelled shift");
         }
 
-        if (handover.getStatus() != HandoverStatus.DRAFT) {
-            throw new BusinessRuleException("INVALID_HANDOVER_STATE",
-                    "Cannot submit handover in status: " + handover.getStatus());
+        if (!handover.isDraft()) {
+            throw new BusinessRuleException("INVALID_HANDOVER_STATE", "Cannot submit handover in status: " + handover.getStatus());
         }
 
         if (principal.isStaff()) {
@@ -233,9 +232,8 @@ public class ShiftHandoverService {
         User user = userRepository.findById(principal.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", principal.getId()));
 
-        handover.setStatus(HandoverStatus.SUBMITTED);
-        handover.setSubmittedBy(user);
-        handover.setSubmittedAt(clock.instant());
+        // Domain method validates status and invariants
+        handover.submit(user, clock.instant());
 
         ShiftHandover saved = handoverRepository.save(handover);
         eventPublisher.publishEvent(new HandoverSubmittedEvent(
@@ -255,20 +253,15 @@ public class ShiftHandoverService {
 
         branchAccessService.validateBranchAccess(principal, handover.getBranch().getId());
 
-        if (handover.getStatus() != HandoverStatus.SUBMITTED) {
-            throw new BusinessRuleException("INVALID_HANDOVER_STATE",
-                    "Cannot acknowledge handover in status: " + handover.getStatus());
+        if (!handover.isSubmitted()) {
+            throw new BusinessRuleException("INVALID_HANDOVER_STATE", "Cannot acknowledge handover in status: " + handover.getStatus());
         }
 
         User user = userRepository.findById(principal.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", principal.getId()));
 
-        handover.setStatus(HandoverStatus.ACKNOWLEDGED);
-        handover.setAcknowledgedBy(user);
-        handover.setAcknowledgedAt(clock.instant());
-        if (request != null && request.notes() != null) {
-            handover.setAcknowledgementNotes(request.notes());
-        }
+        // Domain method validates status is SUBMITTED and updates acknowledger details
+        handover.acknowledge(user, request != null ? request.notes() : null, clock.instant());
 
         ShiftHandover saved = handoverRepository.save(handover);
         UUID submitterId = saved.getSubmittedBy() != null ? saved.getSubmittedBy().getId() : null;

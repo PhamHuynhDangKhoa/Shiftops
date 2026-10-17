@@ -172,9 +172,6 @@ public class TaskService {
             if (!sa.getUser().getId().equals(principal.getId())) {
                 throw new AccessDeniedException("Staff members can only update their own assigned tasks");
             }
-            if (request.getStatus() == TaskStatus.CANCELLED) {
-                throw new AccessDeniedException("Staff members cannot cancel tasks");
-            }
         } else {
             branchAccessService.validateBranchAccess(principal, shift.getBranch().getId());
         }
@@ -186,34 +183,10 @@ public class TaskService {
             return TaskResponse.fromEntity(task);
         }
 
-        // State Machine validation
-        if (currentStatus == TaskStatus.COMPLETED) {
-            throw new BusinessRuleException("TASK_ALREADY_COMPLETED", "Completed task cannot be modified");
-        }
-        if (currentStatus == TaskStatus.CANCELLED) {
-            throw new BusinessRuleException("TASK_CANCELLED", "Cancelled task cannot be modified");
-        }
+        User actor = userRepository.findById(principal.getId()).orElse(null);
 
-        boolean valid = false;
-        switch (currentStatus) {
-            case TODO -> valid = (targetStatus == TaskStatus.IN_PROGRESS || targetStatus == TaskStatus.COMPLETED || targetStatus == TaskStatus.CANCELLED);
-            case IN_PROGRESS -> valid = (targetStatus == TaskStatus.COMPLETED || targetStatus == TaskStatus.CANCELLED || targetStatus == TaskStatus.TODO);
-            default -> valid = false;
-        }
-
-        if (!valid) {
-            throw new BusinessRuleException(
-                    "INVALID_TASK_TRANSITION",
-                    "Cannot transition task from " + currentStatus + " to " + targetStatus);
-        }
-
-        task.setStatus(targetStatus);
-
-        if (targetStatus == TaskStatus.COMPLETED) {
-            task.setCompletedAt(clock.instant());
-            User completedByUser = userRepository.findById(principal.getId()).orElse(null);
-            task.setCompletedBy(completedByUser);
-        }
+        // Domain method handles valid state transitions, staff cancellation restrictions, and completion timestamps
+        task.transitionTo(targetStatus, actor, clock.instant(), principal.isStaff());
 
         Task saved = taskRepository.save(task);
         log.info("Task {} status changed: {} -> {} by {}", taskId, currentStatus, targetStatus, principal.getUsername());

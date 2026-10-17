@@ -394,8 +394,8 @@ class Phase3IntegrationTest {
         Shift draftShift = shiftRepository.save(Shift.builder()
                 .branch(branchA)
                 .name("Draft Shift")
-                .startTime(Instant.parse("2026-10-08T08:00:00Z"))
-                .endTime(Instant.parse("2026-10-08T16:00:00Z"))
+                .startTime(Instant.now().plusSeconds(86400))
+                .endTime(Instant.now().plusSeconds(86400 + 28800))
                 .status(ShiftStatus.DRAFT)
                 .build());
 

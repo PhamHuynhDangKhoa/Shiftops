@@ -47,15 +47,9 @@ app:
     upload-dir: ${UPLOAD_DIR:./uploads}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
-  outbox:
-    scheduler:
-      enabled: ${OUTBOX_SCHEDULER_ENABLED:true}
-    fixed-delay-ms: ${OUTBOX_FIXED_DELAY_MS:3000}
-    base-backoff-seconds: ${OUTBOX_BASE_BACKOFF_SECONDS:5}
-    lease-duration-ms: ${OUTBOX_LEASE_DURATION_MS:60000}
-    max-retries: ${OUTBOX_MAX_RETRIES:3}
-    batch-size: ${OUTBOX_BATCH_SIZE:25}
-    stale-threshold-seconds: ${OUTBOX_STALE_THRESHOLD_SECONDS:300}
+  events:
+    republish-delay-ms: ${EVENTS_REPUBLISH_DELAY_MS:30000}
+    purge-cron: ${EVENTS_PURGE_CRON:0 0 3 * * *}
 
 management:
   endpoints:

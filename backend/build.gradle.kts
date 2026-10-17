@@ -24,6 +24,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.springframework.modulith:spring-modulith-starter-jpa:1.3.1")
+    implementation("org.springframework.modulith:spring-modulith-events-jpa:1.3.1")
+    implementation("org.springframework.modulith:spring-modulith-events-jackson:1.3.1")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")

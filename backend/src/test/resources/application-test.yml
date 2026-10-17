@@ -4,6 +4,8 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
+    hikari:
+      maximum-pool-size: 30
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -23,8 +25,7 @@ app:
     upload-dir: build/test-uploads
   cors:
     allowed-origins: http://localhost:5173,http://localhost:3000
-  outbox:
-    scheduler:
-      enabled: false
+  events:
+    republish-delay-ms: 30000
 
 

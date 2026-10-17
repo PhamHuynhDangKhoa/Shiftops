@@ -10,6 +10,7 @@ import com.shiftops.user.entity.User;
 import com.shiftops.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -18,8 +19,8 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Dedicated handler for durable, transactional event dispatching.
- * Invoked strictly by the Transactional Outbox processor to prevent duplicate notifications.
+ * Dedicated handler for durable, transactional event dispatching backed by Spring Modulith.
+ * Managed automatically by the Spring Modulith Event Publication Registry.
  */
 @Slf4j
 @Service
@@ -30,6 +31,7 @@ public class DurableNotificationHandler {
     private final UserRepository userRepository;
     private final ShiftAssignmentRepository shiftAssignmentRepository;
 
+    @ApplicationModuleListener
     public void handleShiftPublished(ShiftPublishedEvent event) {
         if (event.staffUserIds() == null) return;
         for (UUID staffId : event.staffUserIds()) {
@@ -44,6 +46,7 @@ public class DurableNotificationHandler {
         }
     }
 
+    @ApplicationModuleListener
     public void handleShiftChanged(ShiftChangedEvent event) {
         if (event.staffUserIds() == null) return;
         for (UUID staffId : event.staffUserIds()) {
@@ -60,6 +63,7 @@ public class DurableNotificationHandler {
         }
     }
 
+    @ApplicationModuleListener
     public void handleTaskAssigned(TaskAssignedEvent event) {
         if (event.assignedUserId() == null) return;
         notificationService.createNotification(
@@ -72,6 +76,7 @@ public class DurableNotificationHandler {
         );
     }
 
+    @ApplicationModuleListener
     public void handleIssueAssigned(IssueAssignedEvent event) {
         if (event.assignedToUserId() == null) return;
         notificationService.createNotification(
@@ -84,6 +89,7 @@ public class DurableNotificationHandler {
         );
     }
 
+    @ApplicationModuleListener
     public void handleIssueStatusChanged(IssueStatusChangedEvent event) {
         String msg = "Issue '" + event.issueTitle() + "' status changed to " + event.newStatus();
         Set<UUID> recipients = new HashSet<>();
@@ -108,6 +114,7 @@ public class DurableNotificationHandler {
         }
     }
 
+    @ApplicationModuleListener
     public void handleHandoverSubmitted(HandoverSubmittedEvent event) {
         List<User> branchUsers = userRepository.findByPrimaryBranchIdAndIsActiveTrue(event.branchId());
         for (User user : branchUsers) {
@@ -124,6 +131,7 @@ public class DurableNotificationHandler {
         }
     }
 
+    @ApplicationModuleListener
     public void handleHandoverAcknowledged(HandoverAcknowledgedEvent event) {
         if (event.submitterUserId() == null) return;
         notificationService.createNotification(
@@ -136,6 +144,7 @@ public class DurableNotificationHandler {
         );
     }
 
+    @ApplicationModuleListener
     public void handleAnnouncementPublished(AnnouncementPublishedEvent event) {
         Set<UUID> recipientIds = new HashSet<>();
 

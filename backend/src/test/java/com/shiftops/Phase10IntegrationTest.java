@@ -3,13 +3,15 @@ package com.shiftops;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shiftops.branch.entity.Branch;
 import com.shiftops.branch.repository.BranchRepository;
+import com.shiftops.common.event.EventPublicationRegistryService;
 import com.shiftops.common.exception.BusinessRuleException;
-import com.shiftops.common.outbox.OutboxEvent;
-import com.shiftops.common.outbox.OutboxProcessor;
-import com.shiftops.common.outbox.OutboxRepository;
-import com.shiftops.common.outbox.OutboxService;
-import com.shiftops.common.outbox.OutboxStatus;
 import com.shiftops.common.security.JwtTokenProvider;
+import com.shiftops.notification.event.ShiftPublishedEvent;
+import com.shiftops.notification.event.TaskAssignedEvent;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.modulith.events.CompletedEventPublications;
+import org.springframework.modulith.events.IncompleteEventPublications;
 import com.shiftops.common.security.UserPrincipal;
 import com.shiftops.common.storage.LocalStorageService;
 import com.shiftops.notification.entity.Notification;
@@ -72,13 +74,19 @@ public class Phase10IntegrationTest {
     private NotificationService notificationService;
 
     @Autowired
-    private OutboxRepository outboxRepository;
+    private CompletedEventPublications completedPublications;
 
     @Autowired
-    private OutboxService outboxService;
+    private IncompleteEventPublications incompletePublications;
 
     @Autowired
-    private OutboxProcessor outboxProcessor;
+    private EventPublicationRegistryService eventPublicationRegistryService;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private ShiftReminderScheduler shiftReminderScheduler;
@@ -112,6 +120,9 @@ public class Phase10IntegrationTest {
 
     @BeforeEach
     void setUp() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE event_publication ALTER COLUMN serialized_event VARCHAR(1000000)");
+        } catch (Exception ignored) {}
         cleanup();
 
         testBranch = branchRepository.save(Branch.builder()
@@ -150,7 +161,7 @@ public class Phase10IntegrationTest {
 
     private void cleanup() {
         notificationRepository.deleteAll();
-        outboxRepository.deleteAll();
+        jdbcTemplate.execute("DELETE FROM event_publication");
         shiftAssignmentRepository.deleteAll();
         shiftRepository.deleteAll();
         userRepository.deleteAll();
@@ -273,302 +284,161 @@ public class Phase10IntegrationTest {
     }
 
     // =========================================================================
-    // 2. Transactional Outbox Pattern Tests
+    // 2. Spring Modulith Event Publication Registry Tests
     // =========================================================================
 
     @Test
-    @DisplayName("Transactional Outbox: event persists in PENDING status within transaction")
-    void testOutbox_EventPersistenceInTransaction() {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        UUID eventId = tx.execute(status -> {
-            OutboxEvent event = OutboxEvent.builder()
-                    .eventType("SHIFT_PUBLISHED")
-                    .aggregateType("SHIFT")
-                    .aggregateId(UUID.randomUUID())
-                    .payload("{\"shiftId\":\"" + UUID.randomUUID() + "\",\"shiftName\":\"Morning Shift\",\"staffUserIds\":[]}")
-                    .status(OutboxStatus.PENDING)
-                    .retryCount(0)
-                    .maxRetries(3)
-                    .scheduledAt(Instant.now())
-                    .build();
-            return outboxRepository.save(event).getId();
-        });
-
-        assertThat(eventId).isNotNull();
-        OutboxEvent persisted = outboxRepository.findById(eventId).orElseThrow();
-        assertThat(persisted.getStatus()).isEqualTo(OutboxStatus.PENDING);
-        assertThat(persisted.getRetryCount()).isEqualTo(0);
-        assertThat(persisted.getPayload()).contains("Morning Shift");
-    }
-
-    @Test
-    @DisplayName("Transactional Outbox: OutboxProcessor executes pending events to PROCESSED")
-    void testOutbox_ProcessorExecutesPendingEvents() {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+    @DisplayName("Spring Modulith: event publication is registered and executed after commit")
+    void testModulith_EventPublicationAndExecution() throws Exception {
         UUID shiftId = UUID.randomUUID();
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
         tx.executeWithoutResult(status -> {
-            OutboxEvent event = OutboxEvent.builder()
-                    .eventType("SHIFT_PUBLISHED")
-                    .aggregateType("SHIFT")
-                    .aggregateId(shiftId)
-                    .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Day Shift\",\"staffUserIds\":[\"%s\"]}",
-                            shiftId, staffUser.getId()))
-                    .status(OutboxStatus.PENDING)
-                    .retryCount(0)
-                    .maxRetries(3)
-                    .scheduledAt(Instant.now().minusSeconds(1))
-                    .build();
-            outboxRepository.save(event);
+            eventPublisher.publishEvent(new ShiftPublishedEvent(
+                    shiftId,
+                    testBranch.getId(),
+                    List.of(staffUser.getId()),
+                    "Day Shift",
+                    Instant.now(),
+                    Instant.now().plus(Duration.ofHours(8))
+            ));
         });
 
-        int processed = outboxProcessor.processPendingEvents();
-        assertThat(processed).isEqualTo(1);
+        long deadline = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < deadline && notificationRepository.count() == 0) {
+            Thread.sleep(50);
+        }
 
-        List<OutboxEvent> events = outboxRepository.findAll();
-        assertThat(events).hasSize(1);
-        OutboxEvent processedEvent = events.get(0);
-        assertThat(processedEvent.getStatus()).isEqualTo(OutboxStatus.PROCESSED);
-        assertThat(processedEvent.getProcessedAt()).isNotNull();
-
-        // Verify that the notification was created
+        // Notification created for staffUser
         List<Notification> notifications = notificationRepository.findAll();
         assertThat(notifications).hasSize(1);
         assertThat(notifications.get(0).getTitle()).isEqualTo("Shift Published");
+
+        // Event publication is marked as completed in Spring Modulith registry
+        assertThat(completedPublications.findAll()).isNotEmpty();
     }
 
     @Test
-    @DisplayName("Transactional Outbox: Failure triggers retry count and exponential backoff")
-    void testOutbox_FailureAndExponentialBackoff() {
-        Instant beforeRun = Instant.now();
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        UUID outboxId = tx.execute(status -> {
-            OutboxEvent event = OutboxEvent.builder()
-                    .eventType("SHIFT_PUBLISHED")
-                    .aggregateType("SHIFT")
-                    .aggregateId(UUID.randomUUID())
-                    .payload("{invalid-json-payload")
-                    .status(OutboxStatus.PENDING)
-                    .retryCount(0)
-                    .maxRetries(3)
-                    .scheduledAt(beforeRun.minusSeconds(1))
-                    .build();
-            return outboxRepository.save(event).getId();
-        });
-
-        int processed = outboxProcessor.processPendingEvents();
-        assertThat(processed).isEqualTo(0); // Failed to process cleanly
-
-        OutboxEvent failedEvent = outboxRepository.findById(outboxId).orElseThrow();
-        assertThat(failedEvent.getRetryCount()).isEqualTo(1);
-        assertThat(failedEvent.getErrorMessage()).isNotEmpty();
-        assertThat(failedEvent.getStatus()).isEqualTo(OutboxStatus.PENDING); // Rescheduled for retry
-        // Backoff formula 5 * 2^(1-1) = 5 seconds
-        assertThat(failedEvent.getScheduledAt()).isAfterOrEqualTo(beforeRun.plusSeconds(4))
-                .isBeforeOrEqualTo(beforeRun.plusSeconds(8));
-    }
-
-    @Test
-    @DisplayName("Transactional Outbox: Full retry lifecycle 5s -> 10s -> 20s and final FAILED state")
-    void testOutbox_FullRetryCycleToPermanentlyFailed() {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        UUID outboxId = tx.execute(status -> {
-            OutboxEvent event = OutboxEvent.builder()
-                    .eventType("SHIFT_PUBLISHED")
-                    .aggregateType("SHIFT")
-                    .aggregateId(UUID.randomUUID())
-                    .payload("{malformed-json")
-                    .status(OutboxStatus.PENDING)
-                    .retryCount(0)
-                    .maxRetries(3)
-                    .scheduledAt(Instant.now().minusSeconds(1))
-                    .build();
-            return outboxRepository.save(event).getId();
-        });
-
-        // --- Attempt 1: fails -> retry 1, backoff 5s ---
-        outboxProcessor.processPendingEvents();
-        OutboxEvent attempt1 = outboxRepository.findById(outboxId).orElseThrow();
-        assertThat(attempt1.getRetryCount()).isEqualTo(1);
-        assertThat(attempt1.getStatus()).isEqualTo(OutboxStatus.PENDING);
-
-        // --- Attempt 2: reschedule to past, process -> retry 2, backoff 10s ---
-        tx.executeWithoutResult(status -> {
-            OutboxEvent ev = outboxRepository.findById(outboxId).orElseThrow();
-            ev.setScheduledAt(Instant.now().minusSeconds(1));
-            outboxRepository.save(ev);
-        });
-        Instant beforeAttempt2 = Instant.now();
-        outboxProcessor.processPendingEvents();
-        OutboxEvent attempt2 = outboxRepository.findById(outboxId).orElseThrow();
-        assertThat(attempt2.getRetryCount()).isEqualTo(2);
-        assertThat(attempt2.getStatus()).isEqualTo(OutboxStatus.PENDING);
-        // Backoff formula 5 * 2^(2-1) = 10s
-        assertThat(attempt2.getScheduledAt()).isAfterOrEqualTo(beforeAttempt2.plusSeconds(8))
-                .isBeforeOrEqualTo(beforeAttempt2.plusSeconds(13));
-
-        // --- Attempt 3: reschedule to past, process -> retry 3 = maxRetries -> FAILED ---
-        tx.executeWithoutResult(status -> {
-            OutboxEvent ev = outboxRepository.findById(outboxId).orElseThrow();
-            ev.setScheduledAt(Instant.now().minusSeconds(1));
-            outboxRepository.save(ev);
-        });
-        outboxProcessor.processPendingEvents();
-        OutboxEvent attempt3 = outboxRepository.findById(outboxId).orElseThrow();
-        assertThat(attempt3.getRetryCount()).isEqualTo(3);
-        assertThat(attempt3.getStatus()).isEqualTo(OutboxStatus.FAILED);
-    }
-
-    @Test
-    @DisplayName("Transactional Outbox: Stale PROCESSING events are recovered and retried")
-    void testOutbox_StaleProcessingEventRecovery() {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+    @DisplayName("Spring Modulith: event_publication table records listener_id and completion_date")
+    void testModulith_PublicationTableDetails() throws Exception {
         UUID shiftId = UUID.randomUUID();
-        UUID staleEventId = tx.execute(status -> {
-            OutboxEvent event = OutboxEvent.builder()
-                    .eventType("SHIFT_PUBLISHED")
-                    .aggregateType("SHIFT")
-                    .aggregateId(shiftId)
-                    .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Recovered Shift\",\"staffUserIds\":[\"%s\"]}",
-                            shiftId, staffUser.getId()))
-                    .status(OutboxStatus.PROCESSING)
-                    .claimToken(UUID.randomUUID())
-                    .retryCount(0)
-                    .maxRetries(3)
-                    .scheduledAt(Instant.now().minusSeconds(600))
-                    .build();
-            OutboxEvent saved = outboxRepository.save(event);
-            outboxRepository.forceProcessingState(saved.getId(),
-                    Instant.now().minus(Duration.ofMinutes(10)),
-                    Instant.now().minus(Duration.ofMinutes(5)));
-            return saved.getId();
+        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+        tx.executeWithoutResult(status -> {
+            eventPublisher.publishEvent(new ShiftPublishedEvent(
+                    shiftId,
+                    testBranch.getId(),
+                    List.of(staffUser.getId()),
+                    "Detailed Shift",
+                    Instant.now(),
+                    Instant.now().plus(Duration.ofHours(8))
+            ));
         });
 
-        // Run processor: stale event (>60s) will be recovered to PENDING with retryCount=1
-        outboxProcessor.setStaleThresholdSeconds(60);
-        int processed = outboxProcessor.processPendingEvents();
+        long deadline = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < deadline && notificationRepository.count() == 0) {
+            Thread.sleep(50);
+        }
 
-        // The recovered event was scheduled for retry (now + 5s), so it was reset to PENDING
-        OutboxEvent recovered = outboxRepository.findById(staleEventId).orElseThrow();
-        assertThat(recovered.getRetryCount()).isEqualTo(1);
-        assertThat(recovered.getStatus()).isEqualTo(OutboxStatus.PENDING);
-        assertThat(recovered.getErrorMessage()).contains("Stale PROCESSING lease recovery");
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM event_publication WHERE completion_date IS NOT NULL", Integer.class);
+        assertThat(count).isGreaterThanOrEqualTo(1);
+
+        String eventType = jdbcTemplate.queryForObject(
+                "SELECT event_type FROM event_publication LIMIT 1", String.class);
+        assertThat(eventType).contains("ShiftPublishedEvent");
     }
 
     @Test
-    @DisplayName("Transactional Outbox: Stale worker cannot markProcessed or overwrite re-claimed event")
-    void testOutbox_StaleWorkerClaimRejection() {
-        TransactionTemplate tx = new TransactionTemplate(transactionManager);
+    @DisplayName("Spring Modulith: resubmit incomplete publications guarantees at-least-once delivery")
+    void testModulith_ResubmitIncompletePublications() throws Exception {
         UUID shiftId = UUID.randomUUID();
-        UUID eventId = tx.execute(status -> {
-            OutboxEvent event = OutboxEvent.builder()
-                    .eventType("SHIFT_PUBLISHED")
-                    .aggregateType("SHIFT")
-                    .aggregateId(shiftId)
-                    .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Lease Shift\",\"staffUserIds\":[\"%s\"]}",
-                            shiftId, staffUser.getId()))
-                    .status(OutboxStatus.PENDING)
-                    .retryCount(0)
-                    .maxRetries(3)
-                    .scheduledAt(Instant.now().minusSeconds(1))
-                    .build();
-            return outboxRepository.save(event).getId();
-        });
+        UUID pubId = UUID.randomUUID();
+        String serialized = objectMapper.writeValueAsString(new ShiftPublishedEvent(
+                shiftId,
+                testBranch.getId(),
+                List.of(staffUser.getId()),
+                "Resubmitted Shift",
+                Instant.now(),
+                Instant.now().plus(Duration.ofHours(8))
+        ));
+        String listenerId = "com.shiftops.notification.service.DurableNotificationHandler.handleShiftPublished(com.shiftops.notification.event.ShiftPublishedEvent)";
+        String eventType = "com.shiftops.notification.event.ShiftPublishedEvent";
 
-        // Worker A claims event
-        Optional<UUID> workerAToken = outboxService.claimEvent(eventId);
-        assertThat(workerAToken).isPresent();
+        jdbcTemplate.update(
+                "INSERT INTO event_publication (id, listener_id, event_type, serialized_event, publication_date, completion_date) VALUES (?, ?, ?, ?, ?, NULL)",
+                pubId, listenerId, eventType, serialized, java.sql.Timestamp.from(Instant.now().minusSeconds(60))
+        );
 
-        // Simulate Worker A stalling and lease expiring
-        tx.executeWithoutResult(status -> {
-            outboxRepository.forceProcessingState(eventId,
-                    Instant.now().minus(Duration.ofMinutes(10)),
-                    Instant.now().minus(Duration.ofMinutes(5)));
-        });
+        assertThat(notificationRepository.count()).isEqualTo(0);
 
-        // Stale recovery reclaims event back to PENDING
-        int recovered = outboxService.recoverStaleEvents(Duration.ofSeconds(60));
-        assertThat(recovered).isEqualTo(1);
+        // Execute resubmission via registry service
+        eventPublicationRegistryService.retryIncompleteEvents();
 
-        // Worker B claims event with new token
-        Optional<UUID> workerBToken = outboxService.claimEvent(eventId);
-        assertThat(workerBToken).isPresent();
-        assertThat(workerBToken.get()).isNotEqualTo(workerAToken.get());
+        long deadline = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < deadline && notificationRepository.count() == 0) {
+            Thread.sleep(50);
+        }
 
-        // Worker A finishes late and attempts to mark PROCESSED -> must be REJECTED (returns false)
-        boolean workerASucceeded = outboxService.markProcessed(eventId, workerAToken.get());
-        assertThat(workerASucceeded).isFalse();
-
-        // Worker B finishes on time and marks PROCESSED -> SUCCESS (returns true)
-        boolean workerBSucceeded = outboxService.markProcessed(eventId, workerBToken.get());
-        assertThat(workerBSucceeded).isTrue();
-
-        OutboxEvent finalEvent = outboxRepository.findById(eventId).orElseThrow();
-        assertThat(finalEvent.getStatus()).isEqualTo(OutboxStatus.PROCESSED);
+        assertThat(notificationRepository.count()).isEqualTo(1);
+        assertThat(notificationRepository.findAll().get(0).getTitle()).isEqualTo("Shift Published");
     }
 
     @Test
-    @DisplayName("Transactional Outbox: Concurrent worker claiming does not duplicate processing")
-    void testOutbox_ConcurrentClaimingSafety() throws Exception {
+    @DisplayName("Spring Modulith: purgeOldCompletedEvents removes completed events older than threshold")
+    void testModulith_PurgeCompletedPublications() {
+        UUID pubId = UUID.randomUUID();
+        jdbcTemplate.update(
+                "INSERT INTO event_publication (id, listener_id, event_type, serialized_event, publication_date, completion_date) VALUES (?, ?, ?, ?, ?, ?)",
+                pubId, "listener.dummy", "dummy.Event", "{}",
+                java.sql.Timestamp.from(Instant.now().minus(Duration.ofDays(20))),
+                java.sql.Timestamp.from(Instant.now().minus(Duration.ofDays(16)))
+        );
+
+        Integer beforePurge = jdbcTemplate.queryForObject("SELECT count(*) FROM event_publication", Integer.class);
+        assertThat(beforePurge).isEqualTo(1);
+
+        eventPublicationRegistryService.purgeOldCompletedEvents();
+
+        Integer afterPurge = jdbcTemplate.queryForObject("SELECT count(*) FROM event_publication", Integer.class);
+        assertThat(afterPurge).isEqualTo(0);
+    }
+
+
+
+    @Test
+    @DisplayName("Spring Modulith: concurrent event publications process reliably without data loss")
+    void testModulith_ConcurrentPublishingReliability() throws Exception {
+        int eventCount = 4;
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        CountDownLatch latch = new CountDownLatch(eventCount);
         TransactionTemplate tx = new TransactionTemplate(transactionManager);
-        int eventCount = 5;
-        List<UUID> eventIds = new ArrayList<>();
 
-        tx.executeWithoutResult(status -> {
-            for (int i = 0; i < eventCount; i++) {
-                UUID shiftId = UUID.randomUUID();
-                OutboxEvent event = OutboxEvent.builder()
-                        .eventType("SHIFT_PUBLISHED")
-                        .aggregateType("SHIFT")
-                        .aggregateId(shiftId)
-                        .payload(String.format("{\"shiftId\":\"%s\",\"shiftName\":\"Concurrent Shift %d\",\"staffUserIds\":[\"%s\"]}",
-                                shiftId, i, staffUser.getId()))
-                        .status(OutboxStatus.PENDING)
-                        .retryCount(0)
-                        .maxRetries(3)
-                        .scheduledAt(Instant.now().minusSeconds(1))
-                        .build();
-                eventIds.add(outboxRepository.save(event).getId());
-            }
-        });
-
-        int threadCount = 4;
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch startLatch = new CountDownLatch(1);
-        CountDownLatch doneLatch = new CountDownLatch(threadCount);
-        AtomicInteger totalProcessed = new AtomicInteger(0);
-        java.util.concurrent.ConcurrentLinkedQueue<Throwable> workerErrors = new java.util.concurrent.ConcurrentLinkedQueue<>();
-
-        for (int i = 0; i < threadCount; i++) {
+        for (int i = 0; i < eventCount; i++) {
+            final int idx = i;
             executor.submit(() -> {
                 try {
-                    startLatch.await();
-                    int count = outboxProcessor.processPendingEvents();
-                    totalProcessed.addAndGet(count);
-                } catch (Throwable t) {
-                    workerErrors.add(t);
+                    tx.executeWithoutResult(status -> {
+                        eventPublisher.publishEvent(new TaskAssignedEvent(
+                                UUID.randomUUID(),
+                                UUID.randomUUID(),
+                                staffUser.getId(),
+                                "Task " + idx
+                        ));
+                    });
                 } finally {
-                    doneLatch.countDown();
+                    latch.countDown();
                 }
             });
         }
 
-        startLatch.countDown();
-        boolean finished = doneLatch.await(10, TimeUnit.SECONDS);
+        latch.await(5, TimeUnit.SECONDS);
         executor.shutdown();
 
-        assertThat(finished).isTrue();
-        assertThat(workerErrors).isEmpty();
-        assertThat(totalProcessed.get()).isEqualTo(eventCount);
-
-        List<OutboxEvent> allEvents = outboxRepository.findAll();
-        assertThat(allEvents).hasSize(eventCount);
-        for (OutboxEvent event : allEvents) {
-            assertThat(event.getStatus()).isEqualTo(OutboxStatus.PROCESSED);
+        long deadline = System.currentTimeMillis() + 5000;
+        while (System.currentTimeMillis() < deadline && notificationRepository.count() < eventCount) {
+            Thread.sleep(50);
         }
 
-        // Each shift published notification was created exactly once
-        List<Notification> notifications = notificationRepository.findAll();
-        assertThat(notifications).hasSize(eventCount);
+        assertThat(notificationRepository.count()).isEqualTo(eventCount);
     }
 
     // =========================================================================

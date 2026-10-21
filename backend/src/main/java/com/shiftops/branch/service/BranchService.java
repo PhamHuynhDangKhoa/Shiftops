@@ -120,12 +120,6 @@ public class BranchService {
         long activeStaff = userRepository.countByPrimaryBranchIdAndIsActiveTrue(id);
         long managerCount = userRepository.countByPrimaryBranchIdAndRole(id, Role.MANAGER);
 
-        return BranchSummaryResponse.builder()
-                .branchId(branch.getId())
-                .branchName(branch.getName())
-                .totalStaff(totalStaff)
-                .activeStaff(activeStaff)
-                .managerCount(managerCount)
-                .build();
+        return BranchSummaryResponse.from(branch, totalStaff, activeStaff, managerCount);
     }
 }

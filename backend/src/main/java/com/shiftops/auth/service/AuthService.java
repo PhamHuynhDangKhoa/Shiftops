@@ -40,12 +40,7 @@ public class AuthService {
         UserPrincipal principal = UserPrincipal.create(user);
         String token = jwtTokenProvider.generateToken(principal);
 
-        return AuthResponse.builder()
-                .accessToken(token)
-                .tokenType("Bearer")
-                .expiresInMs(jwtTokenProvider.getExpirationMs())
-                .user(UserResponse.fromEntity(user))
-                .build();
+        return AuthResponse.of(token, jwtTokenProvider.getExpirationMs(), UserResponse.fromEntity(user));
     }
 
     @Transactional(readOnly = true)

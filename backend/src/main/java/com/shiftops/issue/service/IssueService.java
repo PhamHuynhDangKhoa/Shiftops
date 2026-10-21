@@ -152,6 +152,34 @@ public class IssueService {
     }
 
     @Transactional(readOnly = true)
+    public Page<IssueResponse> getBranchIssues(BranchIssuesQuery query) {
+        branchAccessService.validateBranchAccess(query.principal(), query.branchId());
+
+        Specification<Issue> spec = (root, q, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            predicates.add(cb.equal(root.get("branch").get("id"), query.branchId()));
+
+            if (query.status() != null) {
+                predicates.add(cb.equal(root.get("status"), query.status()));
+            }
+            if (query.priority() != null) {
+                predicates.add(cb.equal(root.get("priority"), query.priority()));
+            }
+            if (query.category() != null) {
+                predicates.add(cb.equal(root.get("category"), query.category()));
+            }
+            if (query.assignedToId() != null) {
+                predicates.add(cb.equal(root.get("assignedTo").get("id"), query.assignedToId()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Issue> page = issueRepository.findAll(spec, query.pageable());
+        return page.map(i -> IssueResponse.fromEntity(i, false));
+    }
+
+    @Transactional(readOnly = true)
     public Page<IssueResponse> getBranchIssues(
             UUID branchId,
             IssueStatus status,
@@ -160,31 +188,15 @@ public class IssueService {
             UUID assignedToId,
             Pageable pageable,
             UserPrincipal principal) {
-
-        branchAccessService.validateBranchAccess(principal, branchId);
-
-        Specification<Issue> spec = (root, query, cb) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            predicates.add(cb.equal(root.get("branch").get("id"), branchId));
-
-            if (status != null) {
-                predicates.add(cb.equal(root.get("status"), status));
-            }
-            if (priority != null) {
-                predicates.add(cb.equal(root.get("priority"), priority));
-            }
-            if (category != null) {
-                predicates.add(cb.equal(root.get("category"), category));
-            }
-            if (assignedToId != null) {
-                predicates.add(cb.equal(root.get("assignedTo").get("id"), assignedToId));
-            }
-
-            return cb.and(predicates.toArray(new Predicate[0]));
-        };
-
-        Page<Issue> page = issueRepository.findAll(spec, pageable);
-        return page.map(i -> IssueResponse.fromEntity(i, false));
+        return getBranchIssues(BranchIssuesQuery.builder()
+                .branchId(branchId)
+                .status(status)
+                .priority(priority)
+                .category(category)
+                .assignedToId(assignedToId)
+                .pageable(pageable)
+                .principal(principal)
+                .build());
     }
 
     @Transactional(readOnly = true)
@@ -201,16 +213,7 @@ public class IssueService {
         long urgent = issueRepository.countByBranchIdAndPriority(branchId, IssuePriority.URGENT);
         long high = issueRepository.countByBranchIdAndPriority(branchId, IssuePriority.HIGH);
 
-        return IssueSummaryResponse.builder()
-                .totalCount(total)
-                .openCount(open)
-                .assignedCount(assigned)
-                .inProgressCount(inProgress)
-                .resolvedCount(resolved)
-                .closedCount(closed)
-                .urgentCount(urgent)
-                .highCount(high)
-                .build();
+        return IssueSummaryResponse.from(total, open, assigned, inProgress, resolved, closed, urgent, high);
     }
 
     @Transactional

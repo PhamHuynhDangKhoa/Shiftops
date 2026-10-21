@@ -254,6 +254,25 @@ class UserServiceTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void getUsers_WithOwnerSearchQuery_Success() {
+        Pageable pageable = PageRequest.of(0, 20);
+        Page<User> mockPage = new PageImpl<>(List.of(owner, managerA, staffA), pageable, 3);
+
+        when(userRepository.findAll(any(Specification.class), eq(pageable))).thenReturn(mockPage);
+
+        UserSearchQuery query = UserSearchQuery.builder()
+                .pageable(pageable)
+                .principal(ownerPrincipal)
+                .build();
+
+        PagedResponse<UserResponse> response = userService.getUsers(query);
+
+        assertThat(response.getTotalElements()).isEqualTo(3);
+        assertThat(response.getContent()).hasSize(3);
+    }
+
+    @Test
     void updateUser_ManagerUpdatesStaffInSameBranch_Success() {
         UpdateUserRequest request = UpdateUserRequest.builder()
                 .fullName("Charlie Updated")

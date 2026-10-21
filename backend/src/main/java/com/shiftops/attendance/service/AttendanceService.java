@@ -1,6 +1,7 @@
 package com.shiftops.attendance.service;
 
 import com.shiftops.attendance.dto.AttendanceResponse;
+import com.shiftops.attendance.dto.BranchAttendanceQuery;
 import com.shiftops.attendance.entity.Attendance;
 import com.shiftops.attendance.entity.AttendanceStatus;
 import com.shiftops.attendance.repository.AttendanceRepository;
@@ -168,22 +169,32 @@ public class AttendanceService {
     }
 
     @Transactional(readOnly = true)
+    public List<AttendanceResponse> getBranchAttendance(BranchAttendanceQuery query) {
+        branchAccessService.validateBranchAccess(query.principal(), query.branchId());
+
+        Instant start = query.startDate() != null ? query.startDate() : clock.instant().minus(Duration.ofDays(30));
+        Instant end = query.endDate() != null ? query.endDate() : clock.instant().plus(Duration.ofDays(30));
+
+        return attendanceRepository.findByBranchAndWindow(query.branchId(), start, end, query.status())
+                .stream()
+                .map(AttendanceResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<AttendanceResponse> getBranchAttendance(
             UUID branchId,
             Instant startDate,
             Instant endDate,
             AttendanceStatus status,
             UserPrincipal principal) {
-
-        branchAccessService.validateBranchAccess(principal, branchId);
-
-        Instant start = startDate != null ? startDate : clock.instant().minus(Duration.ofDays(30));
-        Instant end = endDate != null ? endDate : clock.instant().plus(Duration.ofDays(30));
-
-        return attendanceRepository.findByBranchAndWindow(branchId, start, end, status)
-                .stream()
-                .map(AttendanceResponse::fromEntity)
-                .toList();
+        return getBranchAttendance(BranchAttendanceQuery.builder()
+                .branchId(branchId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .status(status)
+                .principal(principal)
+                .build());
     }
 
     @Transactional(readOnly = true)

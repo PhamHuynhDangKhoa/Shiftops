@@ -30,7 +30,11 @@ public class ShiftController {
             @PathVariable UUID branchId,
             @Valid @RequestBody CreateShiftRequest request,
             @AuthenticationPrincipal UserPrincipal principal) {
-        ShiftResponse response = shiftService.createShift(branchId, request, principal);
+        ShiftResponse response = shiftService.createShift(CreateShiftCommand.builder()
+                .branchId(branchId)
+                .request(request)
+                .principal(principal)
+                .build());
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Shift created successfully"));
     }
@@ -43,7 +47,13 @@ public class ShiftController {
             @RequestParam(required = false) Instant endDate,
             @RequestParam(required = false) ShiftStatus status,
             @AuthenticationPrincipal UserPrincipal principal) {
-        List<ShiftResponse> responses = shiftService.getBranchShifts(branchId, startDate, endDate, status, principal);
+        List<ShiftResponse> responses = shiftService.getBranchShifts(BranchShiftsQuery.builder()
+                .branchId(branchId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .status(status)
+                .principal(principal)
+                .build());
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

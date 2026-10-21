@@ -9,6 +9,7 @@ import com.shiftops.shift.entity.ShiftAssignment;
 import com.shiftops.shift.entity.ShiftStatus;
 import com.shiftops.shift.repository.ShiftAssignmentRepository;
 import com.shiftops.shift.repository.ShiftRepository;
+import com.shiftops.task.dto.BranchTasksQuery;
 import com.shiftops.task.dto.CreateAdHocTaskRequest;
 import com.shiftops.task.dto.GenerateTasksRequest;
 import com.shiftops.task.dto.TaskResponse;
@@ -213,6 +214,18 @@ public class TaskService {
     }
 
     @Transactional(readOnly = true)
+    public List<TaskResponse> getBranchTasks(BranchTasksQuery query) {
+        branchAccessService.validateBranchAccess(query.principal(), query.branchId());
+
+        Instant effectiveStart = query.startDate() != null ? query.startDate() : Instant.EPOCH;
+        Instant effectiveEnd = query.endDate() != null ? query.endDate() : Instant.now().plus(java.time.Duration.ofDays(36500));
+
+        List<Task> tasks = taskRepository.findBranchTasks(
+                query.branchId(), query.shiftId(), query.staffId(), query.status(), effectiveStart, effectiveEnd);
+        return tasks.stream().map(TaskResponse::fromEntity).toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<TaskResponse> getBranchTasks(
             UUID branchId,
             UUID shiftId,
@@ -221,14 +234,15 @@ public class TaskService {
             Instant startDate,
             Instant endDate,
             UserPrincipal principal) {
-
-        branchAccessService.validateBranchAccess(principal, branchId);
-
-        Instant effectiveStart = startDate != null ? startDate : Instant.EPOCH;
-        Instant effectiveEnd = endDate != null ? endDate : Instant.now().plus(java.time.Duration.ofDays(36500));
-
-        List<Task> tasks = taskRepository.findBranchTasks(branchId, shiftId, staffId, status, effectiveStart, effectiveEnd);
-        return tasks.stream().map(TaskResponse::fromEntity).toList();
+        return getBranchTasks(BranchTasksQuery.builder()
+                .branchId(branchId)
+                .shiftId(shiftId)
+                .staffId(staffId)
+                .status(status)
+                .startDate(startDate)
+                .endDate(endDate)
+                .principal(principal)
+                .build());
     }
 
     @Transactional(readOnly = true)

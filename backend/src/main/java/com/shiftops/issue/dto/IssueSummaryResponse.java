@@ -13,6 +13,27 @@ public record IssueSummaryResponse(
         long urgentCount,
         long highCount
 ) {
+    public static IssueSummaryResponse from(
+            long totalCount,
+            long openCount,
+            long assignedCount,
+            long inProgressCount,
+            long resolvedCount,
+            long closedCount,
+            long urgentCount,
+            long highCount
+    ) {
+        return new IssueSummaryResponse(
+                totalCount,
+                openCount,
+                assignedCount,
+                inProgressCount,
+                resolvedCount,
+                closedCount,
+                urgentCount,
+                highCount
+        );
+    }
     public long getTotalCount() {
         return totalCount();
     }

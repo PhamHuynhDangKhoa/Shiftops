@@ -2,6 +2,7 @@ package com.shiftops.notification.service;
 
 import com.shiftops.common.exception.ResourceNotFoundException;
 import com.shiftops.common.security.UserPrincipal;
+import com.shiftops.notification.dto.CreateNotificationCommand;
 import com.shiftops.notification.dto.NotificationResponse;
 import com.shiftops.notification.dto.UnreadCountResponse;
 import com.shiftops.notification.entity.Notification;
@@ -36,28 +37,18 @@ public class NotificationService {
     private final org.springframework.transaction.PlatformTransactionManager transactionManager;
     private final Clock clock;
 
-    public Optional<Notification> createNotification(
-            UUID recipientId,
-            NotificationType type,
-            String title,
-            String message,
-            ReferenceType referenceType,
-            UUID referenceId) {
-        return createNotification(recipientId, type, title, message, referenceType, referenceId, null);
-    }
-
-    public Optional<Notification> createNotification(
-            UUID recipientId,
-            NotificationType type,
-            String title,
-            String message,
-            ReferenceType referenceType,
-            UUID referenceId,
-            String idempotencyKey) {
-
-        if (recipientId == null) {
+    public Optional<Notification> createNotification(CreateNotificationCommand command) {
+        if (command == null || command.recipientId() == null) {
             return Optional.empty();
         }
+
+        UUID recipientId = command.recipientId();
+        NotificationType type = command.type();
+        String title = command.title();
+        String message = command.message();
+        ReferenceType referenceType = command.referenceType();
+        UUID referenceId = command.referenceId();
+        String idempotencyKey = command.idempotencyKey();
 
         String effectiveKey = idempotencyKey;
         if (effectiveKey == null && referenceId != null) {
@@ -111,6 +102,27 @@ public class NotificationService {
                 return Optional.empty();
             }
         }
+    }
+
+    public Optional<Notification> createNotification(
+            UUID recipientId,
+            NotificationType type,
+            String title,
+            String message,
+            ReferenceType referenceType,
+            UUID referenceId) {
+        return createNotification(new CreateNotificationCommand(recipientId, type, title, message, referenceType, referenceId));
+    }
+
+    public Optional<Notification> createNotification(
+            UUID recipientId,
+            NotificationType type,
+            String title,
+            String message,
+            ReferenceType referenceType,
+            UUID referenceId,
+            String idempotencyKey) {
+        return createNotification(new CreateNotificationCommand(recipientId, type, title, message, referenceType, referenceId, idempotencyKey));
     }
 
     private Notification doSaveAndPublish(Notification notification, UUID recipientId) {

@@ -1,6 +1,7 @@
 package com.shiftops.notification.service;
 
 import com.shiftops.announcement.entity.AnnouncementTargetType;
+import com.shiftops.notification.dto.CreateNotificationCommand;
 import com.shiftops.notification.entity.NotificationType;
 import com.shiftops.notification.entity.ReferenceType;
 import com.shiftops.notification.event.*;
@@ -35,14 +36,14 @@ public class DurableNotificationHandler {
     public void handleShiftPublished(ShiftPublishedEvent event) {
         if (event.staffUserIds() == null) return;
         for (UUID staffId : event.staffUserIds()) {
-            notificationService.createNotification(
-                    staffId,
-                    NotificationType.SHIFT_PUBLISHED,
-                    "Shift Published",
-                    "You have been scheduled for " + event.shiftName(),
-                    ReferenceType.SHIFT,
-                    event.shiftId()
-            );
+            notificationService.createNotification(CreateNotificationCommand.builder()
+                    .recipientId(staffId)
+                    .type(NotificationType.SHIFT_PUBLISHED)
+                    .title("Shift Published")
+                    .message("You have been scheduled for " + event.shiftName())
+                    .referenceType(ReferenceType.SHIFT)
+                    .referenceId(event.shiftId())
+                    .build());
         }
     }
 
@@ -51,42 +52,42 @@ public class DurableNotificationHandler {
         if (event.staffUserIds() == null) return;
         for (UUID staffId : event.staffUserIds()) {
             String key = "shift:" + event.shiftId() + ":change:" + (event.changeSummary() != null ? event.changeSummary().hashCode() : "all") + ":user:" + staffId;
-            notificationService.createNotification(
-                    staffId,
-                    NotificationType.SHIFT_CHANGED,
-                    "Shift Changed",
-                    "Shift update for " + event.shiftName() + ": " + event.changeSummary(),
-                    ReferenceType.SHIFT,
-                    event.shiftId(),
-                    key
-            );
+            notificationService.createNotification(CreateNotificationCommand.builder()
+                    .recipientId(staffId)
+                    .type(NotificationType.SHIFT_CHANGED)
+                    .title("Shift Changed")
+                    .message("Shift update for " + event.shiftName() + ": " + event.changeSummary())
+                    .referenceType(ReferenceType.SHIFT)
+                    .referenceId(event.shiftId())
+                    .idempotencyKey(key)
+                    .build());
         }
     }
 
     @ApplicationModuleListener
     public void handleTaskAssigned(TaskAssignedEvent event) {
         if (event.assignedUserId() == null) return;
-        notificationService.createNotification(
-                event.assignedUserId(),
-                NotificationType.TASK_ASSIGNED,
-                "New Task Assigned",
-                "You were assigned task: " + event.taskTitle(),
-                ReferenceType.TASK,
-                event.taskId()
-        );
+        notificationService.createNotification(CreateNotificationCommand.builder()
+                .recipientId(event.assignedUserId())
+                .type(NotificationType.TASK_ASSIGNED)
+                .title("New Task Assigned")
+                .message("You were assigned task: " + event.taskTitle())
+                .referenceType(ReferenceType.TASK)
+                .referenceId(event.taskId())
+                .build());
     }
 
     @ApplicationModuleListener
     public void handleIssueAssigned(IssueAssignedEvent event) {
         if (event.assignedToUserId() == null) return;
-        notificationService.createNotification(
-                event.assignedToUserId(),
-                NotificationType.ISSUE_ASSIGNED,
-                "Issue Assigned to You",
-                "You were assigned issue: " + event.issueTitle(),
-                ReferenceType.ISSUE,
-                event.issueId()
-        );
+        notificationService.createNotification(CreateNotificationCommand.builder()
+                .recipientId(event.assignedToUserId())
+                .type(NotificationType.ISSUE_ASSIGNED)
+                .title("Issue Assigned to You")
+                .message("You were assigned issue: " + event.issueTitle())
+                .referenceType(ReferenceType.ISSUE)
+                .referenceId(event.issueId())
+                .build());
     }
 
     @ApplicationModuleListener
@@ -102,15 +103,15 @@ public class DurableNotificationHandler {
 
         for (UUID recipientId : recipients) {
             String key = "issue:" + event.issueId() + ":status:" + event.newStatus() + ":user:" + recipientId;
-            notificationService.createNotification(
-                    recipientId,
-                    NotificationType.ISSUE_UPDATED,
-                    "Issue Status Changed",
-                    msg,
-                    ReferenceType.ISSUE,
-                    event.issueId(),
-                    key
-            );
+            notificationService.createNotification(CreateNotificationCommand.builder()
+                    .recipientId(recipientId)
+                    .type(NotificationType.ISSUE_UPDATED)
+                    .title("Issue Status Changed")
+                    .message(msg)
+                    .referenceType(ReferenceType.ISSUE)
+                    .referenceId(event.issueId())
+                    .idempotencyKey(key)
+                    .build());
         }
     }
 
@@ -119,14 +120,14 @@ public class DurableNotificationHandler {
         List<User> branchUsers = userRepository.findByPrimaryBranchIdAndIsActiveTrue(event.branchId());
         for (User user : branchUsers) {
             if (!user.getId().equals(event.submittedByUserId())) {
-                notificationService.createNotification(
-                        user.getId(),
-                        NotificationType.HANDOVER_SUBMITTED,
-                        "Shift Handover Submitted",
-                        "Shift handover submitted for " + (event.shiftName() != null ? event.shiftName() : "shift"),
-                        ReferenceType.HANDOVER,
-                        event.handoverId()
-                );
+                notificationService.createNotification(CreateNotificationCommand.builder()
+                        .recipientId(user.getId())
+                        .type(NotificationType.HANDOVER_SUBMITTED)
+                        .title("Shift Handover Submitted")
+                        .message("Shift handover submitted for " + (event.shiftName() != null ? event.shiftName() : "shift"))
+                        .referenceType(ReferenceType.HANDOVER)
+                        .referenceId(event.handoverId())
+                        .build());
             }
         }
     }
@@ -134,14 +135,14 @@ public class DurableNotificationHandler {
     @ApplicationModuleListener
     public void handleHandoverAcknowledged(HandoverAcknowledgedEvent event) {
         if (event.submitterUserId() == null) return;
-        notificationService.createNotification(
-                event.submitterUserId(),
-                NotificationType.HANDOVER_ACKNOWLEDGED,
-                "Handover Acknowledged",
-                "Your shift handover for " + (event.shiftName() != null ? event.shiftName() : "shift") + " has been acknowledged",
-                ReferenceType.HANDOVER,
-                event.handoverId()
-        );
+        notificationService.createNotification(CreateNotificationCommand.builder()
+                .recipientId(event.submitterUserId())
+                .type(NotificationType.HANDOVER_ACKNOWLEDGED)
+                .title("Handover Acknowledged")
+                .message("Your shift handover for " + (event.shiftName() != null ? event.shiftName() : "shift") + " has been acknowledged")
+                .referenceType(ReferenceType.HANDOVER)
+                .referenceId(event.handoverId())
+                .build());
     }
 
     @ApplicationModuleListener
@@ -162,14 +163,14 @@ public class DurableNotificationHandler {
         }
 
         for (UUID recipientId : recipientIds) {
-            notificationService.createNotification(
-                    recipientId,
-                    NotificationType.ANNOUNCEMENT_PUBLISHED,
-                    "Announcement: " + event.title(),
-                    event.content(),
-                    ReferenceType.ANNOUNCEMENT,
-                    event.announcementId()
-            );
+            notificationService.createNotification(CreateNotificationCommand.builder()
+                    .recipientId(recipientId)
+                    .type(NotificationType.ANNOUNCEMENT_PUBLISHED)
+                    .title("Announcement: " + event.title())
+                    .message(event.content())
+                    .referenceType(ReferenceType.ANNOUNCEMENT)
+                    .referenceId(event.announcementId())
+                    .build());
         }
     }
 }

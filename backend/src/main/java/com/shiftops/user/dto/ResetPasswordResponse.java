@@ -11,6 +11,13 @@ public record ResetPasswordResponse(
         String temporaryPassword,
         String message
 ) {
+    public static ResetPasswordResponse of(UUID userId, String email, String temporaryPassword, String message) {
+        return new ResetPasswordResponse(userId, email, temporaryPassword, message);
+    }
+
+    public static ResetPasswordResponse of(UUID userId, String email, String temporaryPassword) {
+        return new ResetPasswordResponse(userId, email, temporaryPassword, "Temporary password generated. Staff must change password after login.");
+    }
     public UUID getUserId() {
         return userId();
     }

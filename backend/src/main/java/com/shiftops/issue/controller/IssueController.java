@@ -63,8 +63,15 @@ public class IssueController {
             @AuthenticationPrincipal UserPrincipal principal) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<IssueResponse> responsePage = issueService.getBranchIssues(
-                branchId, status, priority, category, assignedToId, pageable, principal);
+        Page<IssueResponse> responsePage = issueService.getBranchIssues(BranchIssuesQuery.builder()
+                .branchId(branchId)
+                .status(status)
+                .priority(priority)
+                .category(category)
+                .assignedToId(assignedToId)
+                .pageable(pageable)
+                .principal(principal)
+                .build());
 
         return ResponseEntity.ok(ApiResponse.success(PagedResponse.of(responsePage)));
     }

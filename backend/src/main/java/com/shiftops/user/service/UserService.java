@@ -155,41 +155,35 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public PagedResponse<UserResponse> getUsers(
-            UUID branchId,
-            Role role,
-            Boolean active,
-            String search,
-            Pageable pageable,
-            UserPrincipal principal) {
-
+    public PagedResponse<UserResponse> getUsers(UserSearchQuery query) {
+        UserPrincipal principal = query.principal();
         if (principal.isStaff()) {
             throw new AccessDeniedException("Staff members are not permitted to list users");
         }
 
-        UUID effectiveBranchId = branchId;
+        UUID effectiveBranchId = query.branchId();
         if (principal.isManager()) {
-            if (branchId != null && !branchId.equals(principal.getPrimaryBranchId())) {
+            if (query.branchId() != null && !query.branchId().equals(principal.getPrimaryBranchId())) {
                 throw new AccessDeniedException("Managers can only list users in their assigned branch");
             }
             effectiveBranchId = principal.getPrimaryBranchId();
         }
 
         final UUID queryBranchId = effectiveBranchId;
-        Specification<User> spec = (root, query, cb) -> {
+        Specification<User> spec = (root, q, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (queryBranchId != null) {
                 predicates.add(cb.equal(root.get("primaryBranch").get("id"), queryBranchId));
             }
-            if (role != null) {
-                predicates.add(cb.equal(root.get("role"), role));
+            if (query.role() != null) {
+                predicates.add(cb.equal(root.get("role"), query.role()));
             }
-            if (active != null) {
-                predicates.add(cb.equal(root.get("isActive"), active));
+            if (query.active() != null) {
+                predicates.add(cb.equal(root.get("isActive"), query.active()));
             }
-            if (search != null && !search.isBlank()) {
-                String pattern = "%" + search.trim().toLowerCase() + "%";
+            if (query.search() != null && !query.search().isBlank()) {
+                String pattern = "%" + query.search().trim().toLowerCase() + "%";
                 Predicate nameMatch = cb.like(cb.lower(root.get("fullName")), pattern);
                 Predicate emailMatch = cb.like(cb.lower(root.get("email")), pattern);
                 predicates.add(cb.or(nameMatch, emailMatch));
@@ -198,8 +192,26 @@ public class UserService {
             return cb.and(predicates.toArray(new Predicate[0]));
         };
 
-        Page<User> pageResult = userRepository.findAll(spec, pageable);
+        Page<User> pageResult = userRepository.findAll(spec, query.pageable());
         return PagedResponse.of(pageResult.map(UserResponse::fromEntity));
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<UserResponse> getUsers(
+            UUID branchId,
+            Role role,
+            Boolean active,
+            String search,
+            Pageable pageable,
+            UserPrincipal principal) {
+        return getUsers(UserSearchQuery.builder()
+                .branchId(branchId)
+                .role(role)
+                .active(active)
+                .search(search)
+                .pageable(pageable)
+                .principal(principal)
+                .build());
     }
 
     @Transactional
@@ -305,12 +317,7 @@ public class UserService {
 
         userRepository.save(user);
 
-        return ResetPasswordResponse.builder()
-                .userId(user.getId())
-                .email(user.getEmail())
-                .temporaryPassword(tempPassword)
-                .message("Temporary password generated. Staff must change password after login.")
-                .build();
+        return ResetPasswordResponse.of(user.getId(), user.getEmail(), tempPassword);
     }
 
     @Transactional

@@ -2,6 +2,7 @@ package com.shiftops.task.controller;
 
 import com.shiftops.common.dto.ApiResponse;
 import com.shiftops.common.security.UserPrincipal;
+import com.shiftops.task.dto.BranchTasksQuery;
 import com.shiftops.task.dto.CreateAdHocTaskRequest;
 import com.shiftops.task.dto.GenerateTasksRequest;
 import com.shiftops.task.dto.TaskResponse;
@@ -85,7 +86,15 @@ public class TaskController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate,
             @AuthenticationPrincipal UserPrincipal principal) {
-        List<TaskResponse> responses = taskService.getBranchTasks(branchId, shiftId, staffId, status, startDate, endDate, principal);
+        List<TaskResponse> responses = taskService.getBranchTasks(BranchTasksQuery.builder()
+                .branchId(branchId)
+                .shiftId(shiftId)
+                .staffId(staffId)
+                .status(status)
+                .startDate(startDate)
+                .endDate(endDate)
+                .principal(principal)
+                .build());
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

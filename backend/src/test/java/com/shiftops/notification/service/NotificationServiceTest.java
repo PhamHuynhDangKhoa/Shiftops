@@ -2,6 +2,7 @@ package com.shiftops.notification.service;
 
 import com.shiftops.common.exception.ResourceNotFoundException;
 import com.shiftops.common.security.UserPrincipal;
+import com.shiftops.notification.dto.CreateNotificationCommand;
 import com.shiftops.notification.dto.NotificationResponse;
 import com.shiftops.notification.dto.UnreadCountResponse;
 import com.shiftops.notification.entity.Notification;
@@ -116,6 +117,37 @@ class NotificationServiceTest {
         assertThat(n.getMessage()).isEqualTo("You are scheduled");
         assertThat(n.getReferenceType()).isEqualTo(ReferenceType.SHIFT);
         assertThat(n.getReferenceId()).isEqualTo(shiftId);
+        verify(notificationRepository).saveAndFlush(any(Notification.class));
+    }
+
+    @Test
+    void createNotification_WithCommand_Success() {
+        UUID shiftId = UUID.randomUUID();
+        when(notificationRepository.existsByRecipientIdAndTypeAndReferenceId(recipient.getId(), NotificationType.SHIFT_PUBLISHED, shiftId))
+                .thenReturn(false);
+        when(userRepository.findById(recipient.getId())).thenReturn(Optional.of(recipient));
+        when(notificationRepository.saveAndFlush(any(Notification.class))).thenAnswer(invocation -> {
+            Notification n = invocation.getArgument(0);
+            n.setId(UUID.randomUUID());
+            return n;
+        });
+
+        CreateNotificationCommand cmd = CreateNotificationCommand.builder()
+                .recipientId(recipient.getId())
+                .type(NotificationType.SHIFT_PUBLISHED)
+                .title("Shift Published")
+                .message("You are scheduled")
+                .referenceType(ReferenceType.SHIFT)
+                .referenceId(shiftId)
+                .build();
+
+        Optional<Notification> result = notificationService.createNotification(cmd);
+
+        assertThat(result).isPresent();
+        Notification n = result.get();
+        assertThat(n.getRecipient()).isEqualTo(recipient);
+        assertThat(n.getType()).isEqualTo(NotificationType.SHIFT_PUBLISHED);
+        assertThat(n.getTitle()).isEqualTo("Shift Published");
         verify(notificationRepository).saveAndFlush(any(Notification.class));
     }
 

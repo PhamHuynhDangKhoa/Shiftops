@@ -47,6 +47,11 @@ public class ShiftService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
+    public ShiftResponse createShift(CreateShiftCommand command) {
+        return createShift(command.branchId(), command.request(), command.principal());
+    }
+
+    @Transactional
     public ShiftResponse createShift(UUID branchId, CreateShiftRequest request, UserPrincipal principal) {
         if (principal.isStaff()) {
             throw new AccessDeniedException("Staff members cannot create shifts");
@@ -110,30 +115,40 @@ public class ShiftService {
     }
 
     @Transactional(readOnly = true)
+    public List<ShiftResponse> getBranchShifts(BranchShiftsQuery query) {
+        if (query.principal().isStaff()) {
+            throw new AccessDeniedException("Staff members cannot list all branch shifts. Use /my-shifts instead.");
+        }
+
+        branchAccessService.validateBranchAccess(query.principal(), query.branchId());
+
+        Instant start = query.startDate() != null ? query.startDate() : Instant.now().minus(7, ChronoUnit.DAYS);
+        Instant end = query.endDate() != null ? query.endDate() : Instant.now().plus(14, ChronoUnit.DAYS);
+
+        List<Shift> shifts;
+        if (query.status() != null) {
+            shifts = shiftRepository.findByBranchAndStatusAndWindow(query.branchId(), query.status(), start, end);
+        } else {
+            shifts = shiftRepository.findByBranchAndWindow(query.branchId(), start, end);
+        }
+
+        return shifts.stream().map(ShiftResponse::fromEntity).toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<ShiftResponse> getBranchShifts(
             UUID branchId,
             Instant startDate,
             Instant endDate,
             ShiftStatus status,
             UserPrincipal principal) {
-
-        if (principal.isStaff()) {
-            throw new AccessDeniedException("Staff members cannot list all branch shifts. Use /my-shifts instead.");
-        }
-
-        branchAccessService.validateBranchAccess(principal, branchId);
-
-        Instant start = startDate != null ? startDate : Instant.now().minus(7, ChronoUnit.DAYS);
-        Instant end = endDate != null ? endDate : Instant.now().plus(14, ChronoUnit.DAYS);
-
-        List<Shift> shifts;
-        if (status != null) {
-            shifts = shiftRepository.findByBranchAndStatusAndWindow(branchId, status, start, end);
-        } else {
-            shifts = shiftRepository.findByBranchAndWindow(branchId, start, end);
-        }
-
-        return shifts.stream().map(ShiftResponse::fromEntity).toList();
+        return getBranchShifts(BranchShiftsQuery.builder()
+                .branchId(branchId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .status(status)
+                .principal(principal)
+                .build());
     }
 
     @Transactional(readOnly = true)

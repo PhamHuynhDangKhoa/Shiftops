@@ -1,6 +1,7 @@
 package com.shiftops.attendance.controller;
 
 import com.shiftops.attendance.dto.AttendanceResponse;
+import com.shiftops.attendance.dto.BranchAttendanceQuery;
 import com.shiftops.attendance.entity.AttendanceStatus;
 import com.shiftops.attendance.service.AttendanceService;
 import com.shiftops.common.dto.ApiResponse;
@@ -74,7 +75,13 @@ public class AttendanceController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate,
             @RequestParam(required = false) AttendanceStatus status,
             @AuthenticationPrincipal UserPrincipal principal) {
-        List<AttendanceResponse> response = attendanceService.getBranchAttendance(branchId, startDate, endDate, status, principal);
+        List<AttendanceResponse> response = attendanceService.getBranchAttendance(BranchAttendanceQuery.builder()
+                .branchId(branchId)
+                .startDate(startDate)
+                .endDate(endDate)
+                .status(status)
+                .principal(principal)
+                .build());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

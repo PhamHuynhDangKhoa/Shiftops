@@ -45,7 +45,14 @@ public class UserController {
             @RequestParam(required = false) String search,
             @PageableDefault(size = 20, sort = "fullName", direction = Sort.Direction.ASC) Pageable pageable,
             @AuthenticationPrincipal UserPrincipal principal) {
-        PagedResponse<UserResponse> responses = userService.getUsers(branchId, role, active, search, pageable, principal);
+        PagedResponse<UserResponse> responses = userService.getUsers(UserSearchQuery.builder()
+                .branchId(branchId)
+                .role(role)
+                .active(active)
+                .search(search)
+                .pageable(pageable)
+                .principal(principal)
+                .build());
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 

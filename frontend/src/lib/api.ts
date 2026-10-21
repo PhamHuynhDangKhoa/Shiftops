@@ -19,11 +19,14 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response interceptor for error handling
+// Response interceptor for session expiration and error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // TODO: Phase 1 - handle 401 token refresh
+    if (error.response?.status === 401) {
+      localStorage.removeItem('accessToken');
+      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+    }
     return Promise.reject(error);
   },
 );

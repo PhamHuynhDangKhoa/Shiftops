@@ -15,3 +15,10 @@ Thumbs.db
 docker/local_pgdata/
 docker/*.log
 
+# Runtime user uploads
+/uploads/*
+!/uploads/.gitkeep
+/backend/uploads/*
+!/backend/uploads/.gitkeep
+
+

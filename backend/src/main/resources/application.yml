@@ -44,7 +44,16 @@ app:
     secret: ${JWT_SECRET:}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   storage:
+    type: ${STORAGE_TYPE:local}
     upload-dir: ${UPLOAD_DIR:./uploads}
+    s3:
+      bucket: ${S3_BUCKET:shiftops}
+      endpoint: ${S3_ENDPOINT:}
+      region: ${S3_REGION:us-east-1}
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}
+      path-style-access-enabled: ${S3_PATH_STYLE_ACCESS:true}
+      auto-create-bucket: ${S3_AUTO_CREATE_BUCKET:true}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
   events:

@@ -1,5 +1,8 @@
 import React from 'react';
 import { ShiftAssignment, TaskPriority } from '../../lib/types';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 
 interface CreateAdHocTaskModalProps {
   isOpen: boolean;
@@ -32,42 +35,26 @@ export const CreateAdHocTaskModal: React.FC<CreateAdHocTaskModalProps> = ({
   onSubmit,
   isPending,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add Ad-Hoc Task"
+      description="Assign a single task directly to an on-duty staff member"
     >
-      <div
-        style={{
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          padding: '1.5rem',
-          maxWidth: '480px',
-          width: '100%',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
         }}
+        className="space-y-4"
       >
-        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: 700 }}>
-          Add Ad-Hoc Task
-        </h2>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Assign to Staff Member:
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Assign to Personnel</label>
           <select
             value={assignmentId}
             onChange={(e) => onSelectAssignmentId(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           >
             {assignments.map((a) => (
               <option key={a.id} value={a.id}>
@@ -77,76 +64,57 @@ export const CreateAdHocTaskModal: React.FC<CreateAdHocTaskModalProps> = ({
           </select>
         </div>
 
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Task Title:
-          </label>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => onChangeTitle(e.target.value)}
-            placeholder="e.g. Unpack delivery box #4"
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
-          />
-        </div>
+        <Input
+          label="Task Title"
+          value={title}
+          onChange={(e) => onChangeTitle(e.target.value)}
+          placeholder="e.g. Unpack supply shipment, sanitize workstation"
+          required
+        />
 
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Description (Optional):
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Description (Optional)</label>
           <textarea
             value={description}
             onChange={(e) => onChangeDescription(e.target.value)}
             rows={2}
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
+            placeholder="Additional requirements or context..."
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           />
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Priority:
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Priority Level</label>
           <select
             value={priority}
             onChange={(e) => onChangePriority(e.target.value as TaskPriority)}
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           >
-            <option value="LOW">LOW</option>
-            <option value="NORMAL">NORMAL</option>
-            <option value="HIGH">HIGH</option>
+            <option value="LOW">Low</option>
+            <option value="NORMAL">Normal</option>
+            <option value="HIGH">High (Urgent)</option>
           </select>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-          <button
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
             onClick={onClose}
-            style={{
-              padding: '0.5rem 1rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-            }}
           >
             Cancel
-          </button>
-          <button
-            onClick={onSubmit}
-            disabled={!assignmentId || !title.trim() || isPending}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              backgroundColor: '#2563eb',
-              border: 'none',
-              color: '#fff',
-              fontWeight: 600,
-              cursor: !assignmentId || !title.trim() ? 'not-allowed' : 'pointer',
-            }}
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            disabled={!title.trim() || !assignmentId || isPending}
           >
-            {isPending ? 'Saving...' : 'Add Task'}
-          </button>
+            {isPending ? 'Assigning...' : 'Assign Task'}
+          </Button>
         </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

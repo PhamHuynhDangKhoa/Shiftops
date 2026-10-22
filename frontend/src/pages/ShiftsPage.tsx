@@ -10,6 +10,8 @@ import {
   CreateShiftModal,
   AssignStaffModal,
 } from '../components/shifts';
+import { Card } from '../components/ui/Card';
+import { IconCalendar, IconAlertTriangle } from '../components/ui/Icons';
 
 export const ShiftsPage: React.FC = () => {
   const { user } = useAuth();
@@ -173,9 +175,10 @@ export const ShiftsPage: React.FC = () => {
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string; error?: { code?: string } }>;
-      const detail = axiosErr.response?.data?.error?.code === 'SHIFT_OVERLAP_CONFLICT'
-        ? '⚠️ Schedule Conflict: This staff member already has an overlapping shift assignment!'
-        : axiosErr.response?.data?.message || 'Failed to assign staff';
+      const detail =
+        axiosErr.response?.data?.error?.code === 'SHIFT_OVERLAP_CONFLICT'
+          ? 'Schedule Conflict: This staff member already has an overlapping shift assignment.'
+          : axiosErr.response?.data?.message || 'Failed to assign staff';
       setAssignError(detail);
     },
   });
@@ -199,7 +202,7 @@ export const ShiftsPage: React.FC = () => {
   const error = isStaff ? myShiftsError : branchShiftsError;
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem' }}>
+    <div className="space-y-6">
       {/* Shift Filter & Action Bar */}
       <ShiftFilterBar
         isStaff={isStaff}
@@ -225,49 +228,41 @@ export const ShiftsPage: React.FC = () => {
         }}
       />
 
-      {/* Shifts Content State */}
+      {/* Loading State */}
       {isLoading && (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-          Loading shifts...
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-44 rounded-lg bg-zinc-100 animate-pulse border border-zinc-200" />
+          ))}
         </div>
       )}
 
+      {/* Error State */}
       {error && (
-        <div
-          style={{
-            backgroundColor: '#fee2e2',
-            color: '#991b1b',
-            padding: '1rem',
-            borderRadius: '6px',
-            marginBottom: '1rem',
-          }}
-        >
-          Failed to load shifts. Please try again.
+        <div className="p-3.5 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800 flex items-center gap-2">
+          <IconAlertTriangle size={15} className="text-rose-600 flex-shrink-0" />
+          <span>Failed to load shift rosters. Please verify connectivity.</span>
         </div>
       )}
 
+      {/* Empty State */}
       {!isLoading && !error && activeShifts && activeShifts.length === 0 && (
-        <div
-          style={{
-            backgroundColor: '#ffffff',
-            borderRadius: '8px',
-            border: '1px dashed #d1d5db',
-            padding: '3rem',
-            textAlign: 'center',
-            color: '#6b7280',
-          }}
-        >
-          <p style={{ fontSize: '1rem', fontWeight: 500, margin: '0 0 0.5rem' }}>No shifts found</p>
-          <p style={{ fontSize: '0.875rem', margin: 0 }}>
+        <Card className="py-12 text-center text-zinc-500">
+          <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-2.5">
+            <IconCalendar size={18} />
+          </div>
+          <p className="font-semibold text-sm text-zinc-900">No shifts scheduled</p>
+          <p className="text-xs text-zinc-500 mt-1">
             {isStaff
               ? 'You do not have any published shifts scheduled for this period.'
-              : 'Create a new shift to start scheduling staff.'}
+              : 'Create a new shift to start scheduling staff rosters.'}
           </p>
-        </div>
+        </Card>
       )}
 
+      {/* Shifts Grid */}
       {!isLoading && !error && activeShifts && activeShifts.length > 0 && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '1rem' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {activeShifts.map((shift) => (
             <ShiftCard
               key={shift.id}

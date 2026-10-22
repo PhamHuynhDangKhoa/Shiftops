@@ -31,35 +31,34 @@ export const HandoverAcknowledgeModal: React.FC<HandoverAcknowledgeModalProps> =
       isOpen={isOpen}
       onClose={onClose}
       title="Acknowledge Shift Handover"
+      description="Formally acknowledge receipt of operational directives and responsibilities from previous crew"
       maxWidth="md"
     >
       <div className="space-y-4">
-        <p className="text-sm text-gray-600">
-          You are formally acknowledging receipt of the operational debrief from the previous shift.
-        </p>
-        <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">
             Acknowledgement Notes (Optional)
           </label>
           <textarea
             value={ackNotes}
             onChange={(e) => setAckNotes(e.target.value)}
             rows={3}
-            placeholder="e.g., Reviewed tasks, continuing unresolved inventory count..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Reviewed task backlog, proceeding with unresolved equipment issue..."
+            className="w-full px-3 py-2 border border-zinc-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           />
         </div>
-        <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">
-          <Button variant="ghost" onClick={onClose}>
+
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <Button variant="secondary" size="sm" onClick={onClose}>
             Cancel
           </Button>
           <Button
             variant="primary"
+            size="sm"
             onClick={handleConfirm}
-            isLoading={isPending}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+            disabled={isPending}
           >
-            Confirm Acknowledgement
+            {isPending ? 'Confirming...' : 'Confirm Acknowledgement'}
           </Button>
         </div>
       </div>

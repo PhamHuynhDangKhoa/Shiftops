@@ -3,6 +3,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { User, Branch, PagedResponse, ApiResponse, Role, ResetPasswordResponse } from '../lib/types';
+import { Button } from '../components/ui/Button';
+import { Badge } from '../components/ui/Badge';
+import { Modal } from '../components/ui/Modal';
+import { Input } from '../components/ui/Input';
+import {
+  IconUsers,
+  IconPlus,
+  IconSearch,
+  IconMapPin,
+  IconKey,
+} from '../components/ui/Icons';
 
 export const StaffPage: React.FC = () => {
   const { user: currentUser } = useAuth();
@@ -90,17 +101,19 @@ export const StaffPage: React.FC = () => {
       }
     },
     onError: (err: unknown) => {
-      if (err instanceof Error) {
-        setFormError(err.message);
-      } else {
-        setFormError('Failed to create user');
-      }
+      setFormError(err instanceof Error ? err.message : 'Failed to create user');
     },
   });
 
   // Update User Mutation
   const updateMutation = useMutation({
-    mutationFn: async ({ id, payload }: { id: string; payload: { fullName: string; phone?: string; role?: Role; primaryBranchId?: string } }) => {
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: string;
+      payload: { fullName: string; phone?: string; role?: Role; primaryBranchId?: string };
+    }) => {
       const res = await api.put<ApiResponse<User>>(`/users/${id}`, payload);
       return res.data.data;
     },
@@ -109,11 +122,7 @@ export const StaffPage: React.FC = () => {
       setEditingUser(null);
     },
     onError: (err: unknown) => {
-      if (err instanceof Error) {
-        setFormError(err.message);
-      } else {
-        setFormError('Failed to update user');
-      }
+      setFormError(err instanceof Error ? err.message : 'Failed to update user');
     },
   });
 
@@ -172,12 +181,12 @@ export const StaffPage: React.FC = () => {
     setFormError(null);
   };
 
-  const handleOpenEdit = (user: User) => {
-    setEditingUser(user);
-    setEditFullName(user.fullName);
-    setEditPhone(user.phone || '');
-    setEditRole(user.role);
-    setEditBranchId(user.primaryBranchId || '');
+  const handleOpenEdit = (targetUser: User) => {
+    setEditingUser(targetUser);
+    setEditFullName(targetUser.fullName);
+    setEditPhone(targetUser.phone || '');
+    setEditRole(targetUser.role);
+    setEditBranchId(targetUser.primaryBranchId || '');
     setFormError(null);
   };
 
@@ -211,83 +220,54 @@ export const StaffPage: React.FC = () => {
   const handleCopyTempPassword = () => {
     if (tempPasswordModal?.tempPass) {
       navigator.clipboard.writeText(tempPasswordModal.tempPass);
-      alert('Temporary password copied to clipboard!');
+      alert('Temporary password copied to clipboard');
     }
   };
 
-  const getRoleBadge = (role: Role) => {
-    const colors: Record<Role, { bg: string; text: string }> = {
-      OWNER: { bg: '#ede9fe', text: '#6d28d9' },
-      MANAGER: { bg: '#dbeafe', text: '#1d4ed8' },
-      STAFF: { bg: '#dcfce7', text: '#15803d' },
-    };
-    const c = colors[role] || { bg: '#f3f4f6', text: '#374151' };
-    return (
-      <span
-        style={{
-          padding: '0.2rem 0.5rem',
-          borderRadius: '9999px',
-          fontSize: '0.72rem',
-          fontWeight: 600,
-          backgroundColor: c.bg,
-          color: c.text,
-        }}
-      >
-        {role}
-      </span>
-    );
+  const getRoleVariant = (role: Role) => {
+    switch (role) {
+      case 'OWNER':
+        return 'brand';
+      case 'MANAGER':
+        return 'brand';
+      case 'STAFF':
+      default:
+        return 'neutral';
+    }
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0, color: '#111827' }}>
-            Staff Management
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
+            <IconUsers size={20} className="text-zinc-950" />
+            <span>Staff Directory & Access</span>
           </h1>
-          <p style={{ color: '#6b7280', margin: '0.25rem 0 0 0', fontSize: '0.9rem' }}>
-            Invite, assign branches, update profiles, and manage staff credentials
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Manage organization members, branch assignments, credentials, and access roles
           </p>
         </div>
 
-        <button
+        <Button
+          variant="primary"
+          size="sm"
           onClick={() => {
             resetInviteForm();
             setIsInviteOpen(true);
           }}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: '#2563eb',
-            color: '#ffffff',
-            borderRadius: '6px',
-            border: 'none',
-            fontWeight: 600,
-            fontSize: '0.875rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-          }}
+          className="gap-1.5"
         >
-          + Add / Invite Staff
-        </button>
+          <IconPlus size={14} />
+          <span>Add Staff Member</span>
+        </Button>
       </div>
 
-      {/* Filters Bar */}
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '1.25rem',
-          display: 'flex',
-          gap: '1rem',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ flex: '1 1 200px' }}>
+      {/* Filters Toolbar */}
+      <div className="bg-white border border-zinc-200 rounded-lg p-3.5 flex flex-wrap items-center gap-3 text-xs">
+        <div className="flex-1 min-w-[200px] relative">
+          <IconSearch size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -296,33 +276,20 @@ export const StaffPage: React.FC = () => {
               setSearch(e.target.value);
               setPage(0);
             }}
-            style={{
-              width: '100%',
-              padding: '0.5rem 0.75rem',
-              borderRadius: '6px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.875rem',
-              boxSizing: 'border-box',
-            }}
+            className="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
           />
         </div>
 
         {isOwner && (
-          <div style={{ minWidth: '160px' }}>
+          <div className="flex items-center gap-1.5">
+            <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Branch:</label>
             <select
               value={selectedBranchId}
               onChange={(e) => {
                 setSelectedBranchId(e.target.value);
                 setPage(0);
               }}
-              style={{
-                width: '100%',
-                padding: '0.5rem 0.75rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-                backgroundColor: '#fff',
-              }}
+              className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
             >
               <option value="">All Branches</option>
               {branches?.map((b) => (
@@ -334,44 +301,32 @@ export const StaffPage: React.FC = () => {
           </div>
         )}
 
-        <div style={{ minWidth: '130px' }}>
+        <div className="flex items-center gap-1.5">
+          <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Role:</label>
           <select
             value={selectedRole}
             onChange={(e) => {
               setSelectedRole(e.target.value);
               setPage(0);
             }}
-            style={{
-              width: '100%',
-              padding: '0.5rem 0.75rem',
-              borderRadius: '6px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.875rem',
-              backgroundColor: '#fff',
-            }}
+            className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
           >
             <option value="">All Roles</option>
-            {isOwner && <option value="OWNER">OWNER</option>}
-            <option value="MANAGER">MANAGER</option>
-            <option value="STAFF">STAFF</option>
+            {isOwner && <option value="OWNER">Owner</option>}
+            <option value="MANAGER">Manager</option>
+            <option value="STAFF">Staff</option>
           </select>
         </div>
 
-        <div style={{ minWidth: '130px' }}>
+        <div className="flex items-center gap-1.5">
+          <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Status:</label>
           <select
             value={selectedStatus}
             onChange={(e) => {
               setSelectedStatus(e.target.value);
               setPage(0);
             }}
-            style={{
-              width: '100%',
-              padding: '0.5rem 0.75rem',
-              borderRadius: '6px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.875rem',
-              backgroundColor: '#fff',
-            }}
+            className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
           >
             <option value="">All Statuses</option>
             <option value="active">Active Only</option>
@@ -381,159 +336,120 @@ export const StaffPage: React.FC = () => {
       </div>
 
       {/* Staff Table */}
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          overflow: 'hidden',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-        }}
-      >
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
+      <div className="overflow-x-auto border border-zinc-200 rounded-lg">
+        <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb', color: '#4b5563' }}>
-              <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Staff Member</th>
-              <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Role</th>
-              <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Primary Branch</th>
-              <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Phone</th>
-              <th style={{ padding: '0.75rem 1rem', fontWeight: 600 }}>Status</th>
-              <th style={{ padding: '0.75rem 1rem', fontWeight: 600, textAlign: 'right' }}>Actions</th>
+            <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-mono text-[11px] uppercase tracking-wider">
+              <th className="py-2.5 px-3 font-medium">Staff Member</th>
+              <th className="py-2.5 px-3 font-medium">Role</th>
+              <th className="py-2.5 px-3 font-medium">Primary Branch</th>
+              <th className="py-2.5 px-3 font-medium">Contact Phone</th>
+              <th className="py-2.5 px-3 font-medium">Account Status</th>
+              <th className="py-2.5 px-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-zinc-100 bg-white">
             {isLoading ? (
               <tr>
-                <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
+                <td colSpan={6} className="py-12 text-center text-xs font-mono text-zinc-400">
                   Loading staff directory...
                 </td>
               </tr>
             ) : pagedUsers?.content.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: '2rem', textAlign: 'center', color: '#6b7280' }}>
-                  No staff members match the selected criteria.
+                <td colSpan={6} className="py-12 text-center text-xs text-zinc-500">
+                  No personnel matching the current search parameters.
                 </td>
               </tr>
             ) : (
               pagedUsers?.content.map((member) => (
-                <tr key={member.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={{ padding: '0.75rem 1rem' }}>
-                    <div style={{ fontWeight: 600, color: '#111827' }}>{member.fullName}</div>
-                    <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>{member.email}</div>
+                <tr key={member.id} className="hover:bg-zinc-50/80 transition-colors">
+                  <td className="py-2.5 px-3">
+                    <div className="font-semibold text-zinc-950">{member.fullName}</div>
+                    <div className="text-[11px] font-mono text-zinc-400">{member.email}</div>
                     {member.mustChangePassword && (
-                      <span
-                        style={{
-                          fontSize: '0.65rem',
-                          color: '#b45309',
-                          backgroundColor: '#fef3c7',
-                          padding: '0.1rem 0.35rem',
-                          borderRadius: '4px',
-                          display: 'inline-block',
-                          marginTop: '0.2rem',
-                        }}
-                      >
-                        Temporary Password
+                      <span className="inline-block mt-1 font-mono text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded">
+                        Temp Password
                       </span>
                     )}
                   </td>
-                  <td style={{ padding: '0.75rem 1rem' }}>{getRoleBadge(member.role)}</td>
-                  <td style={{ padding: '0.75rem 1rem', color: '#374151' }}>
-                    {member.primaryBranchName ? `📍 ${member.primaryBranchName}` : '—'}
+                  <td className="py-2.5 px-3 whitespace-nowrap">
+                    <Badge variant={getRoleVariant(member.role)} size="sm">
+                      {member.role}
+                    </Badge>
                   </td>
-                  <td style={{ padding: '0.75rem 1rem', color: '#6b7280' }}>{member.phone || '—'}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}>
-                    <span
-                      style={{
-                        padding: '0.2rem 0.45rem',
-                        borderRadius: '9999px',
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        backgroundColor: member.active ? '#dcfce7' : '#fee2e2',
-                        color: member.active ? '#15803d' : '#b91c1c',
-                      }}
-                    >
-                      {member.active ? 'ACTIVE' : 'INACTIVE'}
-                    </span>
+                  <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
+                    {member.primaryBranchName ? (
+                      <span className="flex items-center gap-1">
+                        <IconMapPin size={11} className="text-zinc-400" />
+                        {member.primaryBranchName}
+                      </span>
+                    ) : (
+                      '—'
+                    )}
                   </td>
-                  <td style={{ padding: '0.75rem 1rem', textAlign: 'right' }}>
-                    <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-                      <button
+                  <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
+                    {member.phone || '—'}
+                  </td>
+                  <td className="py-2.5 px-3 whitespace-nowrap">
+                    <Badge variant={member.active ? 'success' : 'neutral'} size="sm">
+                      {member.active ? 'Active' : 'Inactive'}
+                    </Badge>
+                  </td>
+                  <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => handleOpenEdit(member)}
-                        style={{
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '4px',
-                          border: '1px solid #d1d5db',
-                          backgroundColor: '#fff',
-                          fontSize: '0.75rem',
-                          cursor: 'pointer',
-                        }}
+                        className="text-[11px] py-0.5 px-2"
                       >
                         Edit
-                      </button>
+                      </Button>
 
                       {isOwner && (
-                        <button
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           onClick={() => {
                             setTransferUser(member);
                             setTargetTransferBranchId(member.primaryBranchId || '');
                           }}
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            border: '1px solid #c7d2fe',
-                            backgroundColor: '#eef2ff',
-                            color: '#4338ca',
-                            fontSize: '0.75rem',
-                            cursor: 'pointer',
-                          }}
+                          className="text-[11px] py-0.5 px-2"
                         >
                           Transfer
-                        </button>
+                        </Button>
                       )}
 
-                      {/* Reset Password */}
                       {member.id !== currentUser?.id && (
-                        <button
-                          onClick={() => {
-                            if (window.confirm(`Generate a new temporary password for ${member.fullName}?`)) {
-                              resetPasswordMutation.mutate(member.id);
-                            }
-                          }}
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            border: '1px solid #fed7aa',
-                            backgroundColor: '#fff7ed',
-                            color: '#c2410c',
-                            fontSize: '0.75rem',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Reset Pass
-                        </button>
-                      )}
+                        <>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              if (window.confirm(`Generate a new temporary password for ${member.fullName}?`)) {
+                                resetPasswordMutation.mutate(member.id);
+                              }
+                            }}
+                            className="text-[11px] py-0.5 px-2 text-zinc-600"
+                          >
+                            Reset
+                          </Button>
 
-                      {/* Status Toggle */}
-                      {member.id !== currentUser?.id && (
-                        <button
-                          onClick={() => {
-                            const action = member.active ? 'deactivate' : 'activate';
-                            if (window.confirm(`Are you sure you want to ${action} ${member.fullName}?`)) {
-                              toggleStatusMutation.mutate({ id: member.id, active: !member.active });
-                            }
-                          }}
-                          style={{
-                            padding: '0.25rem 0.5rem',
-                            borderRadius: '4px',
-                            border: `1px solid ${member.active ? '#fca5a5' : '#86efac'}`,
-                            backgroundColor: member.active ? '#fef2f2' : '#f0fdf4',
-                            color: member.active ? '#b91c1c' : '#15803d',
-                            fontSize: '0.75rem',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {member.active ? 'Deactivate' : 'Activate'}
-                        </button>
+                          <Button
+                            variant={member.active ? 'danger' : 'secondary'}
+                            size="sm"
+                            onClick={() => {
+                              const action = member.active ? 'deactivate' : 'activate';
+                              if (window.confirm(`Are you sure you want to ${action} ${member.fullName}?`)) {
+                                toggleStatusMutation.mutate({ id: member.id, active: !member.active });
+                              }
+                            }}
+                            className="text-[11px] py-0.5 px-2"
+                          >
+                            {member.active ? 'Deactivate' : 'Activate'}
+                          </Button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -545,524 +461,324 @@ export const StaffPage: React.FC = () => {
 
         {/* Pagination Bar */}
         {pagedUsers && pagedUsers.totalPages > 1 && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderTop: '1px solid #e5e7eb',
-              fontSize: '0.85rem',
-              color: '#4b5563',
-            }}
-          >
-            <span>
-              Showing {pagedUsers.content.length} of {pagedUsers.totalElements} staff members (Page {pagedUsers.page + 1} of {pagedUsers.totalPages})
+          <div className="p-3 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-600">
+            <span className="font-mono text-[11px]">
+              Showing {pagedUsers.content.length} of {pagedUsers.totalElements} members (Page {pagedUsers.page + 1} of {pagedUsers.totalPages})
             </span>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
+            <div className="flex gap-1.5">
+              <Button
+                variant="secondary"
+                size="sm"
                 disabled={page === 0}
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
-                style={{
-                  padding: '0.3rem 0.7rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: page === 0 ? '#f3f4f6' : '#fff',
-                  cursor: page === 0 ? 'not-allowed' : 'pointer',
-                }}
               >
                 Previous
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
                 disabled={pagedUsers.last}
                 onClick={() => setPage((p) => p + 1)}
-                style={{
-                  padding: '0.3rem 0.7rem',
-                  borderRadius: '4px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: pagedUsers.last ? '#f3f4f6' : '#fff',
-                  cursor: pagedUsers.last ? 'not-allowed' : 'pointer',
-                }}
               >
                 Next
-              </button>
+              </Button>
             </div>
           </div>
         )}
       </div>
 
       {/* Invite Modal */}
-      {isInviteOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: '8px',
-              padding: '1.75rem',
-              maxWidth: '480px',
-              width: '90%',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: 600 }}>
-              Add / Invite Staff Member
-            </h2>
-
-            {formError && (
-              <div
-                style={{
-                  backgroundColor: '#fee2e2',
-                  border: '1px solid #fecaca',
-                  color: '#b91c1c',
-                  padding: '0.6rem 0.8rem',
-                  borderRadius: '4px',
-                  fontSize: '0.85rem',
-                  marginBottom: '1rem',
-                }}
-              >
-                {formError}
-              </div>
-            )}
-
-            <form onSubmit={handleSaveInvite} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={inviteFullName}
-                  onChange={(e) => setInviteFullName(e.target.value)}
-                  placeholder="e.g. Charlie Parker"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="e.g. charlie@company.com"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={invitePhone}
-                  onChange={(e) => setInvitePhone(e.target.value)}
-                  placeholder="e.g. +1 555-0192"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              {isOwner && (
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                    Role *
-                  </label>
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as Role)}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#fff', boxSizing: 'border-box' }}
-                  >
-                    <option value="STAFF">STAFF</option>
-                    <option value="MANAGER">MANAGER</option>
-                    <option value="OWNER">OWNER</option>
-                  </select>
-                </div>
-              )}
-
-              {inviteRole !== 'OWNER' && (
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                    Primary Branch *
-                  </label>
-                  {isOwner ? (
-                    <select
-                      required
-                      value={inviteBranchId}
-                      onChange={(e) => setInviteBranchId(e.target.value)}
-                      style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#fff', boxSizing: 'border-box' }}
-                    >
-                      <option value="">Select a Branch...</option>
-                      {branches?.filter(b => b.active).map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      disabled
-                      value={currentUser?.primaryBranchName || 'Assigned Branch'}
-                      style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #e5e7eb', backgroundColor: '#f9fafb', boxSizing: 'border-box' }}
-                    />
-                  )}
-                </div>
-              )}
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                  Initial Password <span style={{ color: '#6b7280', fontWeight: 400 }}>(Leave blank to auto-generate)</span>
-                </label>
-                <input
-                  type="password"
-                  value={invitePassword}
-                  onChange={(e) => setInvitePassword(e.target.value)}
-                  placeholder="Auto-generated if left blank"
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setIsInviteOpen(false)}
-                  style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#fff', cursor: 'pointer' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createMutation.isPending}
-                  style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', backgroundColor: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  {createMutation.isPending ? 'Inviting...' : 'Create Staff Member'}
-                </button>
-              </div>
-            </form>
+      <Modal
+        isOpen={isInviteOpen}
+        onClose={() => setIsInviteOpen(false)}
+        title="Invite / Register Staff Member"
+        description="Provision account credentials and branch operating assignment"
+      >
+        {formError && (
+          <div className="p-3 mb-4 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800">
+            {formError}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Edit Modal */}
-      {editingUser && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: '8px',
-              padding: '1.75rem',
-              maxWidth: '460px',
-              width: '90%',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: 600 }}>
-              Edit Staff Profile
-            </h2>
+        <form onSubmit={handleSaveInvite} className="space-y-4">
+          <Input
+            label="Full Name *"
+            required
+            value={inviteFullName}
+            onChange={(e) => setInviteFullName(e.target.value)}
+            placeholder="e.g. Charlie Parker"
+          />
 
-            {formError && (
-              <div
-                style={{
-                  backgroundColor: '#fee2e2',
-                  border: '1px solid #fecaca',
-                  color: '#b91c1c',
-                  padding: '0.6rem 0.8rem',
-                  borderRadius: '4px',
-                  fontSize: '0.85rem',
-                  marginBottom: '1rem',
-                }}
-              >
-                {formError}
-              </div>
-            )}
+          <Input
+            label="Email Address *"
+            type="email"
+            required
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            placeholder="e.g. charlie@company.com"
+          />
 
-            <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={editFullName}
-                  onChange={(e) => setEditFullName(e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
+          <Input
+            label="Contact Phone"
+            type="tel"
+            value={invitePhone}
+            onChange={(e) => setInvitePhone(e.target.value)}
+            placeholder="e.g. +1 555-0192"
+          />
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
-                />
-              </div>
-
-              {isOwner && (
-                <>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                      Role
-                    </label>
-                    <select
-                      value={editRole}
-                      onChange={(e) => setEditRole(e.target.value as Role)}
-                      style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#fff', boxSizing: 'border-box' }}
-                    >
-                      <option value="STAFF">STAFF</option>
-                      <option value="MANAGER">MANAGER</option>
-                      <option value="OWNER">OWNER</option>
-                    </select>
-                  </div>
-
-                  {editRole !== 'OWNER' && (
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.2rem' }}>
-                        Primary Branch
-                      </label>
-                      <select
-                        value={editBranchId}
-                        onChange={(e) => setEditBranchId(e.target.value)}
-                        style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#fff', boxSizing: 'border-box' }}
-                      >
-                        {branches?.filter(b => b.active).map((b) => (
-                          <option key={b.id} value={b.id}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setEditingUser(null)}
-                  style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#fff', cursor: 'pointer' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={updateMutation.isPending}
-                  style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', backgroundColor: '#2563eb', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
-                >
-                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Transfer Branch Modal */}
-      {transferUser && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: '8px',
-              padding: '1.75rem',
-              maxWidth: '440px',
-              width: '90%',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.25rem', fontWeight: 600 }}>
-              Transfer Branch
-            </h2>
-            <p style={{ color: '#6b7280', fontSize: '0.85rem', margin: '0 0 1rem 0' }}>
-              Move {transferUser.fullName} to a different operating branch.
-            </p>
-
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.25rem' }}>
-                Target Branch *
-              </label>
+          {isOwner && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-zinc-700">Access Role *</label>
               <select
-                value={targetTransferBranchId}
-                onChange={(e) => setTargetTransferBranchId(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#fff',
-                  boxSizing: 'border-box',
-                }}
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as Role)}
+                className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
               >
-                <option value="">Select target branch...</option>
-                {branches
-                  ?.filter((b) => b.active && b.id !== transferUser.primaryBranchId)
-                  .map((b) => (
+                <option value="STAFF">STAFF (Floor Operations)</option>
+                <option value="MANAGER">MANAGER (Branch Coordinator)</option>
+                <option value="OWNER">OWNER (Full Administration)</option>
+              </select>
+            </div>
+          )}
+
+          {inviteRole !== 'OWNER' && (
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-zinc-700">Primary Branch *</label>
+              {isOwner ? (
+                <select
+                  required
+                  value={inviteBranchId}
+                  onChange={(e) => setInviteBranchId(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                >
+                  <option value="">Select a Branch...</option>
+                  {branches?.filter((b) => b.active).map((b) => (
                     <option key={b.id} value={b.id}>
                       {b.name}
                     </option>
                   ))}
-              </select>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  disabled
+                  value={currentUser?.primaryBranchName || 'Assigned Branch'}
+                  className="w-full px-3 py-2 text-sm rounded-md border border-zinc-200 bg-zinc-100 text-zinc-600 cursor-not-allowed"
+                />
+              )}
             </div>
+          )}
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setTransferUser(null)}
-                style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: '1px solid #d1d5db', backgroundColor: '#fff', cursor: 'pointer' }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={!targetTransferBranchId || transferMutation.isPending}
-                onClick={() => {
+          <Input
+            label="Initial Password (Optional — Auto-generated if left blank)"
+            type="password"
+            value={invitePassword}
+            onChange={(e) => setInvitePassword(e.target.value)}
+            placeholder="Leave blank for secure auto-generation"
+          />
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsInviteOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending ? 'Inviting...' : 'Register Staff Member'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={!!editingUser}
+        onClose={() => setEditingUser(null)}
+        title="Edit Staff Profile"
+        description="Update profile metadata, branch assignment, or role permissions"
+      >
+        {formError && (
+          <div className="p-3 mb-4 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800">
+            {formError}
+          </div>
+        )}
+
+        <form onSubmit={handleSaveEdit} className="space-y-4">
+          <Input
+            label="Full Name *"
+            required
+            value={editFullName}
+            onChange={(e) => setEditFullName(e.target.value)}
+          />
+
+          <Input
+            label="Contact Phone"
+            type="tel"
+            value={editPhone}
+            onChange={(e) => setEditPhone(e.target.value)}
+          />
+
+          {isOwner && (
+            <>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-medium text-zinc-700">Access Role</label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value as Role)}
+                  className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                >
+                  <option value="STAFF">STAFF</option>
+                  <option value="MANAGER">MANAGER</option>
+                  <option value="OWNER">OWNER</option>
+                </select>
+              </div>
+
+              {editRole !== 'OWNER' && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-medium text-zinc-700">Primary Branch</label>
+                  <select
+                    value={editBranchId}
+                    onChange={(e) => setEditBranchId(e.target.value)}
+                    className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  >
+                    {branches?.filter((b) => b.active).map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setEditingUser(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? 'Saving...' : 'Save Profile Changes'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Transfer Branch Modal */}
+      <Modal
+        isOpen={!!transferUser}
+        onClose={() => setTransferUser(null)}
+        title="Transfer Operating Branch"
+        description={transferUser ? `Reassign ${transferUser.fullName} to another active location` : ''}
+        maxWidth="sm"
+      >
+        <div className="space-y-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-700">Target Branch *</label>
+            <select
+              value={targetTransferBranchId}
+              onChange={(e) => setTargetTransferBranchId(e.target.value)}
+              className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+            >
+              <option value="">Select target branch...</option>
+              {branches
+                ?.filter((b) => b.active && b.id !== transferUser?.primaryBranchId)
+                .map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setTransferUser(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!targetTransferBranchId || transferMutation.isPending}
+              onClick={() => {
+                if (transferUser) {
                   transferMutation.mutate({
                     id: transferUser.id,
                     targetBranchId: targetTransferBranchId,
                   });
-                }}
-                style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  backgroundColor: '#2563eb',
-                  color: '#fff',
-                  fontWeight: 600,
-                  cursor: !targetTransferBranchId || transferMutation.isPending ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {transferMutation.isPending ? 'Transferring...' : 'Confirm Transfer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Temporary Password Display Modal */}
-      {tempPasswordModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1100,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: '8px',
-              padding: '1.75rem',
-              maxWidth: '440px',
-              width: '90%',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-            }}
-          >
-            <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-              <span style={{ fontSize: '2.5rem' }}>🔑</span>
-              <h3 style={{ margin: '0.5rem 0 0.25rem 0', fontSize: '1.25rem', fontWeight: 600, color: '#111827' }}>
-                Temporary Password Generated
-              </h3>
-              <p style={{ color: '#6b7280', fontSize: '0.85rem', margin: 0 }}>
-                Share this temporary password with <strong>{tempPasswordModal.email}</strong>.
-              </p>
-            </div>
-
-            <div
-              style={{
-                backgroundColor: '#f3f4f6',
-                border: '1px dashed #d1d5db',
-                borderRadius: '6px',
-                padding: '0.85rem',
-                textAlign: 'center',
-                marginBottom: '1rem',
+                }
               }}
             >
-              <code style={{ fontSize: '1.25rem', fontWeight: 700, letterSpacing: '0.05em', color: '#111827' }}>
-                {tempPasswordModal.tempPass}
-              </code>
-            </div>
-
-            <p style={{ fontSize: '0.75rem', color: '#6b7280', textAlign: 'center', margin: '0 0 1.25rem 0' }}>
-              The staff member will be required to change this password immediately upon their first login.
-            </p>
-
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-              <button
-                type="button"
-                onClick={handleCopyTempPassword}
-                style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '6px',
-                  border: '1px solid #2563eb',
-                  backgroundColor: '#eff6ff',
-                  color: '#1d4ed8',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                📋 Copy Password
-              </button>
-              <button
-                type="button"
-                onClick={() => setTempPasswordModal(null)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  backgroundColor: '#2563eb',
-                  color: '#fff',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Done
-              </button>
-            </div>
+              {transferMutation.isPending ? 'Transferring...' : 'Confirm Transfer'}
+            </Button>
           </div>
         </div>
-      )}
+      </Modal>
+
+      {/* Temporary Password Display Modal */}
+      <Modal
+        isOpen={!!tempPasswordModal}
+        onClose={() => setTempPasswordModal(null)}
+        title="Temporary Credentials Generated"
+        description={tempPasswordModal ? `Share these credentials securely with ${tempPasswordModal.email}` : ''}
+        maxWidth="sm"
+      >
+        <div className="space-y-4 text-center">
+          <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-800 mx-auto">
+            <IconKey size={20} />
+          </div>
+
+          <div className="p-3 rounded-md bg-zinc-50 border border-zinc-200">
+            <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
+              One-Time Password
+            </span>
+            <code className="text-lg font-mono font-bold tracking-wider text-zinc-950 select-all">
+              {tempPasswordModal?.tempPass}
+            </code>
+          </div>
+
+          <p className="text-[11px] text-zinc-500">
+            The user will be required to update this temporary password upon their next session login.
+          </p>
+
+          <div className="flex justify-center gap-2 pt-2 border-t border-zinc-100">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleCopyTempPassword}
+            >
+              Copy Password
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setTempPasswordModal(null)}
+            >
+              Done
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

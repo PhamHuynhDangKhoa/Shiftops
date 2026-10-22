@@ -3,6 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../lib/api';
 import { ApiResponse, PagedResponse, Notification, UnreadCountResponse } from '../lib/types';
+import {
+  IconBell,
+  IconCalendar,
+  IconCheckList,
+  IconAlertTriangle,
+  IconHandshake,
+  IconMegaphone,
+  IconClock,
+  IconCheck,
+} from './ui/Icons';
 
 export const NotificationBell: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -97,25 +107,26 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
-  const getNotificationIcon = (type: string) => {
+  const renderNotificationIcon = (type: string) => {
+    const iconClass = 'w-4 h-4 text-zinc-600 mt-0.5 flex-shrink-0';
     switch (type) {
       case 'SHIFT_PUBLISHED':
       case 'SHIFT_CHANGED':
-        return '📅';
+        return <IconCalendar className={iconClass} />;
       case 'TASK_ASSIGNED':
-        return '📋';
+        return <IconCheckList className={iconClass} />;
       case 'ISSUE_ASSIGNED':
       case 'ISSUE_UPDATED':
-        return '⚠️';
+        return <IconAlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />;
       case 'HANDOVER_SUBMITTED':
       case 'HANDOVER_ACKNOWLEDGED':
-        return '🤝';
+        return <IconHandshake className={iconClass} />;
       case 'ANNOUNCEMENT_PUBLISHED':
-        return '📢';
+        return <IconMegaphone className="w-4 h-4 text-zinc-800 mt-0.5 flex-shrink-0" />;
       case 'SHIFT_REMINDER':
-        return '⏰';
+        return <IconClock className={iconClass} />;
       default:
-        return '🔔';
+        return <IconBell className={iconClass} />;
     }
   };
 
@@ -144,13 +155,13 @@ export const NotificationBell: React.FC = () => {
       {/* Bell Button */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="relative p-1.5 rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition-colors cursor-pointer border border-transparent hover:border-zinc-200 focus:outline-none"
         title="Notifications"
         aria-label="Notifications"
       >
-        <span className="text-xl leading-none select-none">🔔</span>
+        <IconBell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[11px] font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center border-2 border-white shadow-xs animate-in fade-in zoom-in-75">
+          <span className="absolute -top-1 -right-1 bg-zinc-950 text-white text-[10px] font-mono font-medium rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center border border-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -159,16 +170,16 @@ export const NotificationBell: React.FC = () => {
       {/* Dropdown Panel */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden flex flex-col"
+          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg border border-zinc-200 shadow-xl z-50 overflow-hidden flex flex-col"
           style={{ maxHeight: '480px' }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/75">
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 bg-zinc-50/80">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-gray-900 text-sm">Notifications</span>
+              <span className="font-semibold text-zinc-900 text-xs">Notifications</span>
               {unreadCount > 0 && (
-                <span className="bg-red-100 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {unreadCount} new
+                <span className="bg-zinc-900 text-zinc-50 text-[10px] font-mono font-medium px-1.5 py-0.2 rounded">
+                  {unreadCount} unread
                 </span>
               )}
             </div>
@@ -176,7 +187,7 @@ export const NotificationBell: React.FC = () => {
               <button
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={markAllAsReadMutation.isPending}
-                className="text-xs font-medium text-blue-600 hover:text-blue-800 disabled:opacity-50 transition-colors cursor-pointer"
+                className="text-xs font-medium text-zinc-600 hover:text-zinc-950 disabled:opacity-50 transition-colors cursor-pointer"
               >
                 Mark all as read
               </button>
@@ -184,10 +195,10 @@ export const NotificationBell: React.FC = () => {
           </div>
 
           {/* List Content */}
-          <div className="overflow-y-auto divide-y divide-gray-100 flex-1">
+          <div className="overflow-y-auto divide-y divide-zinc-100 flex-1">
             {isLoading ? (
-              <div className="p-8 text-center text-gray-400 text-sm flex flex-col items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+              <div className="p-8 text-center text-zinc-400 text-xs flex flex-col items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path
                     className="opacity-75"
@@ -198,38 +209,38 @@ export const NotificationBell: React.FC = () => {
                 <span>Loading notifications...</span>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-gray-500 text-sm flex flex-col items-center gap-2">
-                <span className="text-3xl">✨</span>
-                <span className="font-semibold text-gray-700">All caught up!</span>
-                <span className="text-xs text-gray-400">No notifications to display.</span>
+              <div className="p-8 text-center text-zinc-500 text-xs flex flex-col items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500">
+                  <IconCheck className="w-4 h-4" />
+                </div>
+                <span className="font-medium text-zinc-800">All caught up</span>
+                <span className="text-[11px] text-zinc-400">No unread notifications</span>
               </div>
             ) : (
               notifications.map((notif) => (
                 <div
                   key={notif.id}
                   onClick={() => handleNotificationClick(notif)}
-                  className={`p-3.5 flex items-start gap-3 hover:bg-gray-50 transition-colors cursor-pointer ${
-                    !notif.read ? 'bg-blue-50/40' : 'bg-white'
+                  className={`p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors cursor-pointer ${
+                    !notif.read ? 'bg-zinc-50/80 font-medium' : 'bg-white'
                   }`}
                 >
-                  <span className="text-xl flex-shrink-0 mt-0.5">
-                    {getNotificationIcon(notif.type)}
-                  </span>
+                  {renderNotificationIcon(notif.type)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <span className={`text-xs font-semibold truncate ${!notif.read ? 'text-blue-950 font-bold' : 'text-gray-900'}`}>
+                      <span className={`text-xs truncate ${!notif.read ? 'text-zinc-950 font-semibold' : 'text-zinc-800'}`}>
                         {notif.title}
                       </span>
-                      <span className="text-[10px] text-gray-400 flex-shrink-0">
+                      <span className="text-[10px] font-mono text-zinc-400 flex-shrink-0">
                         {formatTimeAgo(notif.createdAt)}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed">
                       {notif.message}
                     </p>
                   </div>
                   {!notif.read && (
-                    <span className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-2" title="Unread" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 flex-shrink-0 mt-2" title="Unread" />
                   )}
                 </div>
               ))

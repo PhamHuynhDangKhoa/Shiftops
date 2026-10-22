@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconFilter } from '../ui/Icons';
 
 interface IssueFilterBarProps {
   statusFilter: string;
@@ -20,30 +21,16 @@ export const IssueFilterBar: React.FC<IssueFilterBarProps> = ({
   onPriorityChange,
 }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '1rem',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        backgroundColor: '#ffffff',
-        padding: '1rem',
-        borderRadius: '8px',
-        border: '1px solid #e5e7eb',
-        marginBottom: '1.5rem',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#4b5563' }}>Status:</label>
+    <div className="bg-white border border-zinc-200 rounded-lg p-3.5 mb-5 flex flex-wrap items-center gap-3 text-xs">
+      <div className="flex items-center gap-1.5">
+        <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-1">
+          <IconFilter size={12} className="text-zinc-400" />
+          Status:
+        </label>
         <select
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
-          style={{
-            padding: '0.4rem 0.6rem',
-            borderRadius: '6px',
-            border: '1px solid #d1d5db',
-            fontSize: '0.875rem',
-          }}
+          className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
         >
           <option value="ALL">All Statuses</option>
           <option value="OPEN">Open</option>
@@ -57,43 +44,33 @@ export const IssueFilterBar: React.FC<IssueFilterBarProps> = ({
 
       {!isStaff && onCategoryChange && onPriorityChange && (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#4b5563' }}>
+          <div className="flex items-center gap-1.5">
+            <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider">
               Category:
             </label>
             <select
               value={categoryFilter}
               onChange={(e) => onCategoryChange(e.target.value)}
-              style={{
-                padding: '0.4rem 0.6rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-              }}
+              className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
             >
               <option value="ALL">All Categories</option>
               <option value="EQUIPMENT">Equipment</option>
-              <option value="MAINTENANCE">Maintenance</option>
-              <option value="INVENTORY">Inventory</option>
-              <option value="SAFETY">Safety</option>
               <option value="FACILITY">Facility</option>
+              <option value="SAFETY">Safety</option>
+              <option value="INVENTORY">Inventory</option>
+              <option value="MAINTENANCE">Maintenance</option>
               <option value="OTHER">Other</option>
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#4b5563' }}>
+          <div className="flex items-center gap-1.5">
+            <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider">
               Priority:
             </label>
             <select
               value={priorityFilter}
               onChange={(e) => onPriorityChange(e.target.value)}
-              style={{
-                padding: '0.4rem 0.6rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-              }}
+              className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
             >
               <option value="ALL">All Priorities</option>
               <option value="URGENT">Urgent</option>

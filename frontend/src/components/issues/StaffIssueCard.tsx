@@ -3,6 +3,8 @@ import { Issue } from '../../lib/types';
 import { IssuePriorityBadge } from './IssuePriorityBadge';
 import { IssueCategoryBadge } from './IssueCategoryBadge';
 import { IssueStatusBadge } from './IssueStatusBadge';
+import { Button } from '../ui/Button';
+import { IconClock, IconChevronRight } from '../ui/Icons';
 
 interface StaffIssueCardProps {
   issue: Issue;
@@ -15,76 +17,44 @@ export const StaffIssueCard: React.FC<StaffIssueCardProps> = ({
 }) => {
   return (
     <div
-      style={{
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-        padding: '1.25rem',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-      }}
+      onClick={() => onSelectIssue(issue.id)}
+      className="bg-white border border-zinc-200 rounded-lg p-4 flex flex-col justify-between gap-3 hover:border-zinc-300 transition-colors cursor-pointer"
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-          <IssuePriorityBadge priority={issue.priority} />
-          <IssueCategoryBadge category={issue.category} />
-          <IssueStatusBadge status={issue.status} />
-          <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, color: '#111827' }}>
-            {issue.title}
-          </h3>
+      <div className="space-y-2">
+        <div className="flex items-start justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <IssuePriorityBadge priority={issue.priority} />
+            <IssueCategoryBadge category={issue.category} />
+            <IssueStatusBadge status={issue.status} />
+          </div>
+          <span className="text-[11px] font-mono text-zinc-400 tabular-nums flex items-center gap-1">
+            <IconClock size={11} />
+            {new Date(issue.createdAt).toLocaleDateString()}
+          </span>
         </div>
 
-        <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>
-          {new Date(issue.createdAt).toLocaleString()}
-        </span>
+        <h3 className="font-semibold text-sm text-zinc-950 tracking-tight">
+          {issue.title}
+        </h3>
+
+        <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed">
+          {issue.description}
+        </p>
       </div>
 
-      <p style={{ margin: 0, fontSize: '0.9rem', color: '#4b5563', whiteSpace: 'pre-wrap' }}>
-        {issue.description}
-      </p>
-
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.5rem',
-          borderTop: '1px solid #f3f4f6',
-          paddingTop: '0.75rem',
-          fontSize: '0.85rem',
-          color: '#6b7280',
-        }}
-      >
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-          <span>
-            Reported by: <strong>{issue.reportedByName}</strong>
-          </span>
-          {issue.assignedToName && (
-            <span>
-              Assigned to: <strong style={{ color: '#2563eb' }}>{issue.assignedToName}</strong>
-            </span>
+      <div className="pt-2 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+        <div>
+          {issue.assignedToName ? (
+            <span>Assigned to <strong className="text-zinc-800 font-medium">{issue.assignedToName}</strong></span>
+          ) : (
+            <span className="italic text-zinc-400">Triage in progress</span>
           )}
-          <span>💬 {issue.comments?.length || 0} comments</span>
-          <span>📎 {issue.attachments?.length || 0} photos</span>
         </div>
 
-        <button
-          onClick={() => onSelectIssue(issue.id)}
-          style={{
-            padding: '0.4rem 0.8rem',
-            backgroundColor: '#f3f4f6',
-            color: '#1f2937',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          View & Update →
-        </button>
+        <Button variant="secondary" size="sm" className="gap-1 text-[11px] py-0.5 px-2">
+          <span>Details</span>
+          <IconChevronRight size={11} />
+        </Button>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card } from '../ui/Card';
 
 export interface IssueMetrics {
   urgentCount: number;
@@ -13,85 +14,46 @@ interface IssueSummaryCardsProps {
 
 export const IssueSummaryCards: React.FC<IssueSummaryCardsProps> = ({ metrics }) => {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem',
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #fee2e2',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #ef4444',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#991b1b', fontWeight: 600 }}>
-          🚨 Urgent Issues
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+      <Card compact accent="red" className="space-y-1">
+        <span className="text-[11px] font-mono font-medium text-rose-700 uppercase tracking-wider block">
+          Urgent Incidents
         </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#991b1b', marginTop: '0.25rem' }}>
+        <div className="text-2xl font-bold font-mono tabular-nums text-rose-800">
           {metrics.urgentCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#b91c1c' }}>Immediate action required</span>
-      </div>
+        <span className="text-[11px] text-rose-600 block">Immediate response required</span>
+      </Card>
 
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #ffedd5',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #f97316',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#9a3412', fontWeight: 600 }}>
+      <Card compact accent="orange" className="space-y-1">
+        <span className="text-[11px] font-mono font-medium text-amber-700 uppercase tracking-wider block">
           High Priority
         </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#9a3412', marginTop: '0.25rem' }}>
+        <div className="text-2xl font-bold font-mono tabular-nums text-amber-800">
           {metrics.highCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#c2410c' }}>Pending resolution</span>
-      </div>
+        <span className="text-[11px] text-amber-600 block">Triage queue active</span>
+      </Card>
 
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #dbeafe',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #3b82f6',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#1e40af', fontWeight: 600 }}>
-          Open & Active
+      <Card compact accent="blue" className="space-y-1">
+        <span className="text-[11px] font-mono font-medium text-zinc-600 uppercase tracking-wider block">
+          Open / Assigned
         </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1e40af', marginTop: '0.25rem' }}>
+        <div className="text-2xl font-bold font-mono tabular-nums text-zinc-950">
           {metrics.openAssignedCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#2563eb' }}>In investigation / progress</span>
-      </div>
+        <span className="text-[11px] text-zinc-500 block">In investigation or progress</span>
+      </Card>
 
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #d1fae5',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #10b981',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#065f46', fontWeight: 600 }}>
+      <Card compact accent="green" className="space-y-1">
+        <span className="text-[11px] font-mono font-medium text-emerald-700 uppercase tracking-wider block">
           Resolved
         </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#065f46', marginTop: '0.25rem' }}>
+        <div className="text-2xl font-bold font-mono tabular-nums text-emerald-800">
           {metrics.resolvedCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#059669' }}>Ready for manager closing</span>
-      </div>
+        <span className="text-[11px] text-emerald-600 block">Past 30 days</span>
+      </Card>
     </div>
   );
 };

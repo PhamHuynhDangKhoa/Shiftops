@@ -1,6 +1,9 @@
 import React from 'react';
 import { Shift, Attendance } from '../../lib/types';
 import { AttendanceStatusBadge } from './AttendanceStatusBadge';
+import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { IconClock, IconMapPin, IconCheck } from '../ui/Icons';
 
 interface StaffShiftCheckInCardProps {
   shifts?: Shift[];
@@ -16,10 +19,9 @@ interface StaffShiftCheckInCardProps {
 const formatDateTime = (isoString?: string) => {
   if (!isoString) return '—';
   const d = new Date(isoString);
-  return d.toLocaleString('en-US', {
+  return d.toLocaleString(undefined, {
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -29,7 +31,7 @@ const formatDateTime = (isoString?: string) => {
 const formatTimeOnly = (isoString?: string) => {
   if (!isoString) return '—';
   const d = new Date(isoString);
-  return d.toLocaleTimeString('en-US', {
+  return d.toLocaleTimeString(undefined, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
@@ -47,29 +49,31 @@ export const StaffShiftCheckInCard: React.FC<StaffShiftCheckInCardProps> = ({
   isCheckingOut,
 }) => {
   return (
-    <div
-      style={{
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '2rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-      }}
-    >
-      <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: '0 0 1rem 0' }}>
-        📍 Current / Upcoming Shifts
-      </h2>
+    <div className="bg-white border border-zinc-200 rounded-lg p-5 mb-6">
+      <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-100">
+        <div>
+          <h2 className="text-sm font-semibold text-zinc-950 tracking-tight">
+            Active & Upcoming Shift Clock-In
+          </h2>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Punch in to mark attendance within the 15-minute dispatch window
+          </p>
+        </div>
+      </div>
 
       {isLoading ? (
-        <p style={{ color: '#6b7280' }}>Loading your assigned shifts...</p>
+        <div className="py-8 text-center text-xs text-zinc-400 font-mono">
+          Loading assigned shifts...
+        </div>
       ) : !shifts || shifts.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-          <p style={{ fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>No shifts assigned within the current window.</p>
-          <p style={{ fontSize: '0.875rem', margin: 0 }}>Check the Shifts tab to view your complete schedule.</p>
+        <div className="py-8 text-center text-zinc-500">
+          <p className="text-xs font-medium text-zinc-800">No shifts assigned in the active window</p>
+          <p className="text-[11px] text-zinc-400 mt-0.5">
+            Check the Shifts tab to review your upcoming roster.
+          </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {shifts.map((shift) => {
             const assignment = shift.assignments?.find((a) => a.userId === currentUserId);
             if (!assignment) return null;
@@ -92,112 +96,90 @@ export const StaffShiftCheckInCard: React.FC<StaffShiftCheckInCardProps> = ({
             return (
               <div
                 key={shift.id}
-                style={{
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '10px',
-                  padding: '1.25rem',
-                  backgroundColor: '#f9fafb',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
+                className="bg-zinc-50 border border-zinc-200 rounded-md p-4 flex flex-col justify-between gap-3"
               >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '1.1rem', color: '#111827' }}>
-                      {shift.name || 'Scheduled Shift'}
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-semibold text-sm text-zinc-950">
+                      {shift.name || 'General Shift'}
                     </span>
                     {shift.overnight && (
-                      <span
-                        style={{
-                          padding: '0.15rem 0.5rem',
-                          borderRadius: '9999px',
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          backgroundColor: '#ede9fe',
-                          color: '#6d28d9',
-                        }}
-                      >
-                        🌙 Overnight
-                      </span>
+                      <Badge variant="brand" size="sm">
+                        Overnight
+                      </Badge>
                     )}
                   </div>
 
-                  <div style={{ fontSize: '0.875rem', color: '#4b5563', marginBottom: '0.75rem' }}>
-                    <div>🏢 <strong>{shift.branchName}</strong></div>
-                    <div>📅 {formatDateTime(shift.startTime)} → {formatDateTime(shift.endTime)}</div>
-                    {shift.notes && <div style={{ marginTop: '0.25rem', fontStyle: 'italic' }}>"{shift.notes}"</div>}
+                  <div className="text-xs text-zinc-600 font-mono space-y-1">
+                    <div className="flex items-center gap-1 text-zinc-500">
+                      <IconMapPin size={12} className="text-zinc-400" />
+                      <span>{shift.branchName}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-zinc-700 tabular-nums">
+                      <IconClock size={12} className="text-zinc-400" />
+                      <span>{formatDateTime(shift.startTime)} → {formatDateTime(shift.endTime)}</span>
+                    </div>
+                    {shift.notes && (
+                      <p className="text-[11px] text-zinc-500 italic mt-1 font-sans">
+                        "{shift.notes}"
+                      </p>
+                    )}
                   </div>
 
-                  {/* Attendance State Badge */}
-                  <div style={{ margin: '0.75rem 0' }}>
+                  {/* Status Indicator Bar */}
+                  <div className="pt-1">
                     {attendanceRecord ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.85rem', color: '#4b5563' }}>Status:</span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-zinc-500">Status:</span>
                           <AttendanceStatusBadge status={attendanceRecord.status} late={attendanceRecord.late} />
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                        <div className="text-[11px] font-mono text-zinc-500 tabular-nums">
                           In: {formatTimeOnly(attendanceRecord.checkInAt)}
-                          {attendanceRecord.checkOutAt && ` | Out: ${formatTimeOnly(attendanceRecord.checkOutAt)}`}
+                          {attendanceRecord.checkOutAt && ` · Out: ${formatTimeOnly(attendanceRecord.checkOutAt)}`}
                         </div>
                       </div>
                     ) : isTooEarly ? (
-                      <div style={{ fontSize: '0.85rem', color: '#d97706', backgroundColor: '#fffbeb', padding: '0.5rem', borderRadius: '6px' }}>
-                        ⏳ Check-in opens 15 mins before shift ({formatTimeOnly(checkInOpenTime.toISOString())})
+                      <div className="text-xs font-mono text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1.5 rounded">
+                        Window opens at {formatTimeOnly(checkInOpenTime.toISOString())}
                       </div>
                     ) : isPastEnd ? (
-                      <div style={{ fontSize: '0.85rem', color: '#dc2626', backgroundColor: '#fef2f2', padding: '0.5rem', borderRadius: '6px' }}>
-                        ⚠️ Shift time has ended.
+                      <div className="text-xs font-mono text-rose-800 bg-rose-50 border border-rose-200/80 px-2.5 py-1.5 rounded">
+                        Shift schedule has concluded
                       </div>
                     ) : (
-                      <div style={{ fontSize: '0.85rem', color: '#059669', backgroundColor: '#ecfdf5', padding: '0.5rem', borderRadius: '6px' }}>
-                        ✅ Check-in window is open!
+                      <div className="text-xs font-mono text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1.5 rounded flex items-center gap-1.5">
+                        <IconCheck size={13} className="text-emerald-600" />
+                        <span>Check-in window active</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+                {/* Punch Actions */}
+                <div className="pt-2 border-t border-zinc-200/70">
                   {!attendanceRecord && (
-                    <button
+                    <Button
+                      variant="primary"
+                      size="sm"
                       onClick={() => onCheckIn(assignment.id)}
                       disabled={!canCheckIn || isCheckingIn}
-                      style={{
-                        flex: 1,
-                        padding: '0.65rem 1rem',
-                        borderRadius: '8px',
-                        backgroundColor: canCheckIn ? '#059669' : '#9ca3af',
-                        color: '#ffffff',
-                        border: 'none',
-                        fontWeight: 600,
-                        cursor: canCheckIn ? 'pointer' : 'not-allowed',
-                        fontSize: '0.9rem',
-                      }}
+                      className="w-full justify-center"
                     >
-                      {isCheckingIn ? 'Checking In...' : '🟢 Clock In Now'}
-                    </button>
+                      {isCheckingIn ? 'Recording Punch...' : 'Clock In Now'}
+                    </Button>
                   )}
 
                   {canCheckOut && (
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => onCheckOut(assignment.id)}
                       disabled={isCheckingOut}
-                      style={{
-                        flex: 1,
-                        padding: '0.65rem 1rem',
-                        borderRadius: '8px',
-                        backgroundColor: '#2563eb',
-                        color: '#ffffff',
-                        border: 'none',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                        fontSize: '0.9rem',
-                      }}
+                      className="w-full justify-center font-semibold"
                     >
-                      {isCheckingOut ? 'Checking Out...' : '🏁 Clock Out'}
-                    </button>
+                      {isCheckingOut ? 'Recording Out-Punch...' : 'Clock Out (End Shift)'}
+                    </Button>
                   )}
                 </div>
               </div>

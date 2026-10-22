@@ -2,6 +2,8 @@ import React from 'react';
 import { Task } from '../../lib/types';
 import { TaskStatusBadge } from './TaskStatusBadge';
 import { TaskPriorityBadge } from './TaskPriorityBadge';
+import { Button } from '../ui/Button';
+import { IconCheckList } from '../ui/Icons';
 
 interface ManagerTaskTableProps {
   tasks?: Task[];
@@ -15,99 +17,77 @@ export const ManagerTaskTable: React.FC<ManagerTaskTableProps> = ({
   onCancelTask,
 }) => {
   if (isLoading) {
-    return <p style={{ color: '#6b7280' }}>Loading branch tasks...</p>;
+    return <div className="py-12 text-center text-xs font-mono text-zinc-400">Loading branch tasks...</div>;
   }
 
   if (tasks.length === 0) {
     return (
-      <div
-        style={{
-          padding: '3rem',
-          textAlign: 'center',
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb',
-          color: '#6b7280',
-        }}
-      >
-        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📋</div>
-        <p style={{ margin: 0, fontWeight: 500 }}>No tasks found for this branch or shift.</p>
-        <p style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
-          Click "Generate Tasks from Template" above to populate checklists for assigned staff.
+      <div className="py-12 text-center border border-dashed border-zinc-200 rounded-lg bg-zinc-50/50">
+        <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-2">
+          <IconCheckList size={16} />
+        </div>
+        <p className="text-xs font-medium text-zinc-800">No operational tasks found</p>
+        <p className="text-[11px] text-zinc-400 mt-0.5">
+          Generate tasks from checklists or add ad-hoc items for assigned staff.
         </p>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        border: '1px solid #e5e7eb',
-        overflow: 'hidden',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-      }}
-    >
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
-        <thead style={{ backgroundColor: '#f9fafb', borderBottom: '1px solid #e5e7eb', color: '#4b5563' }}>
-          <tr>
-            <th style={{ padding: '0.75rem 1rem' }}>Task</th>
-            <th style={{ padding: '0.75rem 1rem' }}>Staff Assigned</th>
-            <th style={{ padding: '0.75rem 1rem' }}>Shift</th>
-            <th style={{ padding: '0.75rem 1rem' }}>Priority</th>
-            <th style={{ padding: '0.75rem 1rem' }}>Status</th>
-            <th style={{ padding: '0.75rem 1rem' }}>Completed At</th>
-            <th style={{ padding: '0.75rem 1rem' }}>Actions</th>
+    <div className="overflow-x-auto border border-zinc-200 rounded-lg">
+      <table className="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-mono text-[11px] uppercase tracking-wider">
+            <th className="py-2.5 px-3 font-medium">Task / Checklist</th>
+            <th className="py-2.5 px-3 font-medium">Assigned Staff</th>
+            <th className="py-2.5 px-3 font-medium">Shift</th>
+            <th className="py-2.5 px-3 font-medium">Priority</th>
+            <th className="py-2.5 px-3 font-medium">Status</th>
+            <th className="py-2.5 px-3 font-medium">Completed At</th>
+            <th className="py-2.5 px-3 font-medium">Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody className="divide-y divide-zinc-100 bg-white">
           {tasks.map((t) => (
-            <tr key={t.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
-              <td style={{ padding: '0.75rem 1rem' }}>
-                <div style={{ fontWeight: 600, color: '#111827' }}>{t.title}</div>
+            <tr key={t.id} className="hover:bg-zinc-50/80 transition-colors">
+              <td className="py-2.5 px-3">
+                <div className="font-semibold text-zinc-950">{t.title}</div>
                 {t.description && (
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.1rem' }}>{t.description}</div>
+                  <div className="text-[11px] text-zinc-500 mt-0.5 max-w-sm">{t.description}</div>
                 )}
               </td>
-              <td style={{ padding: '0.75rem 1rem', color: '#374151' }}>
-                <span style={{ fontWeight: 500 }}>{t.userName}</span>
-                <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{t.userEmail}</div>
+              <td className="py-2.5 px-3">
+                <span className="font-medium text-zinc-800">{t.userName}</span>
+                <div className="text-[11px] font-mono text-zinc-400">{t.userEmail}</div>
               </td>
-              <td style={{ padding: '0.75rem 1rem', color: '#4b5563', fontSize: '0.8rem' }}>
+              <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
                 {t.shiftName || 'Shift'}
               </td>
-              <td style={{ padding: '0.75rem 1rem' }}>
+              <td className="py-2.5 px-3 whitespace-nowrap">
                 <TaskPriorityBadge priority={t.priority} />
               </td>
-              <td style={{ padding: '0.75rem 1rem' }}>
+              <td className="py-2.5 px-3 whitespace-nowrap">
                 <TaskStatusBadge status={t.status} />
               </td>
-              <td style={{ padding: '0.75rem 1rem', fontSize: '0.8rem', color: '#6b7280' }}>
+              <td className="py-2.5 px-3 font-mono tabular-nums text-zinc-600 whitespace-nowrap">
                 {t.completedAt ? (
-                  <span style={{ color: '#16a34a', fontWeight: 500 }}>
-                    {new Date(t.completedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                  <span className="text-emerald-700 font-medium">
+                    {new Date(t.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 ) : (
-                  '-'
+                  '—'
                 )}
               </td>
-              <td style={{ padding: '0.75rem 1rem' }}>
+              <td className="py-2.5 px-3 whitespace-nowrap">
                 {t.status !== 'COMPLETED' && t.status !== 'CANCELLED' && (
-                  <button
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={() => onCancelTask(t.id)}
-                    style={{
-                      padding: '0.25rem 0.5rem',
-                      border: '1px solid #fee2e2',
-                      borderRadius: '4px',
-                      backgroundColor: '#fff',
-                      color: '#b91c1c',
-                      fontSize: '0.75rem',
-                      cursor: 'pointer',
-                    }}
                   >
                     Cancel
-                  </button>
+                  </Button>
                 )}
               </td>
             </tr>

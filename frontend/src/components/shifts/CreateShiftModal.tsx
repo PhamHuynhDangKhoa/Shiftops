@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 
 interface CreateShiftModalProps {
   isOpen: boolean;
@@ -20,8 +23,6 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
   const [endDateTime, setEndDateTime] = useState('');
   const [shiftNotes, setShiftNotes] = useState('');
   const [localError, setLocalError] = useState<string | null>(null);
-
-  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,170 +52,80 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
   const effectiveError = localError || formError;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Create New Shift"
+      description="Define working hours, notes, and operating schedule for this shift"
     >
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '8px',
-          padding: '1.75rem',
-          width: '100%',
-          maxWidth: '480px',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Create New Shift</h2>
-          <button
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#6b7280' }}
-          >
-            ×
-          </button>
+      {effectiveError && (
+        <div className="p-3 mb-4 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800">
+          {effectiveError}
         </div>
+      )}
 
-        {effectiveError && (
-          <div
-            style={{
-              backgroundColor: '#fee2e2',
-              color: '#991b1b',
-              padding: '0.75rem',
-              borderRadius: '4px',
-              marginBottom: '1rem',
-              fontSize: '0.85rem',
-            }}
-          >
-            {effectiveError}
-          </div>
-        )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Shift Name (Optional)"
+          value={shiftName}
+          onChange={(e) => setShiftName(e.target.value)}
+          placeholder="e.g. Morning Floor Crew, Night Cashier"
+        />
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.25rem' }}>
-              Shift Name (optional)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Morning Shift, Night Shift"
-              value={shiftName}
-              onChange={(e) => setShiftName(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.25rem' }}>
-              Start Date & Time *
-            </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-700">Start Time</label>
             <input
               type="datetime-local"
               required
               value={startDateTime}
               onChange={(e) => setStartDateTime(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-                boxSizing: 'border-box',
-              }}
+              className="w-full px-3 py-2 text-xs font-mono rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
             />
           </div>
 
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.25rem' }}>
-              End Date & Time *
-            </label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-zinc-700">End Time</label>
             <input
               type="datetime-local"
               required
               value={endDateTime}
               onChange={(e) => setEndDateTime(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-                boxSizing: 'border-box',
-              }}
-            />
-            <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-              💡 For overnight shifts crossing midnight, select the next day for the end date.
-            </span>
-          </div>
-
-          <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.25rem' }}>
-              Notes / Briefing (optional)
-            </label>
-            <textarea
-              rows={3}
-              placeholder="e.g. Bring keycard, inventory handover..."
-              value={shiftNotes}
-              onChange={(e) => setShiftNotes(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-                boxSizing: 'border-box',
-              }}
+              className="w-full px-3 py-2 text-xs font-mono rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
             />
           </div>
+        </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                backgroundColor: '#ffffff',
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-              }}
-            >
-              {isPending ? 'Creating...' : 'Create Shift'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Instructions / Notes (Optional)</label>
+          <textarea
+            value={shiftNotes}
+            onChange={(e) => setShiftNotes(e.target.value)}
+            rows={3}
+            placeholder="e.g. Bring key for inventory room, deep cleaning on handoff"
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+          />
+        </div>
+
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            disabled={isPending}
+          >
+            {isPending ? 'Creating Shift...' : 'Create Shift'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };

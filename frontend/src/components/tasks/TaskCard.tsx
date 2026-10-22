@@ -2,6 +2,8 @@ import React from 'react';
 import { Task, TaskStatus } from '../../lib/types';
 import { TaskStatusBadge } from './TaskStatusBadge';
 import { TaskPriorityBadge } from './TaskPriorityBadge';
+import { Button } from '../ui/Button';
+import { IconMapPin, IconClock, IconCheck } from '../ui/Icons';
 
 interface TaskCardProps {
   task: Task;
@@ -14,95 +16,77 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onUpdateStatus,
   isUpdating,
 }) => {
+  const isCompleted = task.status === 'COMPLETED';
+
   return (
     <div
-      style={{
-        backgroundColor: '#fff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-        padding: '1rem 1.25rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-        opacity: task.status === 'COMPLETED' ? 0.85 : 1,
-      }}
+      className={`bg-white border border-zinc-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
+        isCompleted ? 'bg-zinc-50/60 opacity-85' : 'hover:border-zinc-300'
+      }`}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, paddingRight: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+      <div className="space-y-1.5 flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
           <TaskStatusBadge status={task.status} />
           <TaskPriorityBadge priority={task.priority} />
           <span
-            style={{
-              fontWeight: 600,
-              fontSize: '1rem',
-              color: task.status === 'COMPLETED' ? '#4b5563' : '#111827',
-              textDecoration: task.status === 'COMPLETED' ? 'line-through' : 'none',
-            }}
+            className={`font-semibold text-sm tracking-tight ${
+              isCompleted ? 'line-through text-zinc-400' : 'text-zinc-950'
+            }`}
           >
             {task.title}
           </span>
         </div>
+
         {task.description && (
-          <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.875rem', color: '#6b7280' }}>
+          <p className="text-xs text-zinc-600 leading-relaxed pr-2">
             {task.description}
           </p>
         )}
-        <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', color: '#9ca3af', marginTop: '0.25rem' }}>
-          <span>📍 {task.branchName}</span>
-          {task.shiftName && <span>⏰ {task.shiftName}</span>}
+
+        <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-400 flex-wrap pt-0.5">
+          <span className="flex items-center gap-1">
+            <IconMapPin size={11} />
+            {task.branchName}
+          </span>
+          {task.shiftName && (
+            <span className="flex items-center gap-1">
+              <IconClock size={11} />
+              {task.shiftName}
+            </span>
+          )}
           {task.completedAt && (
-            <span style={{ color: '#16a34a', fontWeight: 500 }}>
-              ✓ Completed: {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <span className="text-emerald-700 font-medium flex items-center gap-1">
+              <IconCheck size={11} />
+              Done {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
       </div>
 
       {/* Staff Actions */}
-      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <div className="flex items-center gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100">
         {task.status === 'TODO' && (
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => onUpdateStatus(task.id, 'IN_PROGRESS')}
             disabled={isUpdating}
-            style={{
-              padding: '0.4rem 0.8rem',
-              backgroundColor: '#fef3c7',
-              border: '1px solid #fde68a',
-              color: '#92400e',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
           >
             Start Task
-          </button>
+          </Button>
         )}
 
         {(task.status === 'TODO' || task.status === 'IN_PROGRESS') && (
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={() => onUpdateStatus(task.id, 'COMPLETED')}
             disabled={isUpdating}
-            style={{
-              padding: '0.4rem 0.8rem',
-              backgroundColor: '#16a34a',
-              border: 'none',
-              color: '#fff',
-              borderRadius: '6px',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
+            className="gap-1.5"
           >
-            ✓ Complete
-          </button>
-        )}
-
-        {task.status === 'COMPLETED' && (
-          <span style={{ fontSize: '0.85rem', color: '#16a34a', fontWeight: 600 }}>
-            Done
-          </span>
+            <IconCheck size={13} />
+            <span>Mark Complete</span>
+          </Button>
         )}
       </div>
     </div>

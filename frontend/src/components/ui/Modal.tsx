@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
+import { IconClose } from './Icons';
 
 export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  description?: string;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl';
 }
@@ -12,6 +14,7 @@ export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
+  description,
   children,
   maxWidth = 'md',
 }) => {
@@ -40,23 +43,29 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs transition-opacity"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs transition-opacity"
       onClick={onClose}
     >
       <div
-        className={`w-full ${maxWidthStyles[maxWidth]} bg-white rounded-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150`}
+        className={`w-full ${maxWidthStyles[maxWidth]} bg-white rounded-lg border border-zinc-200 shadow-xl overflow-hidden max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50">
-          <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-zinc-50/70">
+          <div>
+            <h3 className="text-sm font-semibold text-zinc-900 tracking-tight">{title}</h3>
+            {description && (
+              <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 rounded-lg p-1 hover:bg-gray-100 transition-colors cursor-pointer text-lg"
+            className="text-zinc-400 hover:text-zinc-700 rounded-md p-1 hover:bg-zinc-200/60 transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
-            ✕
+            <IconClose className="w-4 h-4" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-1">{children}</div>
+        <div className="p-5 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

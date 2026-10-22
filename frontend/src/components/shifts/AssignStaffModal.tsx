@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Shift, User } from '../../lib/types';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 interface AssignStaffModalProps {
   shift: Shift | null;
@@ -39,127 +41,64 @@ export const AssignStaffModal: React.FC<AssignStaffModalProps> = ({
     onSubmit(shift.id, selectedStaffId);
   };
 
+  const assignedUserIds = new Set(shift.assignments.map((a) => a.userId));
+  const availableStaff = branchStaff?.filter((s) => !assignedUserIds.has(s.id)) || [];
+
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+    <Modal
+      isOpen={!!shift}
+      onClose={onClose}
+      title={`Assign Personnel to ${shift.name || 'Shift'}`}
+      description={`Hours: ${formatDateTime(shift.startTime)} → ${formatDateTime(shift.endTime)}`}
     >
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '8px',
-          padding: '1.75rem',
-          width: '100%',
-          maxWidth: '440px',
-          boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)',
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600 }}>
-            Assign Staff to {shift.name || 'Shift'}
-          </h2>
-          <button
-            onClick={onClose}
-            style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#6b7280' }}
+      {assignError && (
+        <div className="p-3 mb-4 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800">
+          {assignError}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Select Available Personnel</label>
+          <select
+            value={selectedStaffId}
+            onChange={(e) => setSelectedStaffId(e.target.value)}
+            required
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           >
-            ×
-          </button>
+            <option value="">-- Choose Staff Member --</option>
+            {availableStaff.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.fullName} ({s.email}) — {s.role}
+              </option>
+            ))}
+          </select>
+          {availableStaff.length === 0 && (
+            <span className="text-[11px] text-zinc-400">
+              All active staff members for this branch are currently assigned.
+            </span>
+          )}
         </div>
 
-        <p style={{ fontSize: '0.85rem', color: '#6b7280', margin: '0 0 1rem' }}>
-          Shift: {formatDateTime(shift.startTime)} → {formatDateTime(shift.endTime)}
-        </p>
-
-        {assignError && (
-          <div
-            style={{
-              backgroundColor: '#fee2e2',
-              color: '#991b1b',
-              padding: '0.75rem',
-              borderRadius: '4px',
-              marginBottom: '1rem',
-              fontSize: '0.85rem',
-              fontWeight: 500,
-            }}
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={onClose}
           >
-            {assignError}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1.25rem' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 500, marginBottom: '0.25rem' }}>
-              Select Staff Member:
-            </label>
-            <select
-              required
-              value={selectedStaffId}
-              onChange={(e) => setSelectedStaffId(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-                boxSizing: 'border-box',
-                backgroundColor: '#ffffff',
-              }}
-            >
-              <option value="">-- Choose staff --</option>
-              {branchStaff
-                ?.filter((s) => s.active)
-                ?.map((s) => {
-                  const alreadyAssigned = shift.assignments.some((a) => a.userId === s.id);
-                  return (
-                    <option key={s.id} value={s.id} disabled={alreadyAssigned}>
-                      {s.fullName} ({s.email}) {alreadyAssigned ? '— (Already assigned)' : ''}
-                    </option>
-                  );
-                })}
-            </select>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                backgroundColor: '#ffffff',
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-              }}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={!selectedStaffId || isPending}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                border: 'none',
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-              }}
-            >
-              {isPending ? 'Assigning...' : 'Assign Staff'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            disabled={!selectedStaffId || isPending}
+          >
+            {isPending ? 'Assigning...' : 'Confirm Assignment'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };

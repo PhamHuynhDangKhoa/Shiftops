@@ -1,6 +1,9 @@
 import React from 'react';
 import { Shift, ShiftStatus } from '../../lib/types';
 import { ShiftStatusBadge } from './ShiftStatusBadge';
+import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { IconClock, IconMapPin, IconUsers, IconClose } from '../ui/Icons';
 
 interface ShiftCardProps {
   shift: Shift;
@@ -31,223 +34,131 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
   onDeleteShift,
 }) => {
   return (
-    <div
-      style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '8px',
-        border: '1px solid #e5e7eb',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        padding: '1.25rem',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        gap: '1rem',
-      }}
-    >
-      <div>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600, color: '#111827' }}>
-            {shift.name || 'Shift'}
-          </h3>
+    <div className="bg-white border border-zinc-200 rounded-lg p-4 flex flex-col justify-between gap-4 hover:border-zinc-300 transition-colors">
+      <div className="space-y-3">
+        {/* Top: Shift Name & Status */}
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h3 className="font-semibold text-sm text-zinc-950 tracking-tight leading-tight">
+              {shift.name || 'General Shift'}
+            </h3>
+            <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-500 mt-0.5">
+              <IconMapPin size={11} className="text-zinc-400" />
+              <span>{shift.branchName}</span>
+            </div>
+          </div>
           <ShiftStatusBadge status={shift.status} />
         </div>
 
-        {/* Branch Name */}
-        <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '0.75rem' }}>
-          📍 {shift.branchName}
-        </div>
-
-        {/* Time & Overnight badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-          <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1f2937' }}>
-            🕒 {formatDateTime(shift.startTime)} → {formatDateTime(shift.endTime)}
+        {/* Time Interval & Overnight Tag */}
+        <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
+          <span className="flex items-center gap-1.5 text-zinc-800 tabular-nums font-medium bg-zinc-50 border border-zinc-200 px-2 py-0.5 rounded">
+            <IconClock size={12} className="text-zinc-500" />
+            {formatDateTime(shift.startTime)} → {formatDateTime(shift.endTime)}
           </span>
           {shift.overnight && (
-            <span
-              style={{
-                backgroundColor: '#ede9fe',
-                color: '#6d28d9',
-                padding: '0.15rem 0.45rem',
-                borderRadius: '4px',
-                fontSize: '0.72rem',
-                fontWeight: 600,
-              }}
-            >
-              🌙 Overnight
-            </span>
+            <Badge variant="brand" size="sm">
+              Overnight
+            </Badge>
           )}
         </div>
 
         {/* Notes */}
         {shift.notes && (
-          <p
-            style={{
-              margin: '0 0 0.75rem',
-              fontSize: '0.825rem',
-              color: '#4b5563',
-              backgroundColor: '#f9fafb',
-              padding: '0.5rem',
-              borderRadius: '4px',
-            }}
-          >
-            💬 {shift.notes}
+          <p className="text-xs text-zinc-600 bg-zinc-50/70 border border-zinc-100 p-2 rounded leading-relaxed">
+            {shift.notes}
           </p>
         )}
 
         {/* Assigned Staff */}
-        <div>
-          <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#4b5563', marginBottom: '0.4rem' }}>
-            Assigned Staff ({shift.assignments.length})
+        <div className="pt-1">
+          <div className="flex items-center justify-between text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider mb-1.5">
+            <span className="flex items-center gap-1">
+              <IconUsers size={12} className="text-zinc-400" />
+              Assigned ({shift.assignments.length})
+            </span>
           </div>
+
           {shift.assignments.length === 0 ? (
-            <span style={{ fontSize: '0.8rem', color: '#9ca3af', fontStyle: 'italic' }}>No staff assigned</span>
+            <span className="text-xs text-zinc-400 italic">No personnel assigned</span>
           ) : (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+            <div className="flex flex-wrap gap-1.5">
               {shift.assignments.map((a) => (
-                <div
+                <span
                   key={a.id}
-                  style={{
-                    backgroundColor: '#f3f4f6',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '9999px',
-                    padding: '0.2rem 0.6rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    fontSize: '0.78rem',
-                  }}
+                  className="inline-flex items-center gap-1 text-xs bg-zinc-100 border border-zinc-200 text-zinc-800 px-2 py-0.5 rounded font-medium"
                 >
-                  <span style={{ fontWeight: 500, color: '#1f2937' }}>{a.userName}</span>
+                  <span>{a.userName}</span>
                   {!isStaff && shift.status === 'DRAFT' && (
                     <button
                       onClick={() => onRemoveAssignment(shift.id, a.userId)}
                       title="Remove assignment"
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#ef4444',
-                        cursor: 'pointer',
-                        fontWeight: 700,
-                        fontSize: '0.85rem',
-                        padding: 0,
-                        lineHeight: 1,
-                      }}
+                      className="text-zinc-400 hover:text-rose-600 cursor-pointer ml-0.5 transition-colors"
                     >
-                      ×
+                      <IconClose size={12} />
                     </button>
                   )}
-                </div>
+                </span>
               ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Action Buttons for Managers / Owners */}
+      {/* Action Footer for Management */}
       {!isStaff && (
-        <div
-          style={{
-            borderTop: '1px solid #f3f4f6',
-            paddingTop: '0.75rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.5rem',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '0.4rem' }}>
+        <div className="border-t border-zinc-100 pt-3 flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             {shift.status === 'DRAFT' && (
               <>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onAssignClick(shift)}
-                  style={{
-                    backgroundColor: '#f3f4f6',
-                    color: '#374151',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '4px',
-                    padding: '0.3rem 0.6rem',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
                 >
-                  + Assign Staff
-                </button>
-                <button
+                  + Assign
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => onUpdateStatus(shift.id, 'PUBLISHED')}
-                  style={{
-                    backgroundColor: '#059669',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '0.3rem 0.6rem',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
                 >
                   Publish
-                </button>
+                </Button>
               </>
             )}
 
             {shift.status === 'PUBLISHED' && (
               <>
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onUpdateStatus(shift.id, 'DRAFT')}
-                  style={{
-                    backgroundColor: '#f3f4f6',
-                    color: '#374151',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '4px',
-                    padding: '0.3rem 0.6rem',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
                 >
                   Revert to Draft
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onUpdateStatus(shift.id, 'COMPLETED')}
-                  style={{
-                    backgroundColor: '#2563eb',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '0.3rem 0.6rem',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
                 >
-                  Complete
-                </button>
+                  Mark Complete
+                </Button>
               </>
             )}
 
             {(shift.status === 'DRAFT' || shift.status === 'PUBLISHED') && (
-              <button
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={() => {
-                  if (confirm('Are you sure you want to cancel this shift?')) {
+                  if (confirm('Cancel this operational shift?')) {
                     onUpdateStatus(shift.id, 'CANCELLED');
                   }
                 }}
-                style={{
-                  backgroundColor: '#fee2e2',
-                  color: '#991b1b',
-                  border: 'none',
-                  borderRadius: '4px',
-                  padding: '0.3rem 0.6rem',
-                  fontSize: '0.78rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
               >
                 Cancel
-              </button>
+              </Button>
             )}
           </div>
 
@@ -258,16 +169,10 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
                   onDeleteShift(shift.id);
                 }
               }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#9ca3af',
-                cursor: 'pointer',
-                fontSize: '0.78rem',
-              }}
-              title="Delete shift"
+              className="text-xs font-mono text-zinc-400 hover:text-rose-600 transition-colors cursor-pointer px-1 py-0.5"
+              title="Delete draft shift"
             >
-              🗑️
+              Delete
             </button>
           )}
         </div>

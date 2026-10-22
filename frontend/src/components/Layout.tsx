@@ -3,6 +3,14 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/WebSocketContext';
 import { NotificationBell } from './NotificationBell';
+import {
+  IconLogo,
+  IconMapPin,
+  IconLogOut,
+  IconAlertTriangle,
+} from './ui/Icons';
+import { Badge } from './ui/Badge';
+import { Button } from './ui/Button';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -14,63 +22,51 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     navigate('/login');
   };
 
-  const getRoleBadgeStyle = (role?: string) => {
+  const getRoleVariant = (role?: string): 'brand' | 'neutral' | 'urgent' => {
     switch (role) {
       case 'OWNER':
-        return { backgroundColor: '#7c3aed', color: '#fff' };
+        return 'brand';
       case 'MANAGER':
-        return { backgroundColor: '#2563eb', color: '#fff' };
+        return 'brand';
       case 'STAFF':
-        return { backgroundColor: '#059669', color: '#fff' };
+        return 'neutral';
       default:
-        return { backgroundColor: '#6b7280', color: '#fff' };
+        return 'neutral';
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <header
-        style={{
-          borderBottom: '1px solid #e5e7eb',
-          backgroundColor: '#ffffff',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1200px',
-            margin: '0 auto',
-            padding: '0.75rem 1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+    <div className="min-h-screen flex flex-col bg-zinc-50 text-zinc-900 antialiased">
+      {/* Top Header */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xs border-b border-zinc-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          {/* Left: Brand + Navigation */}
+          <div className="flex items-center gap-6 min-w-0">
             <Link
               to="/"
-              style={{
-                fontSize: '1.4rem',
-                fontWeight: 700,
-                color: '#111827',
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
+              className="flex items-center gap-2 text-zinc-950 font-semibold tracking-tight text-sm hover:opacity-85 transition-opacity flex-shrink-0"
             >
-              <span style={{ color: '#2563eb' }}>⚡</span> ShiftOps
+              <span className="w-7 h-7 rounded-md bg-zinc-900 text-white flex items-center justify-center">
+                <IconLogo size={14} />
+              </span>
+              <span className="font-semibold text-sm tracking-tight text-zinc-950">ShiftOps</span>
+              <span className="hidden sm:inline-block font-mono text-[10px] text-zinc-600 bg-zinc-100 border border-zinc-200 px-1 py-0.5 rounded font-normal">
+                PORTAL
+              </span>
             </Link>
 
             {isAuthenticated && (
-              <nav style={{ display: 'flex', gap: '1rem' }}>
+              <nav className="hidden md:flex items-center gap-1 overflow-x-auto py-1">
                 <NavLink
                   to="/"
                   end
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                      isActive
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                    }`
+                  }
                 >
                   Dashboard
                 </NavLink>
@@ -78,7 +74,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 {user && (user.role === 'OWNER' || user.role === 'MANAGER') && (
                   <NavLink
                     to="/branches"
-                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                    className={({ isActive }) =>
+                      `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                        isActive
+                          ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                      }`
+                    }
                   >
                     Branches
                   </NavLink>
@@ -87,78 +89,112 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 {user && (user.role === 'OWNER' || user.role === 'MANAGER') && (
                   <NavLink
                     to="/staff"
-                    className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                    className={({ isActive }) =>
+                      `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                        isActive
+                          ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                          : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                      }`
+                    }
                   >
-                    Staff Management
+                    Staff
                   </NavLink>
                 )}
 
                 <NavLink
                   to="/shifts"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                      isActive
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                    }`
+                  }
                 >
                   Shifts
                 </NavLink>
 
                 <NavLink
                   to="/attendance"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                      isActive
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                    }`
+                  }
                 >
                   Attendance
                 </NavLink>
 
                 <NavLink
                   to="/tasks"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                      isActive
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                    }`
+                  }
                 >
                   Tasks
                 </NavLink>
 
                 <NavLink
                   to="/issues"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                      isActive
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                    }`
+                  }
                 >
                   Issues
                 </NavLink>
 
                 <NavLink
                   to="/handovers"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                      isActive
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                    }`
+                  }
                 >
                   Handover
                 </NavLink>
 
                 <NavLink
                   to="/profile"
-                  className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}
+                  className={({ isActive }) =>
+                    `px-2.5 py-1 text-xs rounded-md transition-colors font-medium whitespace-nowrap ${
+                      isActive
+                        ? 'bg-zinc-100 text-zinc-950 font-semibold border border-zinc-200/70'
+                        : 'text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100/70'
+                    }`
+                  }
                 >
-                  My Profile
+                  Profile
                 </NavLink>
               </nav>
             )}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+          {/* Right: Status + User + Controls */}
+          <div className="flex items-center gap-3">
             {isAuthenticated && user ? (
               <>
+                {/* WebSocket Status Indicator */}
                 <div
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    padding: '0.2rem 0.55rem',
-                    borderRadius: '9999px',
-                    fontSize: '0.72rem',
-                    fontWeight: 600,
-                    backgroundColor:
-                      status === 'CONNECTED' ? '#ecfdf5' : status === 'RECONNECTING' ? '#fffbeb' : '#f3f4f6',
-                    color:
-                      status === 'CONNECTED' ? '#047857' : status === 'RECONNECTING' ? '#b45309' : '#6b7280',
-                    border: `1px solid ${
-                      status === 'CONNECTED' ? '#a7f3d0' : status === 'RECONNECTING' ? '#fde68a' : '#e5e7eb'
-                    }`,
-                    transition: 'all 0.2s ease',
-                  }}
+                  className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-mono font-medium border ${
+                    status === 'CONNECTED'
+                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200/80'
+                      : status === 'RECONNECTING'
+                      ? 'bg-amber-50 text-amber-800 border-amber-200/80'
+                      : 'bg-zinc-100 text-zinc-600 border-zinc-200'
+                  }`}
                   title={
                     status === 'CONNECTED'
                       ? 'Realtime WebSocket Active'
@@ -168,123 +204,84 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   }
                 >
                   <span
-                    style={{
-                      width: '6px',
-                      height: '6px',
-                      borderRadius: '50%',
-                      backgroundColor:
-                        status === 'CONNECTED' ? '#10b981' : status === 'RECONNECTING' ? '#f59e0b' : '#9ca3af',
-                      display: 'inline-block',
-                    }}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      status === 'CONNECTED'
+                        ? 'bg-emerald-500 animate-pulse'
+                        : status === 'RECONNECTING'
+                        ? 'bg-amber-500 animate-pulse'
+                        : 'bg-zinc-400'
+                    }`}
                   />
-                  <span>{status === 'CONNECTED' ? 'Live' : status === 'RECONNECTING' ? 'Reconnecting' : 'Offline'}</span>
+                  <span>
+                    {status === 'CONNECTED' ? 'Live' : status === 'RECONNECTING' ? 'Reconnecting' : 'Offline'}
+                  </span>
                 </div>
+
                 <NotificationBell />
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', fontSize: '0.875rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontWeight: 600, color: '#1f2937' }}>{user.fullName}</span>
-                    <span
-                      style={{
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '9999px',
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        ...getRoleBadgeStyle(user.role),
-                      }}
-                    >
-                      {user.role}
+
+                {/* User Identity */}
+                <div className="hidden sm:flex flex-col items-end text-right">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-zinc-900 leading-none">
+                      {user.fullName}
                     </span>
+                    <Badge variant={getRoleVariant(user.role)} size="sm">
+                      {user.role}
+                    </Badge>
                   </div>
                   {user.primaryBranchName && (
-                    <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>
-                      📍 {user.primaryBranchName}
+                    <span className="text-[11px] text-zinc-500 flex items-center gap-0.5 mt-0.5 font-mono leading-none">
+                      <IconMapPin size={11} className="text-zinc-400" />
+                      {user.primaryBranchName}
                     </span>
                   )}
                 </div>
 
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={handleLogout}
-                  style={{
-                    padding: '0.4rem 0.8rem',
-                    border: '1px solid #d1d5db',
-                    borderRadius: '6px',
-                    backgroundColor: '#fff',
-                    color: '#374151',
-                    fontSize: '0.875rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
-                  onMouseOver={(e) => ((e.target as HTMLElement).style.backgroundColor = '#f3f4f6')}
-                  onMouseOut={(e) => ((e.target as HTMLElement).style.backgroundColor = '#fff')}
+                  title="Sign out of ShiftOps"
+                  className="gap-1.5"
                 >
-                  Logout
-                </button>
+                  <IconLogOut size={13} className="text-zinc-500" />
+                  <span className="hidden sm:inline">Logout</span>
+                </Button>
               </>
             ) : (
-              <Link
-                to="/login"
-                style={{
-                  padding: '0.4rem 1rem',
-                  borderRadius: '6px',
-                  backgroundColor: '#2563eb',
-                  color: '#fff',
-                  textDecoration: 'none',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                }}
-              >
-                Sign In
+              <Link to="/login">
+                <Button variant="primary" size="sm">
+                  Sign In
+                </Button>
               </Link>
             )}
           </div>
         </div>
 
+        {/* Temporary Password Alert Banner */}
         {isAuthenticated && user?.mustChangePassword && (
-          <div
-            style={{
-              backgroundColor: '#fffbeb',
-              borderTop: '1px solid #fef3c7',
-              borderBottom: '1px solid #fde68a',
-              padding: '0.6rem 1.5rem',
-              textAlign: 'center',
-              color: '#92400e',
-              fontSize: '0.875rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <span>⚠️ Action Required: You are logged in with a temporary password.</span>
+          <div className="bg-amber-50 border-t border-b border-amber-200 px-4 py-2 text-center text-xs text-amber-900 flex items-center justify-center gap-2">
+            <IconAlertTriangle size={14} className="text-amber-700 flex-shrink-0" />
+            <span>
+              <strong>Action Required:</strong> You are logged in with a temporary password.
+            </span>
             <Link
               to="/profile"
-              style={{
-                color: '#b45309',
-                fontWeight: 600,
-                textDecoration: 'underline',
-              }}
+              className="text-amber-800 font-semibold underline underline-offset-2 hover:text-amber-950"
             >
-              Update your password now
+              Update your password now →
             </Link>
           </div>
         )}
       </header>
 
-      <main style={{ flex: 1, maxWidth: '1200px', width: '100%', margin: '0 auto', padding: '1.5rem' }}>
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1">
         {children}
       </main>
 
-      <footer
-        style={{
-          borderTop: '1px solid #e5e7eb',
-          backgroundColor: '#fafafa',
-          padding: '1.25rem',
-          textAlign: 'center',
-          color: '#6b7280',
-          fontSize: '0.875rem',
-        }}
-      >
+      {/* Footer */}
+      <footer className="border-t border-zinc-200 bg-white py-4 text-center text-xs text-zinc-500 font-mono">
         ShiftOps © 2026 — Operations & Shift Management Platform
       </footer>
     </div>

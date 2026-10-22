@@ -19,6 +19,7 @@ import {
   HandoverAcknowledgeModal,
   HandoverDebriefModal,
 } from '../components/handovers';
+import { IconHandshake, IconAlertTriangle, IconClose } from '../components/ui/Icons';
 
 export const HandoversPage: React.FC = () => {
   const { user } = useAuth();
@@ -203,26 +204,26 @@ export const HandoversPage: React.FC = () => {
   });
 
   return (
-    <div className="space-y-8 max-w-7xl mx-auto pb-12">
-      {/* Top Banner / Navigation */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-            <span>🤝</span> Shift Handover Operations
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
+            <IconHandshake size={20} className="text-zinc-950" />
+            <span>Shift Handover Operations</span>
           </h1>
-          <p className="text-sm md:text-base text-gray-600 mt-1">
-            Transfer shift context, log operational debriefs, and prevent operational blindspots.
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Transfer operational shift context, log duty debriefs, and prevent coverage blindspots
           </p>
         </div>
 
-        {/* Branch Selector for Owners / Managers */}
         {(isOwner || isManager) && branches && branches.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Branch:</span>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="font-mono text-zinc-500 text-[11px]">Branch:</span>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-semibold bg-white text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -233,6 +234,21 @@ export const HandoversPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {errorMessage && (
+        <div className="p-3 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <IconAlertTriangle size={14} className="text-rose-600" />
+            <span>{errorMessage}</span>
+          </div>
+          <button
+            onClick={() => setErrorMessage(null)}
+            className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
+          >
+            <IconClose size={13} />
+          </button>
+        </div>
+      )}
 
       {/* 1. LATEST BRANCH HANDOVER (INCOMING TEAM VIEW) */}
       <LatestHandoverCard

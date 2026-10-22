@@ -13,6 +13,7 @@ import {
   IssuePriority,
   IssueStatus,
   ApiResponse,
+  PagedResponse,
 } from '../lib/types';
 import {
   IssueSummaryCards,
@@ -23,6 +24,13 @@ import {
   PhotoPreviewModal,
   IssueDetailModal,
 } from '../components/issues';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconClose,
+} from '../components/ui/Icons';
 
 export const IssuesPage: React.FC = () => {
   const { user } = useAuth();
@@ -96,8 +104,10 @@ export const IssuesPage: React.FC = () => {
     queryKey: ['branch-staff', selectedBranchId],
     queryFn: async () => {
       if (!selectedBranchId) return [];
-      const res = await api.get<ApiResponse<User[]>>(`/branches/${selectedBranchId}/staff`);
-      return res.data.data;
+      const res = await api.get<ApiResponse<PagedResponse<User>>>('/users', {
+        params: { branchId: selectedBranchId, size: 50 },
+      });
+      return res.data.data.content;
     },
     enabled: !isStaff && !!selectedBranchId,
   });
@@ -119,27 +129,24 @@ export const IssuesPage: React.FC = () => {
   const {
     data: branchIssuesPage,
     isLoading: isLoadingBranchIssues,
-  } = useQuery<{ content: IssueSummary[]; totalElements: number }>({
+  } = useQuery<PagedResponse<IssueSummary>>({
     queryKey: ['branch-issues', selectedBranchId, statusFilter, categoryFilter, priorityFilter],
     queryFn: async () => {
-      if (!selectedBranchId) return { content: [], totalElements: 0 };
-      const params: Record<string, string | number> = {
-        size: 50,
-      };
+      if (!selectedBranchId) return { content: [], totalElements: 0, totalPages: 0, size: 50, page: 0, last: true };
+      const params: Record<string, string> = { size: '50' };
       if (statusFilter !== 'ALL') params.status = statusFilter;
       if (categoryFilter !== 'ALL') params.category = categoryFilter;
       if (priorityFilter !== 'ALL') params.priority = priorityFilter;
 
-      const res = await api.get<ApiResponse<{ content: IssueSummary[]; totalElements: number }>>(
-        `/branches/${selectedBranchId}/issues`,
-        { params }
-      );
+      const res = await api.get<ApiResponse<PagedResponse<IssueSummary>>>(`/branches/${selectedBranchId}/issues`, {
+        params,
+      });
       return res.data.data;
     },
     enabled: !isStaff && !!selectedBranchId,
   });
 
-  // Selected Issue Detail query
+  // Issue Detail Query
   const {
     data: selectedIssue,
     isLoading: isLoadingIssueDetail,
@@ -160,91 +167,67 @@ export const IssuesPage: React.FC = () => {
   // Create Issue
   const createIssueMutation = useMutation({
     mutationFn: async () => {
-      const targetBranch = isStaff ? user?.primaryBranchId : (reportBranchId || selectedBranchId);
-      if (!targetBranch) throw new Error('Branch is required');
+      const targetBranch = isStaff ? (user?.primaryBranchId || reportBranchId) : reportBranchId;
+      if (!targetBranch) throw new Error('Branch required');
 
-      // 1. Create issue
-      const res = await api.post<ApiResponse<Issue>>('/issues', {
-        branchId: targetBranch,
-        title: reportTitle.trim(),
-        description: reportDescription.trim(),
-        category: reportCategory,
-        priority: reportPriority,
-      });
-
-      const created = res.data.data;
-
-      // 2. If photo attached, upload it
-      if (reportFile && created.id) {
-        const formData = new FormData();
-        formData.append('file', reportFile);
-        await api.post(`/issues/${created.id}/attachments`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+      const formData = new FormData();
+      formData.append('title', reportTitle.trim());
+      formData.append('description', reportDescription.trim());
+      formData.append('category', reportCategory);
+      formData.append('priority', reportPriority);
+      if (reportFile) {
+        formData.append('attachment', reportFile);
       }
 
-      return created;
+      const res = await api.post<ApiResponse<Issue>>(`/branches/${targetBranch}/issues`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return res.data;
     },
-    onSuccess: (data) => {
-      setAlert({ type: 'success', message: `Issue "${data.title}" reported successfully!` });
+    onSuccess: () => {
+      setAlert({ type: 'success', message: 'Incident reported successfully' });
       setShowReportModal(false);
       setReportTitle('');
       setReportDescription('');
+      setReportCategory('EQUIPMENT');
+      setReportPriority('NORMAL');
       setReportFile(null);
-      queryClient.invalidateQueries({ queryKey: ['my-issues'] });
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
+      queryClient.invalidateQueries({ queryKey: ['my-issues'] });
     },
     onError: (err: unknown) => {
-      const axiosErr = err as AxiosError<{ message?: string }>;
-      setAlert({
-        type: 'error',
-        message: axiosErr.response?.data?.message || axiosErr.message || 'Failed to report issue',
-      });
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to report issue';
+      setAlert({ type: 'error', message: msg });
     },
   });
 
   // Assign Issue
   const assignIssueMutation = useMutation({
     mutationFn: async ({ issueId, userId }: { issueId: string; userId: string }) => {
-      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/assign`, {
-        assignedToUserId: userId,
-      });
-      return res.data.data;
+      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/assign`, { userId });
+      return res.data;
     },
     onSuccess: () => {
       setAlert({ type: 'success', message: 'Issue assigned successfully' });
+      setAssigneeUserId('');
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
-      queryClient.invalidateQueries({ queryKey: ['my-issues'] });
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string }>;
-      setAlert({
-        type: 'error',
-        message: axiosErr.response?.data?.message || 'Failed to assign issue',
-      });
+      setAlert({ type: 'error', message: axiosErr.response?.data?.message || 'Failed to assign issue' });
     },
   });
 
   // Update Status
   const updateStatusMutation = useMutation({
-    mutationFn: async ({
-      issueId,
-      status,
-      comment,
-    }: {
-      issueId: string;
-      status: IssueStatus;
-      comment?: string;
-    }) => {
-      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/status`, {
-        status,
-        comment: comment?.trim() || undefined,
-      });
-      return res.data.data;
+    mutationFn: async ({ issueId, status, comment }: { issueId: string; status: IssueStatus; comment?: string }) => {
+      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/status`, { status, comment });
+      return res.data;
     },
-    onSuccess: (data) => {
-      setAlert({ type: 'success', message: `Issue marked as ${data.status}` });
+    onSuccess: () => {
+      setAlert({ type: 'success', message: 'Incident status updated' });
       setStatusActionTarget(null);
       setStatusComment('');
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
@@ -253,49 +236,39 @@ export const IssuesPage: React.FC = () => {
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string }>;
-      setAlert({
-        type: 'error',
-        message: axiosErr.response?.data?.message || 'Failed to update issue status',
-      });
+      setAlert({ type: 'error', message: axiosErr.response?.data?.message || 'Failed to update status' });
     },
   });
 
   // Add Comment
   const addCommentMutation = useMutation({
     mutationFn: async ({ issueId, message }: { issueId: string; message: string }) => {
-      const res = await api.post(`/issues/${issueId}/comments`, {
-        message: message.trim(),
-      });
+      const res = await api.post<ApiResponse<Issue>>(`/issues/${issueId}/comments`, { message });
       return res.data;
     },
     onSuccess: () => {
       setNewComment('');
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
-      queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string }>;
-      setAlert({
-        type: 'error',
-        message: axiosErr.response?.data?.message || 'Failed to post comment',
-      });
+      setAlert({ type: 'error', message: axiosErr.response?.data?.message || 'Failed to add comment' });
     },
   });
 
-  // Upload Additional Attachment
+  // Upload Attachment
   const uploadAttachmentMutation = useMutation({
     mutationFn: async ({ issueId, file }: { issueId: string; file: File }) => {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await api.post(`/issues/${issueId}/attachments`, formData, {
+      const res = await api.post<ApiResponse<Issue>>(`/issues/${issueId}/attachments`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return res.data;
     },
     onSuccess: () => {
-      setAlert({ type: 'success', message: 'Attachment uploaded successfully' });
+      setAlert({ type: 'success', message: 'Attachment uploaded' });
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
-      queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string }>;
@@ -330,112 +303,81 @@ export const IssuesPage: React.FC = () => {
   }, [branchIssuesPage]);
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1.5rem 1rem' }}>
-      {/* Alert banner */}
-      {alert && (
-        <div
-          style={{
-            padding: '1rem',
-            marginBottom: '1.5rem',
-            borderRadius: '8px',
-            backgroundColor: alert.type === 'success' ? '#ecfdf5' : '#fef2f2',
-            color: alert.type === 'success' ? '#065f46' : '#991b1b',
-            border: `1px solid ${alert.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <span>{alert.message}</span>
-          <button
-            onClick={() => setAlert(null)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-              color: 'inherit',
-            }}
-          >
-            ✕
-          </button>
-        </div>
-      )}
-
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-          gap: '1rem',
-          marginBottom: '1.5rem',
-        }}
-      >
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
         <div>
-          <h1 style={{ fontSize: '1.875rem', fontWeight: 800, color: '#111827', margin: 0 }}>
-            Operational Issues
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
+            <IconAlertTriangle size={20} className="text-zinc-950" />
+            <span>Operational Incidents & Issues</span>
           </h1>
-          <p style={{ color: '#4b5563', margin: '0.25rem 0 0 0', fontSize: '0.95rem' }}>
+          <p className="text-xs text-zinc-500 mt-0.5">
             {isStaff
-              ? 'Report equipment breakdowns, safety hazards, and track resolution.'
-              : 'Monitor, assign, and resolve branch hazards, maintenance issues, and equipment failures.'}
+              ? 'Report equipment breakdowns, safety hazards, and track triage progress'
+              : 'Monitor branch hazards, assign personnel, and verify resolution ledgers'}
           </p>
         </div>
 
-        <button
+        <Button
+          variant="danger"
+          size="sm"
           onClick={() => {
             setReportBranchId(isStaff ? user?.primaryBranchId || '' : selectedBranchId);
             setShowReportModal(true);
           }}
-          style={{
-            padding: '0.65rem 1.25rem',
-            backgroundColor: '#dc2626',
-            color: '#ffffff',
-            border: 'none',
-            borderRadius: '6px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-          }}
+          className="gap-1.5"
         >
-          <span>⚠️</span> Report Issue
-        </button>
+          <IconAlertTriangle size={14} />
+          <span>Report Incident</span>
+        </Button>
       </div>
+
+      {/* Alert banner */}
+      {alert && (
+        <div
+          className={`p-3 rounded-md text-xs border flex items-center justify-between ${
+            alert.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
+              : 'bg-rose-50 text-rose-800 border-rose-200/90'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {alert.type === 'success' ? (
+              <IconCheck size={14} className="text-emerald-600" />
+            ) : (
+              <IconAlertTriangle size={14} className="text-rose-600" />
+            )}
+            <span>{alert.message}</span>
+          </div>
+          <button
+            onClick={() => setAlert(null)}
+            className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
+          >
+            <IconClose size={13} />
+          </button>
+        </div>
+      )}
 
       {/* MANAGER / OWNER: Branch Selector and Metrics */}
       {!isStaff && (
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div className="space-y-4">
           {isOwner && branches && branches.length > 0 && (
-            <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <label style={{ fontWeight: 600, color: '#374151', fontSize: '0.9rem' }}>
-                Select Branch:
-              </label>
+            <div className="flex items-center gap-2 text-xs">
+              <label className="font-mono text-zinc-500 text-[11px]">Select Branch:</label>
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#ffffff',
-                  fontWeight: 500,
-                }}
+                className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
               >
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.name} {b.active ? '' : '(Inactive)'}
+                    {b.name} {!b.active && '(Inactive)'}
                   </option>
                 ))}
               </select>
             </div>
           )}
 
-          {/* Operational Metrics Cards */}
           <IssueSummaryCards metrics={metrics} />
         </div>
       )}
@@ -455,45 +397,21 @@ export const IssuesPage: React.FC = () => {
       {isStaff && (
         <div>
           {isLoadingMyIssues ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: '#6b7280' }}>
-              Loading reported & assigned issues...
+            <div className="py-12 text-center text-xs font-mono text-zinc-400">
+              Loading incident reports...
             </div>
           ) : !myIssues || myIssues.length === 0 ? (
-            <div
-              style={{
-                backgroundColor: '#ffffff',
-                border: '1px dashed #d1d5db',
-                borderRadius: '8px',
-                padding: '3rem',
-                textAlign: 'center',
-                color: '#6b7280',
-              }}
-            >
-              <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.5rem' }}>🛡️</span>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#374151' }}>
-                No Issues Reported
-              </h3>
-              <p style={{ fontSize: '0.9rem', color: '#6b7280', maxWidth: '400px', margin: '0.5rem auto' }}>
-                You have not reported any operational issues and none are currently assigned to you.
+            <Card className="py-12 text-center text-zinc-500">
+              <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-2">
+                <IconAlertTriangle size={16} />
+              </div>
+              <p className="text-xs font-medium text-zinc-800">No active incidents</p>
+              <p className="text-[11px] text-zinc-400 mt-0.5">
+                You haven't reported any issues and none are assigned to you.
               </p>
-              <button
-                onClick={() => setShowReportModal(true)}
-                style={{
-                  marginTop: '1rem',
-                  padding: '0.5rem 1rem',
-                  backgroundColor: '#dc2626',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Report New Issue
-              </button>
-            </div>
+            </Card>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
               {myIssues
                 .filter((iss) => (statusFilter === 'ALL' ? true : iss.status === statusFilter))
                 .map((issue) => (
@@ -517,7 +435,7 @@ export const IssuesPage: React.FC = () => {
         />
       )}
 
-      {/* MODAL 1: REPORT ISSUE MODAL */}
+      {/* MODALS */}
       <ReportIssueModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
@@ -538,7 +456,6 @@ export const IssuesPage: React.FC = () => {
         isPending={createIssueMutation.isPending}
       />
 
-      {/* MODAL 2: ISSUE DETAIL & INVESTIGATION MODAL */}
       <IssueDetailModal
         issueId={selectedIssueId}
         onClose={() => {
@@ -599,7 +516,6 @@ export const IssuesPage: React.FC = () => {
         isAddingComment={addCommentMutation.isPending}
       />
 
-      {/* MODAL 3: PHOTO PREVIEW MODAL */}
       <PhotoPreviewModal
         imageUrl={previewImageUrl}
         onClose={() => {

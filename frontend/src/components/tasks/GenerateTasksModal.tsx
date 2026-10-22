@@ -1,5 +1,7 @@
 import React from 'react';
 import { Shift, TaskTemplate } from '../../lib/types';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 interface GenerateTasksModalProps {
   isOpen: boolean;
@@ -17,8 +19,8 @@ interface GenerateTasksModalProps {
 export const GenerateTasksModal: React.FC<GenerateTasksModalProps> = ({
   isOpen,
   onClose,
-  branchShifts,
-  branchTemplates,
+  branchShifts = [],
+  branchTemplates = [],
   selectedShiftId,
   onSelectShiftId,
   selectedTemplateId,
@@ -26,106 +28,71 @@ export const GenerateTasksModal: React.FC<GenerateTasksModalProps> = ({
   onSubmit,
   isPending,
 }) => {
-  if (!isOpen) return null;
-
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Generate Shift Tasks from Template"
+      description="Select an active shift roster and standard operating checklist to generate tasks for assigned personnel"
     >
-      <div
-        style={{
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          padding: '1.5rem',
-          maxWidth: '480px',
-          width: '100%',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
         }}
+        className="space-y-4"
       >
-        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: 700 }}>
-          Generate Tasks for Shift
-        </h2>
-        <p style={{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '1rem' }}>
-          Select a shift and task template. A distinct task will be assigned to every staff member on the shift.
-        </p>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Target Shift:
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Target Shift</label>
           <select
             value={selectedShiftId}
             onChange={(e) => onSelectShiftId(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           >
-            {branchShifts?.map((s) => (
+            <option value="">-- Choose Target Shift --</option>
+            {branchShifts.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name || 'Shift'} ({new Date(s.startTime).toLocaleDateString()}{' '}
-                {new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}) -{' '}
-                {s.assignments?.length || 0} staff
+                {s.name || 'Shift'} ({new Date(s.startTime).toLocaleDateString()} {new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}) — {s.assignments?.length || 0} Staff
               </option>
             ))}
           </select>
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Select Template:
-          </label>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Checklist Template</label>
           <select
             value={selectedTemplateId}
             onChange={(e) => onSelectTemplateId(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           >
             <option value="">-- Choose Template --</option>
-            {branchTemplates
-              ?.filter((t) => t.active)
-              .map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name} ({t.items?.length || 0} checklist items)
-                </option>
-              ))}
+            {branchTemplates.filter((t) => t.active).map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} ({t.items?.length || 0} checklist items)
+              </option>
+            ))}
           </select>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-          <button
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
             onClick={onClose}
-            style={{
-              padding: '0.5rem 1rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-            }}
           >
             Cancel
-          </button>
-          <button
-            onClick={onSubmit}
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
             disabled={!selectedShiftId || !selectedTemplateId || isPending}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              backgroundColor: '#2563eb',
-              border: 'none',
-              color: '#fff',
-              fontWeight: 600,
-              cursor: !selectedShiftId || !selectedTemplateId ? 'not-allowed' : 'pointer',
-            }}
           >
             {isPending ? 'Generating...' : 'Generate Tasks'}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

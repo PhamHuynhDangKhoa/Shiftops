@@ -1,24 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
+  --color-zinc-950: #09090b;
+  --color-zinc-900: #18181b;
+  --color-zinc-800: #27272a;
+  --color-zinc-700: #3f3f46;
+  --color-zinc-600: #52525b;
+  --color-zinc-500: #71717a;
+  --color-zinc-400: #a1a1aa;
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-200: #e4e4e7;
+  --color-zinc-100: #f4f4f5;
+  --color-zinc-50: #fafafa;
 
-  --color-status-urgent: #ef4444;
-  --color-status-high: #f97316;
-  --color-status-normal: #3b82f6;
-  --color-status-low: #6b7280;
+  --color-brand-600: #0284c7;
+  --color-brand-700: #0369a1;
+
+  --color-status-urgent: #e11d48;
+  --color-status-high: #ea580c;
+  --color-status-normal: #0284c7;
+  --color-status-low: #71717a;
+  --color-status-success: #16a34a;
 }
 
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #1f2937;
+  color: #18181b;
   background-color: #f8fafc;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 * {
@@ -30,64 +43,27 @@ body {
   min-width: 320px;
   min-height: 100vh;
   background-color: #f8fafc;
+  color: #18181b;
 }
 
-.nav-link {
-  color: #4b5563;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  transition: all 0.15s ease-in-out;
+/* Tabular figures for operational timestamps and numbers */
+.num-tabular, time, [data-tabular] {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-.nav-link:hover {
-  color: #111827;
-  background-color: #f3f4f6;
-}
-
-.nav-link.active {
-  color: #2563eb;
-  background-color: #eff6ff;
-  font-weight: 600;
+/* Precise high-craft form inputs without fuzzy halos */
+input, select, textarea {
+  font-family: inherit;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: #18181b !important;
+  box-shadow: 0 0 0 1px #18181b !important;
 }
 
 button {
   font-family: inherit;
 }
 
-.health-page {
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
-}
-
-.health-success {
-  border-color: #4caf50;
-  background: #f1f8e9;
-}
-
-.health-error {
-  border-color: #f44336;
-  background: #ffebee;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-td {
-  padding: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}

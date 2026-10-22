@@ -16,6 +16,7 @@ import {
   AttendanceFilterBar,
   AttendanceTable,
 } from '../components/attendance';
+import { IconClock, IconAlertTriangle, IconCheck, IconClose } from '../components/ui/Icons';
 
 export const AttendancePage: React.FC = () => {
   const { user } = useAuth();
@@ -151,7 +152,7 @@ export const AttendancePage: React.FC = () => {
     onSuccess: (data) => {
       setActionMessage({
         type: 'success',
-        text: `Check-in recorded successfully! Status: ${data.data.status}${data.data.late ? ' (LATE)' : ''}`,
+        text: `Check-in recorded successfully. Status: ${data.data.status}${data.data.late ? ' (LATE)' : ''}`,
       });
       queryClient.invalidateQueries({ queryKey: ['my-attendance'] });
       queryClient.invalidateQueries({ queryKey: ['my-shifts-attendance'] });
@@ -172,7 +173,7 @@ export const AttendancePage: React.FC = () => {
     onSuccess: () => {
       setActionMessage({
         type: 'success',
-        text: 'Checked out successfully! Shift completed.',
+        text: 'Checked out successfully. Shift completed.',
       });
       queryClient.invalidateQueries({ queryKey: ['my-attendance'] });
       queryClient.invalidateQueries({ queryKey: ['my-shifts-attendance'] });
@@ -185,53 +186,51 @@ export const AttendancePage: React.FC = () => {
   });
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem' }}>
-      {/* Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111827', margin: '0 0 0.5rem 0' }}>
-          ⏱️ Attendance & Clocking
-        </h1>
-        <p style={{ color: '#4b5563', margin: 0, fontSize: '0.95rem' }}>
-          {isStaff
-            ? 'Record your shift attendance and view your punctuality history.'
-            : 'Monitor staff clock-in/out records, punctuality, and absences.'}
-        </p>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
+            <IconClock size={20} className="text-zinc-950" />
+            <span>Attendance & Clocking</span>
+          </h1>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            {isStaff
+              ? 'Record shift punches and track your personal punctuality ledger'
+              : 'Monitor branch clock-ins, verify punctuality, and track operational coverage'}
+          </p>
+        </div>
       </div>
 
       {/* Action Notification Alert */}
       {actionMessage && (
         <div
-          style={{
-            marginBottom: '1.5rem',
-            padding: '1rem',
-            borderRadius: '8px',
-            backgroundColor: actionMessage.type === 'success' ? '#f0fdf4' : '#fef2f2',
-            border: `1px solid ${actionMessage.type === 'success' ? '#bbf7d0' : '#fecaca'}`,
-            color: actionMessage.type === 'success' ? '#166534' : '#991b1b',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+          className={`p-3 rounded-md text-xs border flex items-center justify-between ${
+            actionMessage.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
+              : 'bg-rose-50 text-rose-800 border-rose-200/90'
+          }`}
         >
-          <span>{actionMessage.text}</span>
+          <div className="flex items-center gap-2">
+            {actionMessage.type === 'success' ? (
+              <IconCheck size={14} className="text-emerald-600" />
+            ) : (
+              <IconAlertTriangle size={14} className="text-rose-600" />
+            )}
+            <span>{actionMessage.text}</span>
+          </div>
           <button
             onClick={() => setActionMessage(null)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'inherit',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
+            className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
           >
-            ✕
+            <IconClose size={13} />
           </button>
         </div>
       )}
 
       {/* STAFF VIEW */}
       {isStaff && (
-        <div>
+        <div className="space-y-6">
           <StaffShiftCheckInCard
             shifts={myShifts}
             attendanceList={myAttendanceList}
@@ -243,34 +242,26 @@ export const AttendancePage: React.FC = () => {
             isCheckingOut={checkOutMutation.isPending}
           />
 
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: 0 }}>
-                📜 My Attendance Records
+          <div className="bg-white border border-zinc-200 rounded-lg p-5">
+            <div className="flex items-center justify-between flex-wrap gap-3 mb-4 pb-3 border-b border-zinc-100">
+              <h2 className="text-sm font-semibold text-zinc-950">
+                Attendance Ledger
               </h2>
 
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                <label style={{ fontSize: '0.85rem', color: '#4b5563' }}>From:</label>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-zinc-500 font-mono text-[11px]">From:</span>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  style={{ padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                  className="px-2 py-1 text-xs font-mono rounded border border-zinc-300 bg-white"
                 />
-                <label style={{ fontSize: '0.85rem', color: '#4b5563' }}>To:</label>
+                <span className="text-zinc-500 font-mono text-[11px]">To:</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  style={{ padding: '0.4rem 0.6rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
+                  className="px-2 py-1 text-xs font-mono rounded border border-zinc-300 bg-white"
                 />
               </div>
             </div>
@@ -286,7 +277,7 @@ export const AttendancePage: React.FC = () => {
 
       {/* MANAGER / OWNER VIEW */}
       {!isStaff && (
-        <div>
+        <div className="space-y-5">
           <AttendanceFilterBar
             branches={branches}
             selectedBranchId={selectedBranchId}
@@ -302,17 +293,9 @@ export const AttendancePage: React.FC = () => {
 
           <AttendanceMetricsSummary records={branchAttendanceList} />
 
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e5e7eb',
-              borderRadius: '12px',
-              padding: '1.5rem',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-            }}
-          >
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827', margin: '0 0 1rem 0' }}>
-              👥 Staff Attendance Records
+          <div className="bg-white border border-zinc-200 rounded-lg p-5">
+            <h2 className="text-sm font-semibold text-zinc-950 mb-3.5">
+              Staff Shift Check-In Ledger
             </h2>
 
             <AttendanceTable

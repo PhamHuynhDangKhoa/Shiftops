@@ -1,5 +1,9 @@
 import React from 'react';
 import { TaskPriority } from '../../lib/types';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { IconPlus, IconClose } from '../ui/Icons';
 
 export interface TemplateDraftItem {
   title: string;
@@ -35,8 +39,6 @@ export const TaskTemplateModal: React.FC<TaskTemplateModalProps> = ({
   onSubmit,
   isPending,
 }) => {
-  if (!isOpen) return null;
-
   const handleAddItem = () => {
     onChangeItems([
       ...items,
@@ -70,160 +72,115 @@ export const TaskTemplateModal: React.FC<TaskTemplateModalProps> = ({
     !name.trim() || items.some((it) => !it.title.trim()) || isPending;
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={isEditing ? 'Edit Task Template' : 'Create Task Template'}
+      description="Define standard checklist routine items to dispatch across shifts"
+      maxWidth="lg"
     >
-      <div
-        style={{
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          padding: '1.5rem',
-          maxWidth: '600px',
-          width: '100%',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSubmit();
         }}
+        className="space-y-4"
       >
-        <h2 style={{ margin: '0 0 1rem 0', fontSize: '1.25rem', fontWeight: 700 }}>
-          {isEditing ? 'Edit Task Template' : 'Create Task Template'}
-        </h2>
+        <Input
+          label="Template Name"
+          value={name}
+          onChange={(e) => onChangeName(e.target.value)}
+          placeholder="e.g. Opening Shift Checklist"
+          required
+        />
 
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Template Name:
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => onChangeName(e.target.value)}
-            placeholder="e.g. Morning Opening Checklist"
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
-          />
-        </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.3rem' }}>
-            Description (Optional):
-          </label>
-          <input
-            type="text"
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-zinc-700">Description (Optional)</label>
+          <textarea
             value={description}
             onChange={(e) => onChangeDescription(e.target.value)}
-            placeholder="Brief summary of duties"
-            style={{ width: '100%', padding: '0.5rem', borderRadius: '6px', border: '1px solid #d1d5db' }}
+            rows={2}
+            placeholder="Operational purpose or scope..."
+            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
           />
         </div>
 
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600 }}>Checklist Items:</label>
-            <button
+        {/* Checklist Items Editor */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-100">
+            <span className="text-xs font-semibold text-zinc-900">
+              Checklist Items ({items.length})
+            </span>
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={handleAddItem}
-              style={{
-                padding: '0.2rem 0.6rem',
-                fontSize: '0.75rem',
-                borderRadius: '4px',
-                backgroundColor: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                color: '#1d4ed8',
-                cursor: 'pointer',
-                fontWeight: 600,
-              }}
+              className="gap-1"
             >
-              ➕ Add Item
-            </button>
+              <IconPlus size={12} />
+              <span>Add Item</span>
+            </Button>
           </div>
 
-          {items.map((item, idx) => (
-            <div
-              key={idx}
-              style={{
-                display: 'flex',
-                gap: '0.5rem',
-                alignItems: 'center',
-                marginBottom: '0.5rem',
-                backgroundColor: '#f9fafb',
-                padding: '0.5rem',
-                borderRadius: '6px',
-              }}
-            >
-              <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#6b7280', width: '20px' }}>
-                {idx + 1}.
-              </span>
-              <input
-                type="text"
-                value={item.title}
-                onChange={(e) => handleUpdateItemTitle(idx, e.target.value)}
-                placeholder="Task item title"
-                style={{ flex: 2, padding: '0.4rem', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
-              />
-              <select
-                value={item.priority}
-                onChange={(e) => handleUpdateItemPriority(idx, e.target.value as TaskPriority)}
-                style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.85rem' }}
-              >
-                <option value="LOW">LOW</option>
-                <option value="NORMAL">NORMAL</option>
-                <option value="HIGH">HIGH</option>
-              </select>
-              <button
-                type="button"
-                onClick={() => handleRemoveItem(idx)}
-                style={{
-                  border: 'none',
-                  background: 'none',
-                  color: '#ef4444',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  padding: '0 0.3rem',
-                }}
-              >
-                ✕
-              </button>
+          {items.length === 0 ? (
+            <div className="py-6 text-center text-xs text-zinc-400 font-mono border border-dashed border-zinc-200 rounded-md">
+              No items in this template yet. Click "Add Item" above.
             </div>
-          ))}
+          ) : (
+            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+              {items.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-2 p-2 bg-zinc-50 border border-zinc-200 rounded-md">
+                  <span className="text-[11px] font-mono text-zinc-400 w-5 text-right">{idx + 1}.</span>
+                  <input
+                    type="text"
+                    value={item.title}
+                    onChange={(e) => handleUpdateItemTitle(idx, e.target.value)}
+                    placeholder="Item title..."
+                    required
+                    className="flex-1 px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  />
+                  <select
+                    value={item.priority}
+                    onChange={(e) => handleUpdateItemPriority(idx, e.target.value as TaskPriority)}
+                    className="px-2 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+                  >
+                    <option value="LOW">Low</option>
+                    <option value="NORMAL">Normal</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveItem(idx)}
+                    className="text-zinc-400 hover:text-rose-600 cursor-pointer p-1 transition-colors"
+                  >
+                    <IconClose size={13} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '1.5rem' }}>
-          <button
+        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
             onClick={onClose}
-            style={{
-              padding: '0.5rem 1rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              backgroundColor: '#fff',
-              cursor: 'pointer',
-            }}
           >
             Cancel
-          </button>
-          <button
-            onClick={onSubmit}
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
             disabled={isSaveDisabled}
-            style={{
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              backgroundColor: '#2563eb',
-              border: 'none',
-              color: '#fff',
-              fontWeight: 600,
-              cursor: isSaveDisabled ? 'not-allowed' : 'pointer',
-            }}
           >
-            {isPending ? 'Saving...' : 'Save Template'}
-          </button>
+            {isPending ? 'Saving Template...' : isEditing ? 'Save Changes' : 'Create Template'}
+          </Button>
         </div>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 };

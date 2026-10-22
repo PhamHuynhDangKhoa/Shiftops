@@ -32,20 +32,19 @@ graph TD
         Controllers --> AnnouncementService["Announcement Domain"]
         Controllers --> NotificationService["Notification Domain"]
         
-        ShiftService -.->|Spring Events| OutboxListener["Outbox Event Listener"]
-        TaskService -.->|Spring Events| OutboxListener
-        IssueService -.->|Spring Events| OutboxListener
-        HandoverService -.->|Spring Events| OutboxListener
+        ShiftService -.->|Domain Events| ModulithRegistry["Spring Modulith Event Registry"]
+        TaskService -.->|Domain Events| ModulithRegistry
+        IssueService -.->|Domain Events| ModulithRegistry
+        HandoverService -.->|Domain Events| ModulithRegistry
         
-        OutboxListener -->|MANDATORY Tx| OutboxTable[("outbox_events Table")]
-        OutboxWorker["Scheduled Outbox Processor"] -->|Optimistic Lock & Poll| OutboxTable
-        OutboxWorker -->|Deduplicated Dispatch| NotificationService
+        ModulithRegistry -->|Transactional Publication| EventPubTable[("event_publication Table")]
+        ModulithRegistry -->|@ApplicationModuleListener| NotificationService
     end
 
     subgraph "Persistence & Storage"
-        ShiftService --> PostgreSQL[("PostgreSQL 16 (Flyway Migrations V1–V10)")]
+        ShiftService --> PostgreSQL[("PostgreSQL 16 (Flyway Migrations V1–V13)")]
         NotificationService --> PostgreSQL
-        IssueService --> LocalStorage["Sanitized File Storage (/uploads)"]
+        IssueService --> Storage["StorageService (Local /uploads or S3/MinIO)"]
     end
 ```
 
@@ -63,24 +62,24 @@ graph TD
 | **Shift Handover** | End-of-shift operational state transfer (completed/pending items, unresolved issues, notes) with manager sign-off and state immutability. |
 | **Announcements** | Target-scoped operational alerts (all staff, branch-specific, shift-specific) with priority tagging (`URGENT`, `NORMAL`). |
 | **Realtime STOMP** | Sub-second state dissemination to active dashboards (check-ins, task completion, issue updates) via authenticated WebSockets. |
-| **Hardened Outbox** | Transactional Outbox pattern providing at-least-once domain event delivery with exponential backoff retry. |
+| **Transactional Events** | Spring Modulith event publication registry providing guaranteed at-least-once delivery with automatic publication completion tracking and scheduled purging. |
 
 ---
 
 ## 3. Technology Stack
 
-- **Backend:** Java 21, Spring Boot 3.4.1, Spring Data JPA, Hibernate, Spring Security, Spring WebSocket (STOMP), Spring Boot Actuator.
-- **Database & Migration:** PostgreSQL 16, Flyway Migrations (V1 through V10).
+- **Backend:** Java 21, Spring Boot 3.4.1, Spring Modulith 1.3, Spring Data JPA, Hibernate, Spring Security, Spring WebSocket (STOMP), Spring Boot Actuator, AWS SDK for Java 2.x (S3).
+- **Database & Migration:** PostgreSQL 16, Flyway Migrations (V1 through V13).
 - **Security & Reliability:** JWT (HMAC-SHA256), Correlation ID (`X-Request-Id` via MDC), optimistic concurrency locking (`@Version`), and partial database index constraints.
-- **Frontend:** React 18, TypeScript 5.7, Vite 6, TanStack Query, Tailwind CSS, Lucide Icons, STOMP.js.
+- **Frontend:** React 18, TypeScript 5.7, Vite 6, Tailwind CSS, Lucide Icons, STOMP.js.
 - **Containerization:** Multi-stage Dockerfiles (Alpine JRE 21 with non-root user, Alpine Nginx) and Docker Compose.
 
 ---
 
 ## 4. Key Reliability & Engineering Patterns
 
-### 4.1 Transactional Outbox Pattern
-Domain events (`ShiftPublishedEvent`, `TaskAssignedEvent`, `HandoverSubmittedEvent`, etc.) are captured in an `outbox_events` table within the same ACID database transaction using `@TransactionalEventListener(phase = BEFORE_COMMIT)`. An asynchronous worker polls, optimistically claims records, dispatches payloads with typed deserialization, and retries with exponential backoff upon transient downstream failures.
+### 4.1 Transactional Event Publication (Spring Modulith)
+Domain events (`ShiftPublishedEvent`, `TaskAssignedEvent`, `HandoverSubmittedEvent`, etc.) are captured and persisted into the `event_publication` table within the same database transaction. Spring Modulith's registry guarantees transactional boundary integrity, automatically executes `@ApplicationModuleListener` handlers asynchronously, and handles periodic event republication (`EVENTS_REPUBLISH_DELAY_MS`) and completed event purging (`EVENTS_PURGE_CRON`).
 
 ### 4.2 Idempotent Notification Dispatch
 Notifications feature multi-layer deduplication:
@@ -88,8 +87,12 @@ Notifications feature multi-layer deduplication:
 2. **Database Layer:** Partial unique indexes (`uq_notifications_idempotency_key`, `uq_notifications_recipient_type_ref`) that reject concurrent duplicate insertions.
 3. **Graceful Degradation:** `DataIntegrityViolationException` is captured and suppressed at runtime, preventing duplicate alerts even under multi-thread contention.
 
-### 4.3 Defense-in-Depth File Storage
-Attachment uploads are restricted to an explicit whitelist (`.jpg`, `.jpeg`, `.png`, `.webp`, `.pdf`). Filenames are scrubbed against path traversal attempts (`../`), stored under UUID aliases, and served with `Content-Disposition: attachment; filename="..."` alongside `X-Content-Type-Options: nosniff` headers to mitigate MIME-confusion attacks.
+### 4.3 Defense-in-Depth & Hybrid Storage Architecture
+Attachment uploads are managed via a unified `StorageService` interface with polymorphic drivers:
+- **Local Storage (`LocalStorageService`):** Default for local single-node development, writing to a sanitized `/uploads` directory.
+- **Cloud/Cluster Storage (`S3StorageService`):** Enterprise driver for multi-instance deployments supporting AWS S3 or MinIO object storage.
+
+All uploads are restricted to an explicit whitelist (`.jpg`, `.jpeg`, `.png`, `.webp`, `.pdf`). Filenames are scrubbed against path traversal attempts (`../`), stored under UUID aliases, and served with `Content-Disposition: attachment; filename="..."` alongside `X-Content-Type-Options: nosniff` headers to mitigate MIME-confusion attacks.
 
 ### 4.4 Observable Distributed Tracing
 `CorrelationIdFilter` inspects incoming HTTP requests for `X-Request-Id` (generating a cryptographically secure UUID if missing), populates SLF4J MDC, stamps outgoing response headers, and prints structured logging in the format:
@@ -106,12 +109,12 @@ Attachment uploads are restricted to an explicit whitelist (`.jpg`, `.jpeg`, `.p
 - **Node.js 20+**
 - **Docker & Docker Compose**
 
-### 1. Start PostgreSQL Database
+### 1. Start Support Services (PostgreSQL & MinIO)
 ```bash
 cd docker
 docker compose up -d
 ```
-*PostgreSQL container listens on host port `5433` (mapped to internal `5432`).*
+*PostgreSQL container listens on host port `5433` (mapped to internal `5432`), and MinIO listens on `9000` (S3 API) and `9001` (Web Console).*
 
 ### 2. Start Spring Boot Backend
 ```bash

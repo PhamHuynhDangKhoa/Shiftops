@@ -99,162 +99,173 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
       title={isDraft ? 'Prepare Shift Handover Debrief' : 'Shift Handover Details'}
       maxWidth="lg"
     >
-      <div className="space-y-5 font-mono">
+      <div className="space-y-5">
         {errorMessage && (
-          <div className="p-3 bg-[#ff1744]/10 border border-[#ff1744]/30 text-[#ff335c] text-xs rounded-sm flex items-center gap-2">
-            <IconAlertTriangle size={14} className="text-[#ff1744] flex-shrink-0" />
+          <div className="p-3 bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 rounded-lg flex items-center gap-2">
+            <IconAlertTriangle size={15} />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {handover && (
-          <div className="flex items-center justify-between pb-3 border-b border-[#262c38]">
+          <div className="flex items-center justify-between p-3.5 bg-zinc-50 border border-zinc-200/80 rounded-xl text-xs">
             <div>
-              <h3 className="font-bold text-sm text-white">{handover.shiftName || 'Shift'}</h3>
-              <p className="text-xs text-[#8a94a6] mt-0.5">
-                {new Date(handover.shiftStartTime).toLocaleString()} —{' '}
-                {new Date(handover.shiftEndTime).toLocaleTimeString()}
-              </p>
+              <span className="font-semibold text-zinc-900 block text-sm">{handover.shiftName || 'Shift'}</span>
+              <span className="text-zinc-500">
+                {new Date(handover.shiftStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} –{' '}
+                {new Date(handover.shiftEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
             </div>
             <HandoverStatusBadge status={handover.status} />
           </div>
         )}
 
-        {/* Operational Notes */}
-        <div>
-          <label className="block text-[10px] font-bold text-[#8a94a6] uppercase tracking-wider mb-1.5">
-            Debrief Notes
+        {/* Debrief Notes */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-zinc-700">
+            Debrief Summary & Operational Notes
           </label>
           <textarea
             value={debriefNotes}
             onChange={(e) => setDebriefNotes(e.target.value)}
             disabled={!isDraft}
             rows={3}
-            placeholder="Operational updates, inventory low warnings, customer notices..."
-            className="w-full px-3 py-2 border border-[#2a2f3d] bg-[#13151a] rounded-sm text-xs text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff] disabled:opacity-50"
+            placeholder="Summarize key store conditions, inventory shortages, customer highlights..."
+            className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs disabled:bg-zinc-100 disabled:text-zinc-600"
           />
         </div>
 
-        {/* Handover Items */}
-        <div className="space-y-3">
-          <label className="block text-[10px] font-bold text-[#8a94a6] uppercase tracking-wider">
-            Operational Handover Items
-          </label>
+        {/* Existing Items */}
+        <div className="space-y-2">
+          <div className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">
+            Turnover Checklist Items ({debriefItems.length})
+          </div>
 
-          {/* Item Builder (Draft only) */}
-          {isDraft && (
-            <div className="p-3 bg-[#161922] rounded-sm border border-[#262c38] space-y-2.5">
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                <select
-                  value={newItemType}
-                  onChange={(e) => setNewItemType(e.target.value as HandoverItemType)}
-                  className="px-2 py-1.5 border border-[#2a2f3d] rounded-sm text-xs font-medium text-white bg-[#13151a] focus:outline-none focus:border-[#00f0ff]"
-                >
-                  <option value="COMPLETED">COMPLETED</option>
-                  <option value="PENDING">PENDING</option>
-                  <option value="ISSUE">ISSUE</option>
-                  <option value="NOTE">NOTE</option>
-                </select>
-
-                <div className="sm:col-span-3">
-                  <Input
-                    value={newItemContent}
-                    onChange={(e) => setNewItemContent(e.target.value)}
-                    placeholder="Add an operational action item or observation..."
-                    className="text-xs py-1.5"
-                  />
-                </div>
-              </div>
-
-              {newItemType === 'ISSUE' && branchIssues && branchIssues.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-[#8a94a6]">Link Branch Issue:</span>
-                  <select
-                    value={newItemIssueId}
-                    onChange={(e) => setNewItemIssueId(e.target.value)}
-                    className="px-2 py-1.5 border border-[#2a2f3d] rounded-sm text-xs bg-[#13151a] text-white flex-1 focus:outline-none focus:border-[#00f0ff]"
-                  >
-                    <option value="">-- None (Standalone Issue Item) --</option>
-                    {branchIssues.map((bi) => (
-                      <option key={bi.id} value={bi.id}>
-                        [{bi.priority}] {bi.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="flex justify-end pt-1">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleAddItem}
-                  disabled={!newItemContent.trim()}
-                  className="gap-1.5 text-xs"
-                >
-                  <IconPlus size={12} />
-                  <span>Add Item</span>
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Items List */}
-          {debriefItems.length > 0 ? (
-            <div className="space-y-1.5 max-h-60 overflow-y-auto">
-              {debriefItems.map((it, idx) => (
-                <div
-                  key={idx}
-                  className="p-2.5 bg-[#161922] rounded-sm border border-[#262c38] flex items-center justify-between gap-3 text-xs"
-                >
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <Badge variant={getItemBadgeVariant(it.type)} size="sm">{it.type}</Badge>
-                    <span className="text-white truncate">{it.content}</span>
+          <div className="max-h-52 overflow-y-auto space-y-2 pr-1">
+            {debriefItems.map((item, idx) => (
+              <div
+                key={idx}
+                className="p-3 bg-zinc-50 border border-zinc-200/80 rounded-xl flex items-start justify-between gap-2.5 text-xs"
+              >
+                <div className="flex items-start gap-2 flex-1 min-w-0">
+                  <Badge variant={getItemBadgeVariant(item.type)} size="sm">{item.type}</Badge>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-zinc-800 text-sm leading-relaxed block">{item.content}</span>
+                    {item.issueId && (
+                      <span className="text-xs text-rose-700 font-medium block mt-0.5">
+                        Linked Issue ID: {item.issueId.slice(0, 8)}
+                      </span>
+                    )}
                   </div>
-                  {isDraft && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveItem(idx)}
-                      className="text-[#8a94a6] hover:text-[#ff335c] p-1 rounded transition-colors"
-                      title="Remove item"
-                    >
-                      <IconClose size={13} />
-                    </button>
-                  )}
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-[#606c80] italic">No operational items added yet.</p>
-          )}
+
+                {isDraft && (
+                  <button
+                    onClick={() => handleRemoveItem(idx)}
+                    className="text-zinc-400 hover:text-rose-600 p-1 cursor-pointer transition-colors"
+                  >
+                    <IconClose size={14} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
+        {/* Add New Item (Only if Draft) */}
+        {isDraft && (
+          <div className="p-3.5 border border-zinc-200/90 bg-zinc-50/60 rounded-xl space-y-3">
+            <span className="text-xs font-semibold text-zinc-800 block">Add Turnover Item</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <select
+                value={newItemType}
+                onChange={(e) => setNewItemType(e.target.value as HandoverItemType)}
+                className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+              >
+                <option value="COMPLETED">Completed Task</option>
+                <option value="PENDING">Pending Handover</option>
+                <option value="ISSUE">Linked Issue</option>
+                <option value="NOTE">General Note</option>
+              </select>
+
+              {newItemType === 'ISSUE' ? (
+                <select
+                  value={newItemIssueId}
+                  onChange={(e) => {
+                    setNewItemIssueId(e.target.value);
+                    const selected = branchIssues?.find((i) => i.id === e.target.value);
+                    if (selected && !newItemContent) {
+                      setNewItemContent(selected.title);
+                    }
+                  }}
+                  className="sm:col-span-2 px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                >
+                  <option value="">-- Select Active Issue --</option>
+                  {branchIssues?.map((iss) => (
+                    <option key={iss.id} value={iss.id}>
+                      [{iss.priority}] {iss.title} ({iss.status})
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={newItemContent}
+                  onChange={(e) => setNewItemContent(e.target.value)}
+                  placeholder="Describe status, action taken, or reminder..."
+                  className="sm:col-span-2 px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                />
+              )}
+            </div>
+
+            {newItemType === 'ISSUE' && (
+              <Input
+                label="Custom Issue Note (Optional)"
+                value={newItemContent}
+                onChange={(e) => setNewItemContent(e.target.value)}
+                placeholder="Additional instructions for incoming supervisor regarding this incident..."
+              />
+            )}
+
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={handleAddItem}
+                disabled={!newItemContent.trim()}
+                className="gap-1 text-xs"
+              >
+                <IconPlus size={13} />
+                <span>Add Item</span>
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#262c38]">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
           <Button variant="secondary" size="sm" onClick={onClose}>
             Close
           </Button>
+
           {isDraft && (
             <>
               <Button
-                variant="secondary"
+                variant="outline"
                 size="sm"
                 onClick={() => onSaveDraft(debriefNotes, debriefItems)}
-                isLoading={isSaving}
+                disabled={isSaving}
               >
-                Save Draft
+                {isSaving ? 'Saving...' : 'Save Draft'}
               </Button>
               <Button
                 variant="primary"
                 size="sm"
-                onClick={() => {
-                  if (window.confirm('Submit handover? Once submitted, it cannot be modified.')) {
-                    onSubmit(debriefNotes, debriefItems);
-                  }
-                }}
-                isLoading={isSubmitting}
+                onClick={() => onSubmit(debriefNotes, debriefItems)}
+                disabled={isSubmitting}
               >
-                Submit Handover
+                {isSubmitting ? 'Submitting...' : 'Submit Handover'}
               </Button>
             </>
           )}

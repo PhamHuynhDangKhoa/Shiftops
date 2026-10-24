@@ -15,62 +15,61 @@ export const HandoverHistoryTable: React.FC<HandoverHistoryTableProps> = ({
   onViewDetails,
 }) => {
   return (
-    <Card className="p-5 space-y-4 border border-[#262c38] bg-[#11141a]" chamfer>
-      <div className="pb-3 border-b border-[#262c38]">
-        <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-          HISTORICAL SHIFT HANDOVER DOSSIER
+    <Card className="p-5 sm:p-6 space-y-4">
+      <div className="pb-3 border-b border-zinc-100">
+        <h2 className="text-base font-bold text-zinc-900">
+          Handover History
         </h2>
-        <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
-          Audit trail of finalized and acknowledged shift handovers across sectors
+        <p className="text-xs text-zinc-500 mt-0.5">
+          Audit trail of finalized and acknowledged shift debriefs across branches
         </p>
       </div>
 
       {isLoading ? (
-        <div className="py-8 text-center text-xs font-mono text-[#00f0ff]">
-          [ SYNCING_HANDOVER_ARCHIVE... ]
+        <div className="py-8 text-center text-sm text-zinc-500">
+          Loading handover history...
         </div>
       ) : historyPage && historyPage.content.length > 0 ? (
-        <div className="overflow-x-auto border border-[#262c38] bg-[#11141a] clip-chamfer-card">
-          <table className="w-full text-left text-xs border-collapse">
+        <div className="overflow-x-auto border border-zinc-200/80 bg-white rounded-xl shadow-xs">
+          <table className="w-full text-left text-sm border-collapse">
             <thead>
-              <tr className="bg-[#161922] border-b border-[#262c38] text-[#9da8b9] font-mono text-[10px] uppercase tracking-wider">
-                <th className="py-3 px-3.5 font-bold">ROSTER & TIMESTAMPS</th>
-                <th className="py-3 px-3.5 font-bold">TURNOVER STATUS</th>
-                <th className="py-3 px-3.5 font-bold">TASK RESOLUTION</th>
-                <th className="py-3 px-3.5 font-bold">DISPATCHED BY</th>
-                <th className="py-3 px-3.5 font-bold">ACKNOWLEDGED BY</th>
-                <th className="py-3 px-3.5 font-bold text-right">ACTION</th>
+              <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
+                <th className="py-3 px-4">Shift & Date</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Task Resolution</th>
+                <th className="py-3 px-4">Submitted By</th>
+                <th className="py-3 px-4">Acknowledged By</th>
+                <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1e222b]">
+            <tbody className="divide-y divide-zinc-200/70 text-zinc-800">
               {historyPage.content.map((ho) => (
-                <tr key={ho.id} className="hover:bg-[#181c24] transition-colors font-mono">
-                  <td className="py-3 px-3.5">
-                    <span className="font-bold text-white block uppercase">{ho.shiftName || 'Shift'}</span>
-                    <span className="text-[10px] text-[#606c80]">
+                <tr key={ho.id} className="hover:bg-zinc-50/70 transition-colors">
+                  <td className="py-3.5 px-4">
+                    <span className="font-semibold text-zinc-900 block">{ho.shiftName || 'Shift'}</span>
+                    <span className="text-xs text-zinc-500">
                       {new Date(ho.shiftStartTime).toLocaleDateString()}
                     </span>
                   </td>
-                  <td className="py-3 px-3.5 whitespace-nowrap">
+                  <td className="py-3.5 px-4 whitespace-nowrap">
                     <HandoverStatusBadge status={ho.status} />
                   </td>
-                  <td className="py-3 px-3.5 font-mono text-[#00f0ff] whitespace-nowrap">
-                    {ho.summary ? `${ho.summary.completedTasks}/${ho.summary.totalTasks} RESOLVED` : 'N/A'}
+                  <td className="py-3.5 px-4 tabular-nums text-zinc-700 whitespace-nowrap text-xs font-medium">
+                    {ho.summary ? `${ho.summary.completedTasks} / ${ho.summary.totalTasks} completed` : 'N/A'}
                   </td>
-                  <td className="py-3 px-3.5 text-[#9da8b9]">
-                    {ho.submittedByName || 'Operator'}
+                  <td className="py-3.5 px-4 text-zinc-600 text-xs">
+                    {ho.submittedByName || 'Staff Member'}
                   </td>
-                  <td className="py-3 px-3.5 text-[#9da8b9]">
-                    {ho.acknowledgedByName || <span className="text-[#606c80] italic">[ PENDING_SIGN ]</span>}
+                  <td className="py-3.5 px-4 text-zinc-600 text-xs">
+                    {ho.acknowledgedByName || <span className="text-zinc-400 italic">Pending Signature</span>}
                   </td>
-                  <td className="py-3 px-3.5 text-right whitespace-nowrap">
+                  <td className="py-3.5 px-4 text-right whitespace-nowrap">
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={() => onViewDetails(ho)}
-                      className="text-[11px]"
                     >
-                      [ INSPECT ]
+                      View Dossier
                     </Button>
                   </td>
                 </tr>
@@ -79,8 +78,8 @@ export const HandoverHistoryTable: React.FC<HandoverHistoryTableProps> = ({
           </table>
         </div>
       ) : (
-        <div className="py-8 text-center text-xs font-mono text-[#606c80]">
-          [ NO HISTORICAL HANDOVERS RECORDED ]
+        <div className="py-8 text-center text-xs text-zinc-500">
+          No historical handovers found.
         </div>
       )}
     </Card>

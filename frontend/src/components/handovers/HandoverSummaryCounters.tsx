@@ -9,38 +9,38 @@ interface HandoverSummaryCountersProps {
 export const HandoverSummaryCounters: React.FC<HandoverSummaryCountersProps> = ({ summary }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <Card compact className="p-3 bg-[#161922] border border-[#262c38] space-y-1" chamfer>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-[#8a94a6] block">
+      <Card compact className="p-3.5 space-y-1">
+        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
           Total Tasks
         </span>
-        <span className="text-xl font-bold font-mono tabular-nums text-white block">
+        <span className="text-2xl font-bold tabular-nums text-zinc-900 block">
           {summary?.totalTasks ?? 0}
         </span>
       </Card>
 
-      <Card compact className="p-3 bg-[#161922] border border-[#262c38] space-y-1" chamfer>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-[#00e676] block">
+      <Card compact className="p-3.5 space-y-1">
+        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
           Completed Tasks
         </span>
-        <span className="text-xl font-bold font-mono tabular-nums text-[#00e676] block">
+        <span className="text-2xl font-bold tabular-nums text-emerald-600 block">
           {summary?.completedTasks ?? 0}
         </span>
       </Card>
 
-      <Card compact className="p-3 bg-[#161922] border border-[#262c38] space-y-1" chamfer>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-[#ff6b00] block">
+      <Card compact className="p-3.5 space-y-1">
+        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
           Pending Handover
         </span>
-        <span className="text-xl font-bold font-mono tabular-nums text-[#ff6b00] block">
+        <span className="text-2xl font-bold tabular-nums text-amber-600 block">
           {summary?.pendingTasks ?? 0}
         </span>
       </Card>
 
-      <Card compact className="p-3 bg-[#161922] border border-[#262c38] space-y-1" chamfer>
-        <span className="text-[10px] font-mono uppercase tracking-wider text-[#ff1744] block">
-          Open Incidents
+      <Card compact className="p-3.5 space-y-1">
+        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
+          Open Issues
         </span>
-        <span className="text-xl font-bold font-mono tabular-nums text-[#ff1744] block">
+        <span className="text-2xl font-bold tabular-nums text-rose-600 block">
           {summary?.openBranchIssues ?? 0}
         </span>
       </Card>

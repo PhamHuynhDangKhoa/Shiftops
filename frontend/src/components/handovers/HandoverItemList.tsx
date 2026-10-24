@@ -26,21 +26,21 @@ export const HandoverItemList: React.FC<HandoverItemListProps> = ({ items }) => 
 
   return (
     <div>
-      <h4 className="text-[10px] font-mono font-bold text-[#8a94a6] uppercase tracking-wider mb-2">
-        Operational Handover Items
+      <h4 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2.5">
+        Handover Items ({items.length})
       </h4>
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {items.map((it) => (
           <div
             key={it.id}
-            className="p-2.5 bg-[#161922] border border-[#262c38] flex items-start gap-2.5 text-xs font-mono"
+            className="p-3 bg-zinc-50/80 border border-zinc-200/80 rounded-xl flex items-start gap-3 text-xs"
           >
             <Badge variant={getItemBadgeVariant(it.type)} size="sm">{it.type}</Badge>
-            <div className="flex-1 text-[#f1f5f9] min-w-0">
-              <span className="leading-snug">{it.content}</span>
+            <div className="flex-1 text-zinc-800 min-w-0">
+              <span className="leading-relaxed text-sm block">{it.content}</span>
               {it.issueTitle && (
-                <span className="block text-[11px] font-mono text-[#ff335c] mt-1">
-                  Linked Issue: {it.issueTitle} ({it.issueStatus})
+                <span className="block text-xs text-rose-700 font-medium mt-1">
+                  Linked Incident: {it.issueTitle} ({it.issueStatus})
                 </span>
               )}
             </div>

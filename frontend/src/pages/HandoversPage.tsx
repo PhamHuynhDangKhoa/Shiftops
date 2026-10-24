@@ -86,7 +86,7 @@ export const HandoversPage: React.FC = () => {
   const { data: historyPage, isLoading: isLoadingHistory } = useQuery<PagedResponse<ShiftHandover>>({
     queryKey: ['branch-handovers-history', effectiveBranchId],
     queryFn: async () => {
-      if (!effectiveBranchId) return { content: [], page: 0, size: 20, totalElements: 0, totalPages: 0, last: true };
+      if (!effectiveBranchId) return { content: [], page: 0, size: 20, totalElements: 0, totalPages: 0, first: true, last: true, empty: true };
       const res = await api.get<ApiResponse<PagedResponse<ShiftHandover>>>(`/branches/${effectiveBranchId}/handovers`, {
         params: { page: 0, size: 10 },
       });
@@ -99,21 +99,20 @@ export const HandoversPage: React.FC = () => {
   const { data: availableShifts } = useQuery<Shift[]>({
     queryKey: ['available-shifts-for-handover', effectiveBranchId, isStaff],
     queryFn: async () => {
+      if (!effectiveBranchId) return [];
+      const start = new Date();
+      start.setHours(start.getHours() - 12);
+      const end = new Date();
+      end.setHours(end.getHours() + 12);
+
       if (isStaff) {
-        const now = new Date();
-        const start = new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
-        const end = new Date(now.getTime() + 24 * 3600 * 1000).toISOString();
         const res = await api.get<ApiResponse<Shift[]>>('/shifts/my-shifts', {
-          params: { startDate: start, endDate: end },
+          params: { startDate: start.toISOString(), endDate: end.toISOString() },
         });
         return res.data.data;
       } else {
-        if (!effectiveBranchId) return [];
-        const now = new Date();
-        const start = new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
-        const end = new Date(now.getTime() + 24 * 3600 * 1000).toISOString();
         const res = await api.get<ApiResponse<Shift[]>>(`/branches/${effectiveBranchId}/shifts`, {
-          params: { startDate: start, endDate: end },
+          params: { startDate: start.toISOString(), endDate: end.toISOString() },
         });
         return res.data.data;
       }
@@ -121,9 +120,9 @@ export const HandoversPage: React.FC = () => {
     enabled: !!effectiveBranchId,
   });
 
-  // Fetch Open Branch Issues to link items
+  // Fetch Open Issues for branch (for linking to handover debrief items)
   const { data: branchIssues } = useQuery<Issue[]>({
-    queryKey: ['branch-issues-for-handover', effectiveBranchId],
+    queryKey: ['open-issues-for-handover', effectiveBranchId],
     queryFn: async () => {
       if (!effectiveBranchId) return [];
       const res = await api.get<ApiResponse<PagedResponse<Issue>>>(`/branches/${effectiveBranchId}/issues`, {
@@ -134,31 +133,38 @@ export const HandoversPage: React.FC = () => {
     enabled: !!effectiveBranchId,
   });
 
-  // Open Handover Debrief Modal
+  // Initialize or fetch draft handover for a shift
   const handleOpenDebrief = async (shiftId: string) => {
-    setErrorMessage(null);
     try {
-      const res = await api.post<ApiResponse<ShiftHandover>>(`/shifts/${shiftId}/handover`, {});
+      setErrorMessage(null);
+      const res = await api.get<ApiResponse<ShiftHandover>>(`/shifts/${shiftId}/handover`);
       setActiveHandover(res.data.data);
       setIsDebriefModalOpen(true);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to load handover draft';
-      setErrorMessage(message);
+    } catch {
+      setErrorMessage('Failed to open shift handover. Please retry.');
     }
   };
 
   // Save Draft Mutation
   const saveDraftMutation = useMutation({
-    mutationFn: async ({ notes, items }: { notes: string; items: { type: HandoverItemType; content: string; issueId?: string; orderIndex: number }[] }) => {
-      if (!activeHandover) return;
-      const res = await api.put<ApiResponse<ShiftHandover>>(`/handovers/${activeHandover.id}`, { notes, items });
+    mutationFn: async ({
+      notes,
+      items,
+    }: {
+      notes: string;
+      items: { type: HandoverItemType; content: string; issueId?: string; orderIndex: number }[];
+    }) => {
+      if (!activeHandover) throw new Error('No active handover');
+      const res = await api.put<ApiResponse<ShiftHandover>>(`/handovers/${activeHandover.id}`, {
+        notes,
+        items,
+      });
       return res.data.data;
     },
     onSuccess: (data) => {
-      if (data) setActiveHandover(data);
+      setActiveHandover(data);
       queryClient.invalidateQueries({ queryKey: ['latest-handover'] });
       queryClient.invalidateQueries({ queryKey: ['branch-handovers-history'] });
-      setErrorMessage(null);
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : 'Failed to save draft';
@@ -168,17 +174,26 @@ export const HandoversPage: React.FC = () => {
 
   // Submit Handover Mutation
   const submitMutation = useMutation({
-    mutationFn: async ({ notes, items }: { notes: string; items: { type: HandoverItemType; content: string; issueId?: string; orderIndex: number }[] }) => {
-      if (!activeHandover) return;
-      await api.put(`/handovers/${activeHandover.id}`, { notes, items });
-      const res = await api.patch<ApiResponse<ShiftHandover>>(`/handovers/${activeHandover.id}/submit`);
+    mutationFn: async ({
+      notes,
+      items,
+    }: {
+      notes: string;
+      items: { type: HandoverItemType; content: string; issueId?: string; orderIndex: number }[];
+    }) => {
+      if (!activeHandover) throw new Error('No active handover');
+      await api.put<ApiResponse<ShiftHandover>>(`/handovers/${activeHandover.id}`, {
+        notes,
+        items,
+      });
+      const res = await api.post<ApiResponse<ShiftHandover>>(`/handovers/${activeHandover.id}/submit`);
       return res.data.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setActiveHandover(data);
+      setIsDebriefModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['latest-handover'] });
       queryClient.invalidateQueries({ queryKey: ['branch-handovers-history'] });
-      setIsDebriefModalOpen(false);
-      setActiveHandover(null);
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : 'Failed to submit handover';
@@ -186,16 +201,18 @@ export const HandoversPage: React.FC = () => {
     },
   });
 
-  // Acknowledge Mutation
+  // Acknowledge Handover Mutation
   const acknowledgeMutation = useMutation({
     mutationFn: async ({ handoverId, notes }: { handoverId: string; notes: string }) => {
-      const res = await api.patch<ApiResponse<ShiftHandover>>(`/handovers/${handoverId}/acknowledge`, { notes });
+      const res = await api.post<ApiResponse<ShiftHandover>>(`/handovers/${handoverId}/acknowledge`, {
+        acknowledgementNotes: notes,
+      });
       return res.data.data;
     },
     onSuccess: () => {
+      setIsAckModalOpen(false);
       queryClient.invalidateQueries({ queryKey: ['latest-handover'] });
       queryClient.invalidateQueries({ queryKey: ['branch-handovers-history'] });
-      setIsAckModalOpen(false);
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : 'Failed to acknowledge handover';
@@ -206,24 +223,24 @@ export const HandoversPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
         <div>
-          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
-            <IconHandshake size={18} className="text-[#ff6b00]" />
-            <span>Shift Turnover</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
+            <IconHandshake size={22} className="text-zinc-700" />
+            <span>Shift Handover & Turnover</span>
           </h1>
-          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
-            Relief briefings, pending checklist handovers, and active duty debriefs
+          <p className="text-sm text-zinc-500 mt-1">
+            Incoming shift briefings, checklist handovers, and manager sign-offs
           </p>
         </div>
 
         {(isOwner || isManager) && branches && branches.length > 0 && (
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <span className="text-[#606c80] font-bold text-[10px] uppercase">SECTOR:</span>
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-zinc-500 font-semibold uppercase text-xs">Branch:</span>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+              className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs font-medium"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -236,16 +253,16 @@ export const HandoversPage: React.FC = () => {
       </div>
 
       {errorMessage && (
-        <div className="p-3.5 rounded-sm bg-[#ff1744]/15 border border-[#ff1744]/40 text-xs font-mono text-[#ff335c] flex items-center justify-between">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-800 flex items-center justify-between shadow-2xs">
           <div className="flex items-center gap-2">
-            <IconAlertTriangle size={14} className="text-[#ff1744]" />
+            <IconAlertTriangle size={16} className="text-rose-600 flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
           <button
             onClick={() => setErrorMessage(null)}
-            className="text-[#606c80] hover:text-white cursor-pointer"
+            className="text-zinc-400 hover:text-zinc-700 cursor-pointer p-1"
           >
-            <IconClose size={13} />
+            <IconClose size={14} />
           </button>
         </div>
       )}

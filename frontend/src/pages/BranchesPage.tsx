@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Branch, BranchSummary, ApiResponse } from '../lib/types';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
+import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import {
@@ -119,44 +120,46 @@ export const BranchesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
         <div>
-          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
-            <IconBuilding size={20} className="text-[#e5c07b]" />
-            <span>OPERATING FLEET SECTORS & HUBS</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
+            <IconBuilding size={22} className="text-zinc-700" />
+            <span>Branch Locations</span>
           </h1>
-          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
-            Manage physical operational sites, timezones, and branch rosters
+          <p className="text-sm text-zinc-500 mt-1">
+            Manage physical operational stores, operating timezones, and branch rosters
           </p>
         </div>
 
         {isOwner && (
           <Button
-            variant="amber"
+            variant="primary"
             size="md"
             onClick={() => {
               resetForm();
               setIsCreateOpen(true);
             }}
-            className="gap-2 shadow-[0_0_12px_rgba(229,192,123,0.25)]"
+            className="gap-2 shadow-xs"
           >
-            <IconPlus size={14} />
-            <span>[ + REGISTER SECTOR ]</span>
+            <IconPlus size={15} />
+            <span>Register Branch</span>
           </Button>
         )}
       </div>
 
       {isLoading && (
-        <div className="py-12 text-center text-xs font-mono text-[#00f0ff]">[ SYNCING_SECTOR_HUBS... ]</div>
-      )}
-
-      {error && (
-        <div className="p-3.5 rounded-sm bg-[#ff1744]/15 border border-[#ff1744]/40 text-xs font-mono text-[#ff335c]">
-          [SECTOR_ERR]: Failed to load sector records.
+        <div className="py-12 text-center text-sm text-zinc-500 bg-white border border-zinc-200/80 rounded-xl">
+          Loading branch locations...
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+      {error && (
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-800 shadow-2xs">
+          Failed to load branch records. Please verify connectivity.
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {branches?.map((branch) => (
           <BranchCard
             key={branch.id}
@@ -180,7 +183,7 @@ export const BranchesPage: React.FC = () => {
         maxWidth="md"
       >
         {formError && (
-          <div className="p-3 mb-4 rounded-md bg-rose-50 border border-rose-200 text-xs text-rose-800">
+          <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700">
             {formError}
           </div>
         )}
@@ -191,7 +194,7 @@ export const BranchesPage: React.FC = () => {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Downtown Central, North Terminal"
+            placeholder="e.g. Downtown Central, North Mall"
           />
 
           <Input
@@ -201,12 +204,12 @@ export const BranchesPage: React.FC = () => {
             placeholder="e.g. 123 Main Street, Suite 400"
           />
 
-          <div className="flex flex-col gap-1.5 font-mono">
-            <label className="text-xs font-semibold uppercase text-[#8a94a6]">Operating Timezone</label>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-zinc-700">Operating Timezone</label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
             >
               <option value="UTC">UTC (Universal Coordinated)</option>
               <option value="Asia/Jakarta">Asia/Jakarta (WIB, UTC+7)</option>
@@ -217,7 +220,7 @@ export const BranchesPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
             <Button
               type="button"
               variant="secondary"
@@ -260,64 +263,64 @@ const BranchCard: React.FC<{
   });
 
   return (
-    <div className="bg-[#11141a] border border-[#262c38] p-4 flex flex-col justify-between gap-4 clip-chamfer-card hover:border-[#384152] transition-colors">
-      <div className="space-y-3 font-mono">
+    <Card className="flex flex-col justify-between gap-4 p-5 hover:border-zinc-300 transition-colors">
+      <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-bold text-sm text-white uppercase tracking-wider">{branch.name}</h3>
-            <p className="text-[11px] text-[#9da8b9] flex items-center gap-1 mt-0.5">
-              <IconMapPin size={11} className="text-[#00f0ff]" />
+            <h3 className="font-bold text-base text-zinc-900">{branch.name}</h3>
+            <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
+              <IconMapPin size={12} className="text-zinc-400" />
               <span>{branch.address || 'No physical address specified'}</span>
             </p>
           </div>
-          <Badge variant={branch.active ? 'success' : 'neutral'} size="sm">
-            {branch.active ? 'ONLINE' : 'OFFLINE'}
+          <Badge variant={branch.active ? 'success' : 'neutral'} size="sm" showDot>
+            {branch.active ? 'Active' : 'Inactive'}
           </Badge>
         </div>
 
-        <div className="text-[11px] text-[#606c80] flex items-center gap-1">
-          <IconClock size={11} className="text-[#00f0ff]" />
-          <span>TIMEZONE: {branch.timezone}</span>
+        <div className="text-xs text-zinc-500 flex items-center gap-1.5">
+          <IconClock size={13} className="text-zinc-400" />
+          <span>Timezone: {branch.timezone}</span>
         </div>
 
         {summary && (
-          <div className="grid grid-cols-3 gap-2 p-2.5 rounded-sm bg-[#161922] border border-[#2a2f3d] text-xs">
+          <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-zinc-50 border border-zinc-200/70 text-xs">
             <div>
-              <span className="text-[10px] text-[#606c80] uppercase block">TOTAL CREW</span>
-              <span className="font-bold text-white tabular-nums">{summary.totalStaff}</span>
+              <span className="text-zinc-400 uppercase text-[10px] font-semibold block">Total Staff</span>
+              <span className="font-bold text-zinc-900 text-sm tabular-nums">{summary.totalStaff}</span>
             </div>
-            <div className="border-l border-[#2a2f3d] pl-2">
-              <span className="text-[10px] text-[#606c80] uppercase block">ACTIVE</span>
-              <span className="font-bold text-[#00e676] tabular-nums">{summary.activeStaff}</span>
+            <div className="border-l border-zinc-200 pl-2.5">
+              <span className="text-zinc-400 uppercase text-[10px] font-semibold block">Active</span>
+              <span className="font-bold text-emerald-600 text-sm tabular-nums">{summary.activeStaff}</span>
             </div>
-            <div className="border-l border-[#2a2f3d] pl-2">
-              <span className="text-[10px] text-[#606c80] uppercase block">COMMAND</span>
-              <span className="font-bold text-[#e5c07b] tabular-nums">{summary.managerCount}</span>
+            <div className="border-l border-zinc-200 pl-2.5">
+              <span className="text-zinc-400 uppercase text-[10px] font-semibold block">Managers</span>
+              <span className="font-bold text-zinc-800 text-sm tabular-nums">{summary.managerCount}</span>
             </div>
           </div>
         )}
       </div>
 
       {isOwner && (
-        <div className="pt-2 border-t border-[#1e222b] flex items-center gap-2">
+        <div className="pt-3 border-t border-zinc-100 flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={onEdit}
-            className="flex-1 justify-center"
+            className="flex-1 justify-center text-xs"
           >
-            [ EDIT ]
+            Edit
           </Button>
           <Button
-            variant={branch.active ? 'danger' : 'secondary'}
+            variant={branch.active ? 'outline' : 'secondary'}
             size="sm"
             onClick={onToggleStatus}
-            className="flex-1 justify-center"
+            className={`flex-1 justify-center text-xs ${branch.active ? 'text-rose-600 hover:text-rose-700 hover:border-rose-300' : ''}`}
           >
-            {branch.active ? '[ DEACTIVATE ]' : '[ ACTIVATE ]'}
+            {branch.active ? 'Deactivate' : 'Activate'}
           </Button>
         </div>
       )}
-    </div>
+    </Card>
   );
 };

@@ -206,24 +206,24 @@ export const HandoversPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-            <IconHandshake size={20} className="text-zinc-950" />
-            <span>Shift Handover Operations</span>
+          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+            <IconHandshake size={20} className="text-[#ff6b00]" />
+            <span>OPERATIONAL SHIFT TURNOVER & DEBRIEFS</span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
             Transfer operational shift context, log duty debriefs, and prevent coverage blindspots
           </p>
         </div>
 
         {(isOwner || isManager) && branches && branches.length > 0 && (
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-mono text-zinc-500 text-[11px]">Branch:</span>
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <span className="text-[#606c80] font-bold text-[10px] uppercase">SECTOR:</span>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+              className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -236,14 +236,14 @@ export const HandoversPage: React.FC = () => {
       </div>
 
       {errorMessage && (
-        <div className="p-3 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800 flex items-center justify-between">
+        <div className="p-3.5 rounded-sm bg-[#ff1744]/15 border border-[#ff1744]/40 text-xs font-mono text-[#ff335c] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <IconAlertTriangle size={14} className="text-rose-600" />
+            <IconAlertTriangle size={14} className="text-[#ff1744]" />
             <span>{errorMessage}</span>
           </div>
           <button
             onClick={() => setErrorMessage(null)}
-            className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
+            className="text-[#606c80] hover:text-white cursor-pointer"
           >
             <IconClose size={13} />
           </button>

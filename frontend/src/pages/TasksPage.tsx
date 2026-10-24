@@ -316,14 +316,14 @@ export const TasksPage: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-              <IconCheckList size={20} className="text-zinc-950" />
-              <span>My Shift Tasks</span>
+            <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+              <IconCheckList size={20} className="text-[#00f0ff]" />
+              <span>FIELD MISSION CHECKLIST</span>
             </h1>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              Checklist of operational duties assigned to your active shifts
+            <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
+              Operational duties and directives assigned to your active shift
             </p>
           </div>
 
@@ -331,32 +331,32 @@ export const TasksPage: React.FC = () => {
             variant="secondary"
             size="sm"
             onClick={() => refetchMyTasks()}
-            className="gap-1.5"
+            className="gap-2"
           >
-            <IconRefresh size={13} className="text-zinc-500" />
-            <span>Refresh</span>
+            <IconRefresh size={13} className="text-[#00f0ff]" />
+            <span>[ RE-SYNC ]</span>
           </Button>
         </div>
 
         {alert && (
           <div
-            className={`p-3 rounded-md text-xs border flex items-center justify-between ${
+            className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
               alert.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
-                : 'bg-rose-50 text-rose-800 border-rose-200/90'
+                ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
+                : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
             }`}
           >
             <div className="flex items-center gap-2">
               {alert.type === 'success' ? (
-                <IconCheck size={14} className="text-emerald-600" />
+                <IconCheck size={14} className="text-[#00e676]" />
               ) : (
-                <IconAlertTriangle size={14} className="text-rose-600" />
+                <IconAlertTriangle size={14} className="text-[#ff1744]" />
               )}
               <span>{alert.message}</span>
             </div>
             <button
               onClick={() => setAlert(null)}
-              className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
+              className="text-[#606c80] hover:text-white cursor-pointer"
             >
               <IconClose size={13} />
             </button>
@@ -364,31 +364,31 @@ export const TasksPage: React.FC = () => {
         )}
 
         {/* Progress Strip */}
-        <Card compact className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-mono text-zinc-600">Completion Progress</span>
-            <span className="font-mono font-semibold text-zinc-950 tabular-nums">
-              {completedCount} of {tasks.length} Done ({progressPercent}%)
+        <Card compact className="space-y-2.5 border border-[#262c38] bg-[#11141a]" chamfer>
+          <div className="flex items-center justify-between text-xs font-mono">
+            <span className="text-[#9da8b9] uppercase font-bold text-[10px]">DIRECTIVE COMPLETION RATE</span>
+            <span className="font-bold text-[#00f0ff] tabular-nums">
+              {completedCount} OF {tasks.length} RESOLVED ({progressPercent}%)
             </span>
           </div>
-          <div className="w-full h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-[#181c24] rounded-none overflow-hidden border border-[#2a2f3d]">
             <div
-              className="h-full bg-zinc-950 transition-all duration-300"
+              className="h-full bg-[#00f0ff] shadow-[0_0_8px_rgba(0,240,255,0.6)] transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </Card>
 
         {/* Status Filter Segment */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono">
           {['ALL', 'TODO', 'IN_PROGRESS', 'COMPLETED'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-2.5 py-1 rounded text-xs font-mono font-medium border transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-sm text-xs font-mono font-bold tracking-wider uppercase border transition-colors cursor-pointer clip-chamfer-btn ${
                 statusFilter === st
-                  ? 'bg-zinc-900 text-zinc-50 border-zinc-900'
-                  : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300'
+                  ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
+                  : 'bg-[#11141a] text-[#9da8b9] border-[#262c38] hover:border-[#384152] hover:text-white'
               }`}
             >
               {st}
@@ -433,24 +433,24 @@ export const TasksPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-            <IconCheckList size={20} className="text-zinc-950" />
-            <span>Shift Tasks & Operating Checklists</span>
+          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+            <IconCheckList size={20} className="text-[#00f0ff]" />
+            <span>OPERATIONAL TASKS & CHECKLIST DIRECTIVES</span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
             Dispatch checklist routines, assign ad-hoc responsibilities, and monitor shift execution
           </p>
         </div>
 
         {branches && branches.length > 1 && (
-          <div className="flex items-center gap-1.5 text-xs">
-            <label className="text-zinc-500 font-mono text-[11px]">Branch:</label>
+          <div className="flex items-center gap-2 text-xs font-mono">
+            <label className="text-[#606c80] uppercase font-bold text-[10px]">SECTOR:</label>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+              className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -464,23 +464,23 @@ export const TasksPage: React.FC = () => {
 
       {alert && (
         <div
-          className={`p-3 rounded-md text-xs border flex items-center justify-between ${
+          className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
             alert.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
-              : 'bg-rose-50 text-rose-800 border-rose-200/90'
+              ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
+              : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
           }`}
         >
           <div className="flex items-center gap-2">
             {alert.type === 'success' ? (
-              <IconCheck size={14} className="text-emerald-600" />
+              <IconCheck size={14} className="text-[#00e676]" />
             ) : (
-              <IconAlertTriangle size={14} className="text-rose-600" />
+              <IconAlertTriangle size={14} className="text-[#ff1744]" />
             )}
             <span>{alert.message}</span>
           </div>
           <button
             onClick={() => setAlert(null)}
-            className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
+            className="text-[#606c80] hover:text-white cursor-pointer"
           >
             <IconClose size={13} />
           </button>
@@ -488,44 +488,44 @@ export const TasksPage: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-zinc-200">
+      <div className="flex items-center gap-2 border-b border-[#262c38]">
         <button
           onClick={() => setActiveTab('MONITORING')}
-          className={`pb-2.5 px-3 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+          className={`pb-2.5 px-4 text-xs font-mono font-bold tracking-wider uppercase border-b-2 transition-colors cursor-pointer ${
             activeTab === 'MONITORING'
-              ? 'border-zinc-950 text-zinc-950 font-semibold'
-              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+              ? 'border-[#00f0ff] text-[#00f0ff]'
+              : 'border-transparent text-[#606c80] hover:text-white'
           }`}
         >
-          Shift Tasks Monitoring
+          [ 01 // TASK MONITORING ]
         </button>
         <button
           onClick={() => setActiveTab('TEMPLATES')}
-          className={`pb-2.5 px-3 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
+          className={`pb-2.5 px-4 text-xs font-mono font-bold tracking-wider uppercase border-b-2 transition-colors cursor-pointer ${
             activeTab === 'TEMPLATES'
-              ? 'border-zinc-950 text-zinc-950 font-semibold'
-              : 'border-transparent text-zinc-500 hover:text-zinc-800'
+              ? 'border-[#00f0ff] text-[#00f0ff]'
+              : 'border-transparent text-[#606c80] hover:text-white'
           }`}
         >
-          Checklist Templates
+          [ 02 // CHECKLIST TEMPLATES ]
         </button>
       </div>
 
       {/* TAB 1: MONITORING */}
       {activeTab === 'MONITORING' && (
         <div className="space-y-4">
-          <div className="bg-white border border-zinc-200 rounded-lg p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-                  Shift:
+          <div className="bg-[#11141a] border border-[#262c38] p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs clip-chamfer-btn">
+            <div className="flex items-center gap-3 flex-wrap font-mono">
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] text-[#606c80] uppercase font-bold">
+                  SHIFT:
                 </label>
                 <select
                   value={selectedShiftId}
                   onChange={(e) => setSelectedShiftId(e.target.value)}
-                  className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+                  className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
                 >
-                  <option value="ALL">All Branch Shifts</option>
+                  <option value="ALL">All Sector Shifts</option>
                   {branchShifts?.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name || 'Shift'} ({new Date(s.startTime).toLocaleDateString()} {new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
@@ -534,14 +534,14 @@ export const TasksPage: React.FC = () => {
                 </select>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-                  Status:
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] text-[#606c80] uppercase font-bold">
+                  STATUS:
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+                  className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="TODO">TODO</option>

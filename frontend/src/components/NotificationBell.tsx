@@ -108,7 +108,7 @@ export const NotificationBell: React.FC = () => {
   };
 
   const renderNotificationIcon = (type: string) => {
-    const iconClass = 'w-4 h-4 text-zinc-600 mt-0.5 flex-shrink-0';
+    const iconClass = 'w-4 h-4 text-[#00f0ff] mt-0.5 flex-shrink-0';
     switch (type) {
       case 'SHIFT_PUBLISHED':
       case 'SHIFT_CHANGED':
@@ -117,12 +117,12 @@ export const NotificationBell: React.FC = () => {
         return <IconCheckList className={iconClass} />;
       case 'ISSUE_ASSIGNED':
       case 'ISSUE_UPDATED':
-        return <IconAlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />;
+        return <IconAlertTriangle className="w-4 h-4 text-[#ff6b00] mt-0.5 flex-shrink-0" />;
       case 'HANDOVER_SUBMITTED':
       case 'HANDOVER_ACKNOWLEDGED':
         return <IconHandshake className={iconClass} />;
       case 'ANNOUNCEMENT_PUBLISHED':
-        return <IconMegaphone className="w-4 h-4 text-zinc-800 mt-0.5 flex-shrink-0" />;
+        return <IconMegaphone className="w-4 h-4 text-[#e5c07b] mt-0.5 flex-shrink-0" />;
       case 'SHIFT_REMINDER':
         return <IconClock className={iconClass} />;
       default:
@@ -152,34 +152,37 @@ export const NotificationBell: React.FC = () => {
 
   return (
     <div className="relative inline-block" ref={dropdownRef}>
-      {/* Bell Button */}
+      {/* Tactical Bell Button */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative p-1.5 rounded-md text-zinc-600 hover:text-zinc-950 hover:bg-zinc-100 transition-colors cursor-pointer border border-transparent hover:border-zinc-200 focus:outline-none"
-        title="Notifications"
+        className="relative h-9 px-2.5 rounded-sm bg-[#13151a] border border-[#2a2f3d] text-[#9da8b9] hover:text-[#00f0ff] hover:border-[#00f0ff] transition-all duration-150 cursor-pointer flex items-center justify-center focus:outline-none"
+        title="Tactical Comms & Notifications"
         aria-label="Notifications"
       >
         <IconBell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-zinc-950 text-white text-[10px] font-mono font-medium rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center border border-white">
+          <span className="absolute -top-1 -right-1 bg-[#ff1744] text-white text-[10px] font-mono font-bold h-4 min-w-[16px] px-1 flex items-center justify-center border border-[#090a0d] shadow-[0_0_8px_rgba(255,23,68,0.6)]">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Dropdown Panel */}
+      {/* Dropdown Tactical Dossier */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg border border-zinc-200 shadow-xl z-50 overflow-hidden flex flex-col"
+          className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#11141a] border border-[#2a2f3d] shadow-[0_0_30px_rgba(0,0,0,0.9)] z-50 overflow-hidden flex flex-col clip-chamfer-card"
           style={{ maxHeight: '480px' }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 bg-zinc-50/80">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#2a2f3d] bg-[#161922]">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-zinc-900 text-xs">Notifications</span>
+              <span className="w-1.5 h-3.5 bg-[#00f0ff] inline-block shadow-[0_0_6px_rgba(0,240,255,0.6)]" />
+              <span className="font-mono font-bold text-white text-xs uppercase tracking-wider">
+                COMMS // NOTIFICATIONS
+              </span>
               {unreadCount > 0 && (
-                <span className="bg-zinc-900 text-zinc-50 text-[10px] font-mono font-medium px-1.5 py-0.2 rounded">
-                  {unreadCount} unread
+                <span className="bg-[#ff1744]/20 border border-[#ff1744]/40 text-[#ff335c] text-[10px] font-mono font-bold px-1.5 py-0.2">
+                  {unreadCount} NEW
                 </span>
               )}
             </div>
@@ -187,18 +190,18 @@ export const NotificationBell: React.FC = () => {
               <button
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={markAllAsReadMutation.isPending}
-                className="text-xs font-medium text-zinc-600 hover:text-zinc-950 disabled:opacity-50 transition-colors cursor-pointer"
+                className="text-[11px] font-mono uppercase text-[#9da8b9] hover:text-[#00f0ff] disabled:opacity-40 transition-colors cursor-pointer"
               >
-                Mark all as read
+                [ MARK ALL READ ]
               </button>
             )}
           </div>
 
           {/* List Content */}
-          <div className="overflow-y-auto divide-y divide-zinc-100 flex-1">
+          <div className="overflow-y-auto divide-y divide-[#1e222c] flex-1">
             {isLoading ? (
-              <div className="p-8 text-center text-zinc-400 text-xs flex flex-col items-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24">
+              <div className="p-8 text-center text-[#606c80] text-xs font-mono flex flex-col items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-[#00f0ff]" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path
                     className="opacity-75"
@@ -206,41 +209,41 @@ export const NotificationBell: React.FC = () => {
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <span>Loading notifications...</span>
+                <span>SYNCING_DISPATCH...</span>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="p-8 text-center text-zinc-500 text-xs flex flex-col items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500">
+              <div className="p-8 text-center text-[#9da8b9] text-xs font-mono flex flex-col items-center gap-2">
+                <div className="w-8 h-8 bg-[#181c24] border border-[#2a2f3d] flex items-center justify-center text-[#00f0ff]">
                   <IconCheck className="w-4 h-4" />
                 </div>
-                <span className="font-medium text-zinc-800">All caught up</span>
-                <span className="text-[11px] text-zinc-400">No unread notifications</span>
+                <span className="font-bold text-white uppercase tracking-wider">ALL DISPATCHES RESOLVED</span>
+                <span className="text-[11px] text-[#606c80]">No pending transmissions</span>
               </div>
             ) : (
               notifications.map((notif) => (
                 <div
                   key={notif.id}
                   onClick={() => handleNotificationClick(notif)}
-                  className={`p-3 flex items-start gap-3 hover:bg-zinc-50 transition-colors cursor-pointer ${
-                    !notif.read ? 'bg-zinc-50/80 font-medium' : 'bg-white'
+                  className={`p-3.5 flex items-start gap-3 hover:bg-[#181c24] transition-colors cursor-pointer ${
+                    !notif.read ? 'bg-[#141820]' : 'bg-transparent'
                   }`}
                 >
                   {renderNotificationIcon(notif.type)}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                      <span className={`text-xs truncate ${!notif.read ? 'text-zinc-950 font-semibold' : 'text-zinc-800'}`}>
+                    <div className="flex items-center justify-between gap-1 mb-1">
+                      <span className={`text-xs truncate ${!notif.read ? 'text-[#00f0ff] font-bold' : 'text-[#f1f5f9]'}`}>
                         {notif.title}
                       </span>
-                      <span className="text-[10px] font-mono text-zinc-400 flex-shrink-0">
+                      <span className="text-[10px] font-mono text-[#606c80] flex-shrink-0">
                         {formatTimeAgo(notif.createdAt)}
                       </span>
                     </div>
-                    <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[#9da8b9] line-clamp-2 leading-relaxed">
                       {notif.message}
                     </p>
                   </div>
                   {!notif.read && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 flex-shrink-0 mt-2" title="Unread" />
+                    <span className="w-1.5 h-1.5 bg-[#00f0ff] shadow-[0_0_6px_rgba(0,240,255,0.8)] flex-shrink-0 mt-2" title="Unread" />
                   )}
                 </div>
               ))

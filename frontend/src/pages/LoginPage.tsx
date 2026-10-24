@@ -26,7 +26,7 @@ export const LoginPage: React.FC = () => {
       if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Login failed. Please check your credentials.');
+        setError('AUTHENTICATION FAILED: Check security credentials.');
       }
     } finally {
       setIsSubmitting(false);
@@ -41,29 +41,36 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-[calc(100vh-140px)] flex flex-col justify-center items-center py-10 px-4">
       <div className="w-full max-w-sm">
-        {/* Brand Header */}
+        {/* Terminal Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-950 text-white shadow-xs mb-3">
-            <IconLogo size={20} />
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-[#181c24] border border-[#00f0ff] text-[#00f0ff] shadow-[0_0_15px_rgba(0,240,255,0.3)] mb-3 clip-chamfer-btn">
+            <IconLogo size={24} />
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950">ShiftOps</h1>
-          <p className="text-xs text-zinc-500 mt-1">
-            Operations & Shift Coordination Portal
+          <div className="flex items-center justify-center gap-1.5 text-[10px] font-mono tracking-widest text-[#00f0ff] uppercase">
+            <span>PRTS</span>
+            <span>//</span>
+            <span>AUTH_GATEWAY_v4.2</span>
+          </div>
+          <h1 className="text-2xl font-mono font-bold tracking-widest text-white uppercase mt-1">
+            SHIFTOPS
+          </h1>
+          <p className="text-xs font-mono text-[#9da8b9] mt-1">
+            TACTICAL SHIFT & OPERATIONS TERMINAL
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white border border-zinc-200 rounded-lg p-6 shadow-xs">
+        {/* Tactical Auth Dossier */}
+        <div className="bg-[#11141a] border border-[#2a2f3d] p-6 shadow-[0_0_30px_rgba(0,0,0,0.8)] clip-chamfer-card">
           {error && (
-            <div className="mb-5 p-3 rounded-md bg-rose-50 border border-rose-200/90 flex items-start gap-2.5 text-xs text-rose-800">
-              <IconAlertTriangle size={15} className="text-rose-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-5 p-3 rounded-sm bg-[#ff1744]/15 border border-[#ff1744]/40 flex items-start gap-2.5 text-xs font-mono text-[#ff335c]">
+              <IconAlertTriangle size={15} className="text-[#ff1744] flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Email Address"
+              label="OPERATOR IDENTIFIER (EMAIL)"
               type="email"
               required
               autoFocus
@@ -73,7 +80,7 @@ export const LoginPage: React.FC = () => {
             />
 
             <Input
-              label="Password"
+              label="SECURITY CLEARANCE KEY"
               type="password"
               required
               value={password}
@@ -84,51 +91,51 @@ export const LoginPage: React.FC = () => {
             <Button
               type="submit"
               variant="primary"
-              size="md"
-              className="w-full mt-2"
+              size="lg"
+              className="w-full mt-3 font-bold tracking-widest shadow-[0_0_15px_rgba(0,240,255,0.25)]"
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Authenticating...' : 'Sign in to ShiftOps'}
+              {isSubmitting ? 'VERIFYING...' : '[ INITIATE SESSION ]'}
             </Button>
           </form>
 
-          {/* Quick Demo Segment */}
-          <div className="mt-6 pt-5 border-t border-zinc-100">
+          {/* Quick Demo Access Switcher */}
+          <div className="mt-6 pt-5 border-t border-[#1e222b]">
             <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-mono font-medium text-zinc-400 uppercase tracking-wider">
-                Demo Quick Access
+              <span className="text-[10px] font-mono font-bold text-[#606c80] uppercase tracking-wider">
+                TACTICAL CLEARANCE SELECTOR
               </span>
-              <span className="text-[10px] font-mono text-zinc-400">Default pass: Password123!</span>
+              <span className="text-[10px] font-mono text-[#606c80]">PASS: Password123!</span>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => handleQuickLogin('owner@shiftops.com')}
-                className="py-1.5 px-2 text-center border border-zinc-200 rounded-md bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-300 text-xs font-medium text-zinc-700 transition-colors cursor-pointer"
+                className="py-2 px-2 text-center border border-[#e5c07b]/40 rounded-sm bg-[#161922] hover:bg-[#e5c07b]/10 hover:border-[#e5c07b] text-xs font-mono font-bold text-[#e5c07b] transition-all cursor-pointer"
               >
-                Owner
+                [ OWNER ]
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickLogin('manager@shiftops.com')}
-                className="py-1.5 px-2 text-center border border-zinc-200 rounded-md bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-300 text-xs font-medium text-zinc-700 transition-colors cursor-pointer"
+                className="py-2 px-2 text-center border border-[#ff6b00]/40 rounded-sm bg-[#161922] hover:bg-[#ff6b00]/10 hover:border-[#ff6b00] text-xs font-mono font-bold text-[#ff6b00] transition-all cursor-pointer"
               >
-                Manager
+                [ MANAGER ]
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickLogin('staff@shiftops.com')}
-                className="py-1.5 px-2 text-center border border-zinc-200 rounded-md bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-300 text-xs font-medium text-zinc-700 transition-colors cursor-pointer"
+                className="py-2 px-2 text-center border border-[#00f0ff]/40 rounded-sm bg-[#161922] hover:bg-[#00f0ff]/10 hover:border-[#00f0ff] text-xs font-mono font-bold text-[#00f0ff] transition-all cursor-pointer"
               >
-                Staff
+                [ STAFF ]
               </button>
             </div>
           </div>
         </div>
 
-        <p className="text-center text-[11px] font-mono text-zinc-400 mt-6">
-          Encrypted Session · Role-Based Access Control
+        <p className="text-center text-[11px] font-mono text-[#606c80] mt-6 tracking-wider">
+          ENCRYPTED LINK · SECURE ROLE-BASED ACCESS
         </p>
       </div>
     </div>

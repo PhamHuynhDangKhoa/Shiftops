@@ -119,40 +119,40 @@ export const BranchesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-            <IconBuilding size={20} className="text-zinc-950" />
-            <span>Operating Locations & Branches</span>
+          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+            <IconBuilding size={20} className="text-[#e5c07b]" />
+            <span>OPERATING FLEET SECTORS & HUBS</span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
             Manage physical operational sites, timezones, and branch rosters
           </p>
         </div>
 
         {isOwner && (
           <Button
-            variant="primary"
-            size="sm"
+            variant="amber"
+            size="md"
             onClick={() => {
               resetForm();
               setIsCreateOpen(true);
             }}
-            className="gap-1.5"
+            className="gap-2 shadow-[0_0_12px_rgba(229,192,123,0.25)]"
           >
             <IconPlus size={14} />
-            <span>Create Branch</span>
+            <span>[ + REGISTER SECTOR ]</span>
           </Button>
         )}
       </div>
 
       {isLoading && (
-        <div className="py-12 text-center text-xs font-mono text-zinc-400">Loading branches...</div>
+        <div className="py-12 text-center text-xs font-mono text-[#00f0ff]">[ SYNCING_SECTOR_HUBS... ]</div>
       )}
 
       {error && (
-        <div className="p-3.5 rounded-md bg-rose-50 border border-rose-200 text-xs text-rose-800">
-          Failed to load branch records.
+        <div className="p-3.5 rounded-sm bg-[#ff1744]/15 border border-[#ff1744]/40 text-xs font-mono text-[#ff335c]">
+          [SECTOR_ERR]: Failed to load sector records.
         </div>
       )}
 
@@ -260,53 +260,53 @@ const BranchCard: React.FC<{
   });
 
   return (
-    <div className="bg-white border border-zinc-200 rounded-lg p-4 flex flex-col justify-between gap-4 hover:border-zinc-300 transition-colors">
-      <div className="space-y-3">
+    <div className="bg-[#11141a] border border-[#262c38] p-4 flex flex-col justify-between gap-4 clip-chamfer-card hover:border-[#384152] transition-colors">
+      <div className="space-y-3 font-mono">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-semibold text-sm text-zinc-950 tracking-tight">{branch.name}</h3>
-            <p className="text-[11px] font-mono text-zinc-500 flex items-center gap-1 mt-0.5">
-              <IconMapPin size={11} className="text-zinc-400" />
+            <h3 className="font-bold text-sm text-white uppercase tracking-wider">{branch.name}</h3>
+            <p className="text-[11px] text-[#9da8b9] flex items-center gap-1 mt-0.5">
+              <IconMapPin size={11} className="text-[#00f0ff]" />
               <span>{branch.address || 'No physical address specified'}</span>
             </p>
           </div>
           <Badge variant={branch.active ? 'success' : 'neutral'} size="sm">
-            {branch.active ? 'Active' : 'Inactive'}
+            {branch.active ? 'ONLINE' : 'OFFLINE'}
           </Badge>
         </div>
 
-        <div className="text-[11px] font-mono text-zinc-500 flex items-center gap-1">
-          <IconClock size={11} className="text-zinc-400" />
-          <span>Timezone: {branch.timezone}</span>
+        <div className="text-[11px] text-[#606c80] flex items-center gap-1">
+          <IconClock size={11} className="text-[#00f0ff]" />
+          <span>TIMEZONE: {branch.timezone}</span>
         </div>
 
         {summary && (
-          <div className="grid grid-cols-3 gap-2 p-2.5 rounded-md bg-zinc-50 border border-zinc-200 font-mono text-xs">
+          <div className="grid grid-cols-3 gap-2 p-2.5 rounded-sm bg-[#161922] border border-[#2a2f3d] text-xs">
             <div>
-              <span className="text-[10px] text-zinc-400 uppercase block">Total Staff</span>
-              <span className="font-bold text-zinc-950 tabular-nums">{summary.totalStaff}</span>
+              <span className="text-[10px] text-[#606c80] uppercase block">TOTAL CREW</span>
+              <span className="font-bold text-white tabular-nums">{summary.totalStaff}</span>
             </div>
-            <div className="border-l border-zinc-200 pl-2">
-              <span className="text-[10px] text-zinc-400 uppercase block">Active</span>
-              <span className="font-bold text-emerald-800 tabular-nums">{summary.activeStaff}</span>
+            <div className="border-l border-[#2a2f3d] pl-2">
+              <span className="text-[10px] text-[#606c80] uppercase block">ACTIVE</span>
+              <span className="font-bold text-[#00e676] tabular-nums">{summary.activeStaff}</span>
             </div>
-            <div className="border-l border-zinc-200 pl-2">
-              <span className="text-[10px] text-zinc-400 uppercase block">Managers</span>
-              <span className="font-bold text-zinc-900 tabular-nums">{summary.managerCount}</span>
+            <div className="border-l border-[#2a2f3d] pl-2">
+              <span className="text-[10px] text-[#606c80] uppercase block">COMMAND</span>
+              <span className="font-bold text-[#e5c07b] tabular-nums">{summary.managerCount}</span>
             </div>
           </div>
         )}
       </div>
 
       {isOwner && (
-        <div className="pt-2 border-t border-zinc-100 flex items-center gap-2">
+        <div className="pt-2 border-t border-[#1e222b] flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
             onClick={onEdit}
             className="flex-1 justify-center"
           >
-            Edit
+            [ EDIT ]
           </Button>
           <Button
             variant={branch.active ? 'danger' : 'secondary'}
@@ -314,7 +314,7 @@ const BranchCard: React.FC<{
             onClick={onToggleStatus}
             className="flex-1 justify-center"
           >
-            {branch.active ? 'Deactivate' : 'Activate'}
+            {branch.active ? '[ DEACTIVATE ]' : '[ ACTIVATE ]'}
           </Button>
         </div>
       )}

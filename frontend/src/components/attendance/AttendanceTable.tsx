@@ -1,7 +1,6 @@
 import React from 'react';
 import { Attendance } from '../../lib/types';
 import { AttendanceStatusBadge } from './AttendanceStatusBadge';
-import { Badge } from '../ui/Badge';
 
 interface AttendanceTableProps {
   records?: Attendance[];
@@ -28,65 +27,58 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="py-12 text-center text-xs text-zinc-400 font-mono">
-        Loading attendance records...
+      <div className="py-12 text-center text-xs text-[#00f0ff] font-mono">
+        [ SYNCING_ATTENDANCE_TELEMETRY... ]
       </div>
     );
   }
 
   if (records.length === 0) {
     return (
-      <div className="py-12 text-center text-xs text-zinc-500">
-        No attendance records found for the selected filter range.
+      <div className="py-12 text-center text-xs font-mono text-[#606c80] bg-[#11141a] border border-[#262c38]">
+        [ NO ATTENDANCE LOGS FOUND FOR GIVEN QUERY ]
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto border border-zinc-200 rounded-lg">
+    <div className="overflow-x-auto border border-[#262c38] bg-[#11141a] clip-chamfer-card">
       <table className="w-full text-left text-xs border-collapse">
         <thead>
-          <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-mono text-[11px] uppercase tracking-wider">
-            {showStaffColumn && <th className="py-2.5 px-3 font-medium">Staff Member</th>}
-            <th className="py-2.5 px-3 font-medium">Shift Interval</th>
-            <th className="py-2.5 px-3 font-medium">Roster / Shift</th>
-            <th className="py-2.5 px-3 font-medium">Status</th>
-            <th className="py-2.5 px-3 font-medium">Clock In</th>
-            <th className="py-2.5 px-3 font-medium">Clock Out</th>
-            <th className="py-2.5 px-3 font-medium">Notes</th>
+          <tr className="bg-[#161922] border-b border-[#262c38] text-[#9da8b9] font-mono text-[10px] uppercase tracking-wider">
+            {showStaffColumn && <th className="py-3 px-3.5 font-bold">OPERATOR</th>}
+            <th className="py-3 px-3.5 font-bold">INTERVAL</th>
+            <th className="py-3 px-3.5 font-bold">ROSTER / SHIFT</th>
+            <th className="py-3 px-3.5 font-bold">TELEMETRY STATUS</th>
+            <th className="py-3 px-3.5 font-bold">CLOCK IN</th>
+            <th className="py-3 px-3.5 font-bold">CLOCK OUT</th>
+            <th className="py-3 px-3.5 font-bold">NOTES / LOG</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 bg-white">
+        <tbody className="divide-y divide-[#1e222b]">
           {records.map((att) => (
-            <tr key={att.id} className="hover:bg-zinc-50/80 transition-colors">
+            <tr key={att.id} className="hover:bg-[#181c24] transition-colors font-mono">
               {showStaffColumn && (
-                <td className="py-2.5 px-3">
-                  <div className="font-semibold text-zinc-900">{att.userName || 'Staff Member'}</div>
-                  <div className="text-[11px] font-mono text-zinc-400">{att.userEmail}</div>
+                <td className="py-3 px-3.5 text-white font-bold whitespace-nowrap">
+                  {att.userName || 'Operator'}
                 </td>
               )}
-              <td className="py-2.5 px-3 font-mono tabular-nums text-zinc-700 whitespace-nowrap">
-                <div>{formatDateTime(att.shiftStartTime)}</div>
-                <div className="text-[11px] text-zinc-400">→ {formatDateTime(att.shiftEndTime)}</div>
+              <td className="py-3 px-3.5 text-[#9da8b9] whitespace-nowrap">
+                {formatDateTime(att.shiftStartTime)}
               </td>
-              <td className="py-2.5 px-3">
-                <span className="font-medium text-zinc-800">{att.shiftName || 'Scheduled Shift'}</span>
-                {att.overnight && (
-                  <Badge variant="brand" size="sm" className="ml-1.5">
-                    Overnight
-                  </Badge>
-                )}
+              <td className="py-3 px-3.5 text-white font-medium whitespace-nowrap">
+                {att.shiftName || 'Standard Roster'}
               </td>
-              <td className="py-2.5 px-3 whitespace-nowrap">
+              <td className="py-3 px-3.5 whitespace-nowrap">
                 <AttendanceStatusBadge status={att.status} late={att.late} />
               </td>
-              <td className="py-2.5 px-3 font-mono tabular-nums text-zinc-700 whitespace-nowrap">
+              <td className="py-3 px-3.5 tabular-nums text-[#00f0ff] whitespace-nowrap">
                 {formatDateTime(att.checkInAt)}
               </td>
-              <td className="py-2.5 px-3 font-mono tabular-nums text-zinc-700 whitespace-nowrap">
+              <td className="py-3 px-3.5 tabular-nums text-[#9da8b9] whitespace-nowrap">
                 {formatDateTime(att.checkOutAt)}
               </td>
-              <td className="py-2.5 px-3 text-zinc-500 max-w-xs truncate">
+              <td className="py-3 px-3.5 text-[#606c80] max-w-xs truncate">
                 {att.notes || '—'}
               </td>
             </tr>

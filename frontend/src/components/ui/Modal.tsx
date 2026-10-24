@@ -43,29 +43,39 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-xs transition-opacity"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs transition-opacity"
       onClick={onClose}
     >
       <div
-        className={`w-full ${maxWidthStyles[maxWidth]} bg-white rounded-lg border border-zinc-200 shadow-xl overflow-hidden max-h-[90vh] flex flex-col`}
+        className={`w-full ${maxWidthStyles[maxWidth]} bg-[#11141a] border border-[#2a2f3d] shadow-[0_0_30px_rgba(0,0,0,0.8)] overflow-hidden max-h-[90vh] flex flex-col clip-chamfer-card`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-200 bg-zinc-50/70">
-          <div>
-            <h3 className="text-sm font-semibold text-zinc-900 tracking-tight">{title}</h3>
-            {description && (
-              <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
-            )}
+        {/* Tactical Header Bar */}
+        <div className="relative flex items-center justify-between px-5 py-3.5 border-b border-[#2a2f3d] bg-[#161922]">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-4 bg-[#00f0ff] inline-block shadow-[0_0_8px_rgba(0,240,255,0.6)]" />
+            <div>
+              <h3 className="text-xs font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
+                <span>{title}</span>
+              </h3>
+              {description && (
+                <p className="text-[11px] font-mono text-[#9da8b9] mt-0.5">{description}</p>
+              )}
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="text-zinc-400 hover:text-zinc-700 rounded-md p-1 hover:bg-zinc-200/60 transition-colors cursor-pointer"
-            aria-label="Close modal"
+            className="p-1.5 rounded text-[#9da8b9] hover:text-[#00f0ff] hover:bg-[#1f2430] transition-colors cursor-pointer"
+            aria-label="Close"
           >
-            <IconClose className="w-4 h-4" />
+            <IconClose size={16} />
           </button>
         </div>
-        <div className="p-5 overflow-y-auto flex-1">{children}</div>
+
+        {/* Content Body */}
+        <div className="p-5 overflow-y-auto text-[#f1f5f9] text-xs">
+          {children}
+        </div>
       </div>
     </div>
   );

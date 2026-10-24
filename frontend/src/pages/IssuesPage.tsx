@@ -305,53 +305,53 @@ export const IssuesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-            <IconAlertTriangle size={20} className="text-zinc-950" />
-            <span>Operational Incidents & Issues</span>
+          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+            <IconAlertTriangle size={20} className="text-[#ff1744]" />
+            <span>INCIDENT LOG & THREAT TRIAGE</span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
             {isStaff
               ? 'Report equipment breakdowns, safety hazards, and track triage progress'
-              : 'Monitor branch hazards, assign personnel, and verify resolution ledgers'}
+              : 'Monitor sector hazards, assign personnel, and verify resolution ledgers'}
           </p>
         </div>
 
         <Button
           variant="danger"
-          size="sm"
+          size="md"
           onClick={() => {
             setReportBranchId(isStaff ? user?.primaryBranchId || '' : selectedBranchId);
             setShowReportModal(true);
           }}
-          className="gap-1.5"
+          className="gap-2 shadow-[0_0_15px_rgba(255,23,68,0.3)]"
         >
-          <IconAlertTriangle size={14} />
-          <span>Report Incident</span>
+          <IconAlertTriangle size={15} />
+          <span>[ REPORT INCIDENT ]</span>
         </Button>
       </div>
 
       {/* Alert banner */}
       {alert && (
         <div
-          className={`p-3 rounded-md text-xs border flex items-center justify-between ${
+          className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
             alert.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
-              : 'bg-rose-50 text-rose-800 border-rose-200/90'
+              ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
+              : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
           }`}
         >
           <div className="flex items-center gap-2">
             {alert.type === 'success' ? (
-              <IconCheck size={14} className="text-emerald-600" />
+              <IconCheck size={14} className="text-[#00e676]" />
             ) : (
-              <IconAlertTriangle size={14} className="text-rose-600" />
+              <IconAlertTriangle size={14} className="text-[#ff1744]" />
             )}
             <span>{alert.message}</span>
           </div>
           <button
             onClick={() => setAlert(null)}
-            className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
+            className="text-[#606c80] hover:text-white cursor-pointer"
           >
             <IconClose size={13} />
           </button>
@@ -362,12 +362,12 @@ export const IssuesPage: React.FC = () => {
       {!isStaff && (
         <div className="space-y-4">
           {isOwner && branches && branches.length > 0 && (
-            <div className="flex items-center gap-2 text-xs">
-              <label className="font-mono text-zinc-500 text-[11px]">Select Branch:</label>
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <label className="text-[#606c80] font-bold text-[10px] uppercase">SECTOR:</label>
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
               >
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>

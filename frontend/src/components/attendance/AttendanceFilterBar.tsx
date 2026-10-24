@@ -29,17 +29,17 @@ export const AttendanceFilterBar: React.FC<AttendanceFilterBarProps> = ({
   onRefresh,
 }) => {
   return (
-    <div className="bg-white border border-zinc-200 rounded-lg p-3.5 mb-5 flex flex-wrap items-center justify-between gap-3 text-xs">
+    <div className="bg-[#11141a] border border-[#262c38] p-3.5 mb-5 flex flex-wrap items-center justify-between gap-3 text-xs clip-chamfer-btn">
       <div className="flex flex-wrap items-center gap-3">
         {/* Branch Selector */}
-        <div className="flex items-center gap-1.5">
-          <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider">
-            Branch:
+        <div className="flex items-center gap-2">
+          <label className="text-[10px] font-mono font-bold text-[#606c80] uppercase tracking-wider">
+            SECTOR:
           </label>
           <select
             value={selectedBranchId}
             onChange={(e) => onBranchChange(e.target.value)}
-            className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+            className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
           >
             {branches?.map((b) => (
               <option key={b.id} value={b.id}>
@@ -51,53 +51,60 @@ export const AttendanceFilterBar: React.FC<AttendanceFilterBarProps> = ({
 
         {/* Date Window */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-1">
-            <IconCalendar size={12} className="text-zinc-400" />
-            From:
+          <span className="text-[10px] font-mono font-bold text-[#606c80] uppercase tracking-wider flex items-center gap-1">
+            <IconCalendar size={12} className="text-[#00f0ff]" />
+            FROM:
           </span>
           <input
             type="date"
             value={startDate}
             onChange={(e) => onStartDateChange(e.target.value)}
-            className="px-2 py-1 text-xs font-mono rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+            className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
           />
-          <span className="text-[11px] font-mono text-zinc-400">To:</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono font-bold text-[#606c80] uppercase tracking-wider">
+            TO:
+          </span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => onEndDateChange(e.target.value)}
-            className="px-2 py-1 text-xs font-mono rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+            className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
           />
         </div>
 
         {/* Status Filter */}
-        <div className="flex items-center gap-1.5">
-          <label className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-wider flex items-center gap-1">
-            <IconFilter size={12} className="text-zinc-400" />
-            Status:
-          </label>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-mono font-bold text-[#606c80] uppercase tracking-wider flex items-center gap-1">
+            <IconFilter size={12} className="text-[#ff6b00]" />
+            STATUS:
+          </span>
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+            className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
           >
-            <option value="ALL">All Statuses</option>
-            <option value="PRESENT">Present</option>
-            <option value="LATE">Late</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="ABSENT">Absent</option>
+            <option value="ALL">ALL STATUSES</option>
+            <option value="PRESENT">PRESENT</option>
+            <option value="LATE">LATE</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="ABSENT">ABSENT</option>
           </select>
         </div>
       </div>
 
+      {/* Refresh Trigger */}
       <Button
         variant="secondary"
         size="sm"
         onClick={onRefresh}
-        className="gap-1.5"
+        className="gap-1.5 text-xs"
+        title="Sync telemetry"
       >
-        <IconRefresh size={13} className="text-zinc-500" />
-        <span>Refresh</span>
+        <IconRefresh size={13} className="text-[#00f0ff]" />
+        <span>[ RE-SYNC ]</span>
       </Button>
     </div>
   );

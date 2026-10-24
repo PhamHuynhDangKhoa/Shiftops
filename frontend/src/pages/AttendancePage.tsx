@@ -188,16 +188,16 @@ export const AttendancePage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-            <IconClock size={20} className="text-zinc-950" />
-            <span>Attendance & Clocking</span>
+          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+            <IconClock size={20} className="text-[#00f0ff]" />
+            <span>ATTENDANCE & DISPATCH CLOCKING</span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
             {isStaff
               ? 'Record shift punches and track your personal punctuality ledger'
-              : 'Monitor branch clock-ins, verify punctuality, and track operational coverage'}
+              : 'Monitor sector clock-ins, verify punctuality, and track operational coverage'}
           </p>
         </div>
       </div>
@@ -205,23 +205,23 @@ export const AttendancePage: React.FC = () => {
       {/* Action Notification Alert */}
       {actionMessage && (
         <div
-          className={`p-3 rounded-md text-xs border flex items-center justify-between ${
+          className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
             actionMessage.type === 'success'
-              ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
-              : 'bg-rose-50 text-rose-800 border-rose-200/90'
+              ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
+              : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
           }`}
         >
           <div className="flex items-center gap-2">
             {actionMessage.type === 'success' ? (
-              <IconCheck size={14} className="text-emerald-600" />
+              <IconCheck size={14} className="text-[#00e676]" />
             ) : (
-              <IconAlertTriangle size={14} className="text-rose-600" />
+              <IconAlertTriangle size={14} className="text-[#ff1744]" />
             )}
             <span>{actionMessage.text}</span>
           </div>
           <button
             onClick={() => setActionMessage(null)}
-            className="text-zinc-400 hover:text-zinc-700 cursor-pointer"
+            className="text-[#606c80] hover:text-white cursor-pointer"
           >
             <IconClose size={13} />
           </button>
@@ -242,26 +242,26 @@ export const AttendancePage: React.FC = () => {
             isCheckingOut={checkOutMutation.isPending}
           />
 
-          <div className="bg-white border border-zinc-200 rounded-lg p-5">
-            <div className="flex items-center justify-between flex-wrap gap-3 mb-4 pb-3 border-b border-zinc-100">
-              <h2 className="text-sm font-semibold text-zinc-950">
-                Attendance Ledger
+          <div className="bg-[#11141a] border border-[#262c38] p-5 clip-chamfer-card">
+            <div className="flex items-center justify-between flex-wrap gap-3 mb-4 pb-3 border-b border-[#262c38]">
+              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
+                PERSONAL ATTENDANCE LEDGER
               </h2>
 
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-zinc-500 font-mono text-[11px]">From:</span>
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span className="text-[#606c80] text-[10px] uppercase font-bold">FROM:</span>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-2 py-1 text-xs font-mono rounded border border-zinc-300 bg-white"
+                  className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
                 />
-                <span className="text-zinc-500 font-mono text-[11px]">To:</span>
+                <span className="text-[#606c80] text-[10px] uppercase font-bold">TO:</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-2 py-1 text-xs font-mono rounded border border-zinc-300 bg-white"
+                  className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
                 />
               </div>
             </div>
@@ -293,9 +293,9 @@ export const AttendancePage: React.FC = () => {
 
           <AttendanceMetricsSummary records={branchAttendanceList} />
 
-          <div className="bg-white border border-zinc-200 rounded-lg p-5">
-            <h2 className="text-sm font-semibold text-zinc-950 mb-3.5">
-              Staff Shift Check-In Ledger
+          <div className="bg-[#11141a] border border-[#262c38] p-5 clip-chamfer-card">
+            <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider mb-3.5">
+              SECTOR OPERATOR ATTENDANCE LEDGER
             </h2>
 
             <AttendanceTable

@@ -20,8 +20,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
   return (
     <div
-      className={`bg-white border border-zinc-200 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
-        isCompleted ? 'bg-zinc-50/60 opacity-85' : 'hover:border-zinc-300'
+      className={`bg-[#11141a] border border-[#262c38] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all clip-chamfer-card ${
+        isCompleted ? 'opacity-70 border-l-2 border-l-[#00e676]' : 'hover:border-[#00f0ff] border-l-2 border-l-[#00f0ff]'
       }`}
     >
       <div className="space-y-1.5 flex-1 min-w-0">
@@ -29,8 +29,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <TaskStatusBadge status={task.status} />
           <TaskPriorityBadge priority={task.priority} />
           <span
-            className={`font-semibold text-sm tracking-tight ${
-              isCompleted ? 'line-through text-zinc-400' : 'text-zinc-950'
+            className={`font-mono font-bold text-sm tracking-wider uppercase ${
+              isCompleted ? 'line-through text-[#606c80]' : 'text-white'
             }`}
           >
             {task.title}
@@ -38,54 +38,51 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
 
         {task.description && (
-          <p className="text-xs text-zinc-600 leading-relaxed pr-2">
-            {task.description}
+          <p className="text-xs text-[#9da8b9] leading-relaxed pr-2 font-mono">
+            // {task.description}
           </p>
         )}
 
-        <div className="flex items-center gap-3 text-[11px] font-mono text-zinc-400 flex-wrap pt-0.5">
+        <div className="flex items-center gap-3 text-[11px] font-mono text-[#606c80] flex-wrap pt-0.5">
           <span className="flex items-center gap-1">
-            <IconMapPin size={11} />
+            <IconMapPin size={11} className="text-[#00f0ff]" />
             {task.branchName}
           </span>
           {task.shiftName && (
             <span className="flex items-center gap-1">
-              <IconClock size={11} />
+              <IconClock size={11} className="text-[#00f0ff]" />
               {task.shiftName}
             </span>
           )}
           {task.completedAt && (
-            <span className="text-emerald-700 font-medium flex items-center gap-1">
+            <span className="text-[#00e676] font-bold flex items-center gap-1">
               <IconCheck size={11} />
-              Done {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              RESOLVED {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
       </div>
 
-      {/* Staff Actions */}
-      <div className="flex items-center gap-2 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100">
-        {task.status === 'TODO' && (
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {isCompleted ? (
           <Button
             variant="secondary"
             size="sm"
             onClick={() => onUpdateStatus(task.id, 'IN_PROGRESS')}
             disabled={isUpdating}
           >
-            Start Task
+            [ RE-OPEN ]
           </Button>
-        )}
-
-        {(task.status === 'TODO' || task.status === 'IN_PROGRESS') && (
+        ) : (
           <Button
-            variant="primary"
+            variant="cyan"
             size="sm"
             onClick={() => onUpdateStatus(task.id, 'COMPLETED')}
             disabled={isUpdating}
-            className="gap-1.5"
+            className="gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.2)]"
           >
             <IconCheck size={13} />
-            <span>Mark Complete</span>
+            <span>[ RESOLVE ]</span>
           </Button>
         )}
       </div>

@@ -239,35 +239,35 @@ export const StaffPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-            <IconUsers size={20} className="text-zinc-950" />
-            <span>Staff Directory & Access</span>
+          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+            <IconUsers size={20} className="text-[#00f0ff]" />
+            <span>ORGANIZATION PERSONNEL DIRECTORY</span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
-            Manage organization members, branch assignments, credentials, and access roles
+          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
+            Manage organization members, sector assignments, credentials, and access clearance
           </p>
         </div>
 
         <Button
-          variant="primary"
-          size="sm"
+          variant="amber"
+          size="md"
           onClick={() => {
             resetInviteForm();
             setIsInviteOpen(true);
           }}
-          className="gap-1.5"
+          className="gap-2 shadow-[0_0_12px_rgba(255,107,0,0.25)]"
         >
           <IconPlus size={14} />
-          <span>Add Staff Member</span>
+          <span>[ + ADD OPERATOR ]</span>
         </Button>
       </div>
 
       {/* Filters Toolbar */}
-      <div className="bg-white border border-zinc-200 rounded-lg p-3.5 flex flex-wrap items-center gap-3 text-xs">
+      <div className="bg-[#11141a] border border-[#262c38] p-3.5 flex flex-wrap items-center gap-3 text-xs clip-chamfer-btn font-mono">
         <div className="flex-1 min-w-[200px] relative">
-          <IconSearch size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <IconSearch size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#606c80]" />
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -276,22 +276,22 @@ export const StaffPage: React.FC = () => {
               setSearch(e.target.value);
               setPage(0);
             }}
-            className="w-full pl-8 pr-3 py-1.5 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+            className="w-full pl-9 pr-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff]"
           />
         </div>
 
         {isOwner && (
-          <div className="flex items-center gap-1.5">
-            <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Branch:</label>
+          <div className="flex items-center gap-2">
+            <label className="text-[10px] font-bold text-[#606c80] uppercase">SECTOR:</label>
             <select
               value={selectedBranchId}
               onChange={(e) => {
                 setSelectedBranchId(e.target.value);
                 setPage(0);
               }}
-              className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+              className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
             >
-              <option value="">All Branches</option>
+              <option value="">All Sectors</option>
               {branches?.map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name}
@@ -301,15 +301,15 @@ export const StaffPage: React.FC = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-1.5">
-          <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Role:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-[10px] font-bold text-[#606c80] uppercase">ROLE:</label>
           <select
             value={selectedRole}
             onChange={(e) => {
               setSelectedRole(e.target.value);
               setPage(0);
             }}
-            className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+            className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
           >
             <option value="">All Roles</option>
             {isOwner && <option value="OWNER">Owner</option>}
@@ -318,15 +318,15 @@ export const StaffPage: React.FC = () => {
           </select>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <label className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">Status:</label>
+        <div className="flex items-center gap-2">
+          <label className="text-[10px] font-bold text-[#606c80] uppercase">STATUS:</label>
           <select
             value={selectedStatus}
             onChange={(e) => {
               setSelectedStatus(e.target.value);
               setPage(0);
             }}
-            className="px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+            className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
           >
             <option value="">All Statuses</option>
             <option value="active">Active Only</option>
@@ -336,29 +336,29 @@ export const StaffPage: React.FC = () => {
       </div>
 
       {/* Staff Table */}
-      <div className="overflow-x-auto border border-zinc-200 rounded-lg">
+      <div className="overflow-x-auto border border-[#262c38] bg-[#11141a] clip-chamfer-card">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-mono text-[11px] uppercase tracking-wider">
-              <th className="py-2.5 px-3 font-medium">Staff Member</th>
-              <th className="py-2.5 px-3 font-medium">Role</th>
-              <th className="py-2.5 px-3 font-medium">Primary Branch</th>
-              <th className="py-2.5 px-3 font-medium">Contact Phone</th>
-              <th className="py-2.5 px-3 font-medium">Account Status</th>
-              <th className="py-2.5 px-3 font-medium text-right">Actions</th>
+            <tr className="bg-[#161922] border-b border-[#262c38] text-[#9da8b9] font-mono text-[10px] uppercase tracking-wider">
+              <th className="py-3 px-3.5 font-bold">OPERATOR</th>
+              <th className="py-3 px-3.5 font-bold">CLEARANCE ROLE</th>
+              <th className="py-3 px-3.5 font-bold">PRIMARY SECTOR</th>
+              <th className="py-3 px-3.5 font-bold">CONTACT PHONE</th>
+              <th className="py-3 px-3.5 font-bold">STATUS</th>
+              <th className="py-3 px-3.5 font-bold text-right">ACTION</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 bg-white">
+          <tbody className="divide-y divide-[#1e222b]">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs font-mono text-zinc-400">
-                  Loading staff directory...
+                <td colSpan={6} className="py-12 text-center text-xs font-mono text-[#00f0ff]">
+                  [ SYNCING_PERSONNEL_DATABASE... ]
                 </td>
               </tr>
             ) : pagedUsers?.content.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-zinc-500">
-                  No personnel matching the current search parameters.
+                <td colSpan={6} className="py-12 text-center text-xs font-mono text-[#606c80]">
+                  [ NO PERSONNEL MATCHING GIVEN PARAMETERS ]
                 </td>
               </tr>
             ) : (
@@ -461,18 +461,18 @@ export const StaffPage: React.FC = () => {
 
         {/* Pagination Bar */}
         {pagedUsers && pagedUsers.totalPages > 1 && (
-          <div className="p-3 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-600">
-            <span className="font-mono text-[11px]">
-              Showing {pagedUsers.content.length} of {pagedUsers.totalElements} members (Page {pagedUsers.page + 1} of {pagedUsers.totalPages})
+          <div className="p-3 bg-[#161922] border-t border-[#262c38] flex items-center justify-between text-xs font-mono text-[#9da8b9]">
+            <span className="text-[11px]">
+              SHOWING {pagedUsers.content.length} OF {pagedUsers.totalElements} OPERATORS (SECTOR PAGE {pagedUsers.page + 1} OF {pagedUsers.totalPages})
             </span>
-            <div className="flex gap-1.5">
+            <div className="flex gap-2">
               <Button
                 variant="secondary"
                 size="sm"
                 disabled={page === 0}
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
               >
-                Previous
+                [ PREV ]
               </Button>
               <Button
                 variant="secondary"
@@ -480,7 +480,7 @@ export const StaffPage: React.FC = () => {
                 disabled={pagedUsers.last}
                 onClick={() => setPage((p) => p + 1)}
               >
-                Next
+                [ NEXT ]
               </Button>
             </div>
           </div>

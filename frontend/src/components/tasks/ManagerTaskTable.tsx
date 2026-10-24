@@ -17,76 +17,74 @@ export const ManagerTaskTable: React.FC<ManagerTaskTableProps> = ({
   onCancelTask,
 }) => {
   if (isLoading) {
-    return <div className="py-12 text-center text-xs font-mono text-zinc-400">Loading branch tasks...</div>;
+    return <div className="py-12 text-center text-xs font-mono text-[#00f0ff]">[ SYNCING_SECTOR_TASKS... ]</div>;
   }
 
   if (tasks.length === 0) {
     return (
-      <div className="py-12 text-center border border-dashed border-zinc-200 rounded-lg bg-zinc-50/50">
-        <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-2">
+      <div className="py-12 text-center border border-[#262c38] bg-[#11141a] clip-chamfer-card">
+        <div className="w-8 h-8 bg-[#181c24] border border-[#262c38] flex items-center justify-center text-[#606c80] mx-auto mb-2">
           <IconCheckList size={16} />
         </div>
-        <p className="text-xs font-medium text-zinc-800">No operational tasks found</p>
-        <p className="text-[11px] text-zinc-400 mt-0.5">
-          Generate tasks from checklists or add ad-hoc items for assigned staff.
+        <p className="text-xs font-mono font-bold text-white uppercase">[ NO OPERATIONAL TASKS FOUND ]</p>
+        <p className="text-[11px] font-mono text-[#606c80] mt-0.5">
+          Generate tasks from templates or dispatch ad-hoc directives to assigned operators.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto border border-zinc-200 rounded-lg">
+    <div className="overflow-x-auto border border-[#262c38] bg-[#11141a] clip-chamfer-card">
       <table className="w-full text-left text-xs border-collapse">
         <thead>
-          <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-600 font-mono text-[11px] uppercase tracking-wider">
-            <th className="py-2.5 px-3 font-medium">Task / Checklist</th>
-            <th className="py-2.5 px-3 font-medium">Assigned Staff</th>
-            <th className="py-2.5 px-3 font-medium">Shift</th>
-            <th className="py-2.5 px-3 font-medium">Priority</th>
-            <th className="py-2.5 px-3 font-medium">Status</th>
-            <th className="py-2.5 px-3 font-medium">Completed At</th>
-            <th className="py-2.5 px-3 font-medium">Actions</th>
+          <tr className="bg-[#161922] border-b border-[#262c38] text-[#9da8b9] font-mono text-[10px] uppercase tracking-wider">
+            <th className="py-3 px-3.5 font-bold">MISSION / DIRECTIVE</th>
+            <th className="py-3 px-3.5 font-bold">ASSIGNED OPERATOR</th>
+            <th className="py-3 px-3.5 font-bold">SHIFT WINDOW</th>
+            <th className="py-3 px-3.5 font-bold">PRIORITY</th>
+            <th className="py-3 px-3.5 font-bold">STATUS</th>
+            <th className="py-3 px-3.5 font-bold">COMPLETED AT</th>
+            <th className="py-3 px-3.5 font-bold text-right">ACTION</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 bg-white">
+        <tbody className="divide-y divide-[#1e222b]">
           {tasks.map((t) => (
-            <tr key={t.id} className="hover:bg-zinc-50/80 transition-colors">
-              <td className="py-2.5 px-3">
-                <div className="font-semibold text-zinc-950">{t.title}</div>
+            <tr key={t.id} className="hover:bg-[#181c24] transition-colors font-mono">
+              <td className="py-3 px-3.5">
+                <div className="font-bold text-white uppercase">{t.title}</div>
                 {t.description && (
-                  <div className="text-[11px] text-zinc-500 mt-0.5 max-w-sm">{t.description}</div>
+                  <div className="text-[11px] text-[#9da8b9] mt-0.5 max-w-sm truncate">// {t.description}</div>
                 )}
               </td>
-              <td className="py-2.5 px-3">
-                <span className="font-medium text-zinc-800">{t.userName}</span>
-                <div className="text-[11px] font-mono text-zinc-400">{t.userEmail}</div>
+              <td className="py-3 px-3.5">
+                {t.userName ? (
+                  <span className="font-bold text-[#00f0ff]">{t.userName}</span>
+                ) : (
+                  <span className="text-[#606c80] italic">[ UNASSIGNED ]</span>
+                )}
               </td>
-              <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
-                {t.shiftName || 'Shift'}
+              <td className="py-3 px-3.5 text-[#9da8b9]">
+                {t.shiftName || '—'}
               </td>
-              <td className="py-2.5 px-3 whitespace-nowrap">
+              <td className="py-3 px-3.5 whitespace-nowrap">
                 <TaskPriorityBadge priority={t.priority} />
               </td>
-              <td className="py-2.5 px-3 whitespace-nowrap">
+              <td className="py-3 px-3.5 whitespace-nowrap">
                 <TaskStatusBadge status={t.status} />
               </td>
-              <td className="py-2.5 px-3 font-mono tabular-nums text-zinc-600 whitespace-nowrap">
-                {t.completedAt ? (
-                  <span className="text-emerald-700 font-medium">
-                    {new Date(t.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                ) : (
-                  '—'
-                )}
+              <td className="py-3 px-3.5 tabular-nums text-[#606c80] whitespace-nowrap">
+                {t.completedAt ? new Date(t.completedAt).toLocaleTimeString() : '—'}
               </td>
-              <td className="py-2.5 px-3 whitespace-nowrap">
+              <td className="py-3 px-3.5 text-right whitespace-nowrap">
                 {t.status !== 'COMPLETED' && t.status !== 'CANCELLED' && (
                   <Button
                     variant="danger"
                     size="sm"
                     onClick={() => onCancelTask(t.id)}
+                    className="text-[10px]"
                   >
-                    Cancel
+                    [ CANCEL ]
                   </Button>
                 )}
               </td>

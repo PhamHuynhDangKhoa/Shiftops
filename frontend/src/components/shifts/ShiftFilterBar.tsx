@@ -31,15 +31,16 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
   return (
     <div className="space-y-4">
       {/* Title & Top Level Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-zinc-200">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-950">
-            {isStaff ? 'My Assigned Shifts' : 'Shift Scheduling'}
+          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+            <IconCalendar size={20} className="text-[#00f0ff]" />
+            <span>{isStaff ? 'PERSONAL SHIFT ROSTER' : 'OPERATIONAL SHIFT SCHEDULING'}</span>
           </h1>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
             {isStaff
-              ? 'View your upcoming published rosters and scheduled hours'
-              : 'Create, assign personnel, and publish operational shift rosters'}
+              ? 'View upcoming published rosters and scheduled operational windows'
+              : 'Author, assign operators, and publish sector shift rosters'}
           </p>
         </div>
 
@@ -50,7 +51,7 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
                 <select
                   value={selectedBranchId}
                   onChange={(e) => onBranchChange(e.target.value)}
-                  className="px-3 py-1.5 text-xs font-medium rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+                  className="px-3.5 py-2 text-xs font-mono font-bold rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
                 >
                   {branches.map((b) => (
                     <option key={b.id} value={b.id} disabled={!b.active}>
@@ -62,50 +63,45 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
             )}
 
             <Button
-              variant="primary"
-              size="sm"
+              variant="amber"
+              size="md"
               onClick={onCreateClick}
-              className="gap-1.5"
+              className="gap-2 shadow-[0_0_12px_rgba(255,107,0,0.25)]"
             >
               <IconPlus size={14} />
-              <span>Create Shift</span>
+              <span>[ CREATE SHIFT ]</span>
             </Button>
           </div>
         )}
       </div>
 
-      {/* Date Window Filter Bar */}
-      <div className="bg-white border border-zinc-200 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="font-mono font-medium text-zinc-500 flex items-center gap-1.5 uppercase text-[11px] tracking-wider">
-            <IconCalendar size={13} className="text-zinc-400" />
-            Window
-          </span>
-
-          <div className="flex items-center gap-1.5">
-            <span className="text-zinc-400 text-[11px] font-mono">FROM</span>
+      {/* Date Window Toolbar */}
+      <div className="bg-[#11141a] border border-[#262c38] p-3.5 flex flex-wrap items-center justify-between gap-3 clip-chamfer-btn">
+        <div className="flex items-center gap-3 flex-wrap text-xs font-mono">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-[#606c80] uppercase">WINDOW START:</span>
             <input
               type="date"
-              value={startDate.slice(0, 10)}
+              value={startDate}
               onChange={(e) => onStartDateChange(e.target.value)}
-              className="px-2.5 py-1 text-xs font-mono rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+              className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
             />
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-zinc-400 text-[11px] font-mono">TO</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold text-[#606c80] uppercase">WINDOW END:</span>
             <input
               type="date"
-              value={endDate.slice(0, 10)}
+              value={endDate}
               onChange={(e) => onEndDateChange(e.target.value)}
-              className="px-2.5 py-1 text-xs font-mono rounded border border-zinc-300 bg-white text-zinc-800 focus:outline-none focus:border-zinc-900"
+              className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
             />
           </div>
         </div>
 
-        <div className="font-mono text-[11px] text-zinc-400">
-          Range: {new Date(startDate).toLocaleDateString()} — {new Date(endDate).toLocaleDateString()}
-        </div>
+        <span className="text-[10px] font-mono text-[#606c80]">
+          DISPATCH_WINDOW: 7_DAYS_HORIZON
+        </span>
       </div>
     </div>
   );

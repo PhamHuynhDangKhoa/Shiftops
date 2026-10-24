@@ -1,34 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-zinc-950: #09090b;
-  --color-zinc-900: #18181b;
-  --color-zinc-800: #27272a;
-  --color-zinc-700: #3f3f46;
-  --color-zinc-600: #52525b;
-  --color-zinc-500: #71717a;
-  --color-zinc-400: #a1a1aa;
-  --color-zinc-300: #d4d4d8;
-  --color-zinc-200: #e4e4e7;
-  --color-zinc-100: #f4f4f5;
-  --color-zinc-50: #fafafa;
+  --color-zinc-950: #090a0d;
+  --color-zinc-900: #11141a;
+  --color-zinc-800: #181c24;
+  --color-zinc-700: #262c38;
+  --color-zinc-600: #384152;
+  --color-zinc-500: #606c80;
+  --color-zinc-400: #9da8b9;
+  --color-zinc-300: #c2cbd7;
+  --color-zinc-200: #e2e8f0;
+  --color-zinc-100: #f1f5f9;
+  --color-zinc-50: #f8fafc;
 
-  --color-brand-600: #0284c7;
-  --color-brand-700: #0369a1;
+  /* Arknights Tactical Palette */
+  --color-ark-obsidian: #090a0d;
+  --color-ark-carbon: #11141a;
+  --color-ark-slate: #181c24;
+  --color-ark-border: #262c38;
+  --color-ark-border-bright: #3c4558;
 
-  --color-status-urgent: #e11d48;
-  --color-status-high: #ea580c;
-  --color-status-normal: #0284c7;
-  --color-status-low: #71717a;
-  --color-status-success: #16a34a;
+  --color-ark-cyan: #00f0ff;
+  --color-ark-cyan-dark: #00a8b3;
+  --color-ark-amber: #ff6b00;
+  --color-ark-gold: #e5c07b;
+  --color-ark-crimson: #ff1744;
+  --color-ark-green: #00e676;
+
+  --color-brand-600: #00f0ff;
+  --color-brand-700: #00a8b3;
+
+  --color-status-urgent: #ff1744;
+  --color-status-high: #ff6b00;
+  --color-status-normal: #00f0ff;
+  --color-status-low: #606c80;
+  --color-status-success: #00e676;
 }
 
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #18181b;
-  background-color: #f8fafc;
+  color: #f1f5f9;
+  background-color: #090a0d;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -42,28 +56,103 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f8fafc;
-  color: #18181b;
+  background-color: #090a0d;
+  color: #f1f5f9;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.03) 0%, transparent 60%),
+    linear-gradient(to bottom, rgba(9, 10, 13, 0.95), #090a0d);
+  background-attachment: fixed;
 }
 
-/* Tabular figures for operational timestamps and numbers */
-.num-tabular, time, [data-tabular] {
+/* Tabular figures for operational timestamps, counts, and coordinates */
+.num-tabular, time, [data-tabular], .font-mono {
   font-variant-numeric: tabular-nums;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* Precise high-craft form inputs without fuzzy halos */
+/* Chamfer polygon clip-paths for tactical geometric silhouettes */
+.clip-chamfer-btn {
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+
+.clip-chamfer-card {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.clip-chamfer-tr {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+
+.clip-tag {
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+}
+
+/* Industrial Hazard Stripe Utilities */
+.hazard-stripes-amber {
+  background: repeating-linear-gradient(
+    45deg,
+    #ff6b00,
+    #ff6b00 8px,
+    #11141a 8px,
+    #11141a 16px
+  );
+}
+
+.hazard-stripes-crimson {
+  background: repeating-linear-gradient(
+    45deg,
+    #ff1744,
+    #ff1744 8px,
+    #11141a 8px,
+    #11141a 16px
+  );
+}
+
+.hazard-stripes-cyan {
+  background: repeating-linear-gradient(
+    45deg,
+    #00f0ff,
+    #00f0ff 8px,
+    #11141a 8px,
+    #11141a 16px
+  );
+}
+
+/* Subtle tactical grid background pattern */
+.tactical-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(38, 44, 56, 0.3) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(38, 44, 56, 0.3) 1px, transparent 1px);
+}
+
+/* Technical form inputs */
 input, select, textarea {
   font-family: inherit;
 }
 
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: #18181b !important;
-  box-shadow: 0 0 0 1px #18181b !important;
+  border-color: #00f0ff !important;
+  box-shadow: 0 0 0 1px #00f0ff, 0 0 8px rgba(0, 240, 255, 0.25) !important;
 }
 
 button {
   font-family: inherit;
 }
 
+/* Custom scrollbar for tactical consoles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090a0d;
+}
+::-webkit-scrollbar-thumb {
+  background: #262c38;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #384152;
+}

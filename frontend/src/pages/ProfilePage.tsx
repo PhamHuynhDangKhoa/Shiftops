@@ -96,36 +96,36 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="pb-4 border-b border-zinc-200">
-        <h1 className="text-xl font-semibold tracking-tight text-zinc-950 flex items-center gap-2">
-          <IconUser size={20} className="text-zinc-950" />
-          <span>User Profile & Security</span>
+      <div className="pb-4 border-b border-[#262c38]">
+        <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
+          <IconUser size={20} className="text-[#00f0ff]" />
+          <span>OPERATOR DOSSIER & SECURITY CLEARANCE</span>
         </h1>
-        <p className="text-xs text-zinc-500 mt-0.5">
-          Manage your personal identity credentials, contact information, and session password
+        <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
+          Manage your personal identity credentials, contact telemetry, and clearance keys
         </p>
       </div>
 
       {/* Account Info Summary Card */}
-      <Card compact className="p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Card compact className="p-5 border border-[#262c38] bg-[#11141a]" chamfer>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono">
           <div>
-            <h2 className="text-sm font-semibold text-zinc-950">{user?.fullName}</h2>
-            <p className="text-xs font-mono text-zinc-500 mt-0.5">{user?.email}</p>
+            <h2 className="text-base font-bold text-white uppercase tracking-wider">{user?.fullName}</h2>
+            <p className="text-xs text-[#00f0ff] mt-0.5">{user?.email}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="brand" size="sm">
+            <Badge variant="cyan" size="md">
               {user?.role}
             </Badge>
             {user?.primaryBranchName && (
-              <span className="text-xs font-mono text-zinc-500 flex items-center gap-1 bg-zinc-100 border border-zinc-200 px-2 py-0.5 rounded">
-                <IconMapPin size={11} className="text-zinc-400" />
-                {user.primaryBranchName}
+              <span className="text-xs font-mono text-[#f1f5f9] flex items-center gap-1.5 bg-[#161922] border border-[#2a2f3d] px-2.5 py-1 rounded-sm">
+                <IconMapPin size={11} className="text-[#00f0ff]" />
+                <span>{user.primaryBranchName}</span>
               </span>
             )}
             {user?.mustChangePassword && (
-              <Badge variant="urgent" size="sm">
-                Password Change Required
+              <Badge variant="urgent" size="md">
+                KEY_ROTATION_REQUIRED
               </Badge>
             )}
           </div>
@@ -134,18 +134,18 @@ export const ProfilePage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Personal Details Form */}
-        <Card className="p-5 space-y-4">
-          <div className="pb-2 border-b border-zinc-100">
-            <h3 className="text-sm font-semibold text-zinc-950">Personal Details</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Keep your operational contact information current</p>
+        <Card className="p-5 space-y-4 border border-[#262c38] bg-[#11141a]" chamfer>
+          <div className="pb-3 border-b border-[#262c38]">
+            <h3 className="text-xs font-mono font-bold text-white uppercase tracking-wider">PERSONAL DETAILS</h3>
+            <p className="text-xs font-mono text-[#9da8b9] mt-0.5">Keep operational contact parameters synchronized</p>
           </div>
 
           {profileMsg && (
             <div
-              className={`p-3 rounded-md text-xs border flex items-center gap-2 ${
+              className={`p-3 rounded-sm text-xs font-mono border flex items-center gap-2 ${
                 profileMsg.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
-                  : 'bg-rose-50 text-rose-800 border-rose-200/90'
+                  ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
+                  : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
               }`}
             >
               {profileMsg.type === 'success' ? (

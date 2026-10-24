@@ -99,9 +99,9 @@ export const IssuesPage: React.FC = () => {
     }
   }, [branches, selectedBranchId]);
 
-  // Branch Staff query (for Manager/Owner issue assignment)
+  // Branch staff query (to populate Assignee select in Manager Detail Modal)
   const { data: branchStaff } = useQuery<User[]>({
-    queryKey: ['branch-staff', selectedBranchId],
+    queryKey: ['branch-staff-issues', selectedBranchId],
     queryFn: async () => {
       if (!selectedBranchId) return [];
       const res = await api.get<ApiResponse<PagedResponse<User>>>('/users', {
@@ -112,7 +112,7 @@ export const IssuesPage: React.FC = () => {
     enabled: !isStaff && !!selectedBranchId,
   });
 
-  // STAFF: "My Issues" query
+  // Staff query: /issues/my
   const {
     data: myIssues,
     isLoading: isLoadingMyIssues,
@@ -125,19 +125,18 @@ export const IssuesPage: React.FC = () => {
     enabled: isStaff,
   });
 
-  // MANAGER / OWNER: Branch Issues query
+  // Manager query: /branches/{branchId}/issues
   const {
     data: branchIssuesPage,
     isLoading: isLoadingBranchIssues,
   } = useQuery<PagedResponse<IssueSummary>>({
     queryKey: ['branch-issues', selectedBranchId, statusFilter, categoryFilter, priorityFilter],
     queryFn: async () => {
-      if (!selectedBranchId) return { content: [], totalElements: 0, totalPages: 0, size: 50, page: 0, last: true };
+      if (!selectedBranchId) return { content: [], totalElements: 0, totalPages: 0, size: 20, page: 0, first: true, last: true, empty: true };
       const params: Record<string, string> = { size: '50' };
       if (statusFilter !== 'ALL') params.status = statusFilter;
       if (categoryFilter !== 'ALL') params.category = categoryFilter;
       if (priorityFilter !== 'ALL') params.priority = priorityFilter;
-
       const res = await api.get<ApiResponse<PagedResponse<IssueSummary>>>(`/branches/${selectedBranchId}/issues`, {
         params,
       });
@@ -146,14 +145,14 @@ export const IssuesPage: React.FC = () => {
     enabled: !isStaff && !!selectedBranchId,
   });
 
-  // Issue Detail Query
+  // Detailed Issue Query (when opening detail modal)
   const {
     data: selectedIssue,
     isLoading: isLoadingIssueDetail,
   } = useQuery<Issue>({
     queryKey: ['issue-detail', selectedIssueId],
     queryFn: async () => {
-      if (!selectedIssueId) throw new Error('No issue selected');
+      if (!selectedIssueId) throw new Error('No issue ID');
       const res = await api.get<ApiResponse<Issue>>(`/issues/${selectedIssueId}`);
       return res.data.data;
     },
@@ -167,8 +166,8 @@ export const IssuesPage: React.FC = () => {
   // Create Issue
   const createIssueMutation = useMutation({
     mutationFn: async () => {
-      const targetBranch = isStaff ? (user?.primaryBranchId || reportBranchId) : reportBranchId;
-      if (!targetBranch) throw new Error('Branch required');
+      const effectiveBranchId = reportBranchId || user?.primaryBranchId || selectedBranchId;
+      if (!effectiveBranchId) throw new Error('Operating branch required');
 
       const formData = new FormData();
       formData.append('title', reportTitle.trim());
@@ -176,10 +175,10 @@ export const IssuesPage: React.FC = () => {
       formData.append('category', reportCategory);
       formData.append('priority', reportPriority);
       if (reportFile) {
-        formData.append('attachment', reportFile);
+        formData.append('file', reportFile);
       }
 
-      const res = await api.post<ApiResponse<Issue>>(`/branches/${targetBranch}/issues`, formData, {
+      const res = await api.post<ApiResponse<Issue>>(`/branches/${effectiveBranchId}/issues`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return res.data;
@@ -189,15 +188,13 @@ export const IssuesPage: React.FC = () => {
       setShowReportModal(false);
       setReportTitle('');
       setReportDescription('');
-      setReportCategory('EQUIPMENT');
-      setReportPriority('NORMAL');
       setReportFile(null);
-      queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
       queryClient.invalidateQueries({ queryKey: ['my-issues'] });
+      queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
-      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to report issue';
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to report incident';
       setAlert({ type: 'error', message: msg });
     },
   });
@@ -205,11 +202,13 @@ export const IssuesPage: React.FC = () => {
   // Assign Issue
   const assignIssueMutation = useMutation({
     mutationFn: async ({ issueId, userId }: { issueId: string; userId: string }) => {
-      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/assign`, { userId });
+      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/assign`, {
+        assignedToUserId: userId,
+      });
       return res.data;
     },
-    onSuccess: () => {
-      setAlert({ type: 'success', message: 'Issue assigned successfully' });
+    onSuccess: (data) => {
+      setAlert({ type: 'success', message: `Incident assigned to ${data.data.assignedToName || 'staff'}` });
       setAssigneeUserId('');
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
       queryClient.invalidateQueries({ queryKey: ['branch-issues'] });
@@ -222,12 +221,23 @@ export const IssuesPage: React.FC = () => {
 
   // Update Status
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ issueId, status, comment }: { issueId: string; status: IssueStatus; comment?: string }) => {
-      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/status`, { status, comment });
+    mutationFn: async ({
+      issueId,
+      status,
+      comment,
+    }: {
+      issueId: string;
+      status: IssueStatus;
+      comment?: string;
+    }) => {
+      const res = await api.patch<ApiResponse<Issue>>(`/issues/${issueId}/status`, {
+        status,
+        comment: comment?.trim() || undefined,
+      });
       return res.data;
     },
-    onSuccess: () => {
-      setAlert({ type: 'success', message: 'Incident status updated' });
+    onSuccess: (data) => {
+      setAlert({ type: 'success', message: `Status updated to ${data.data.status}` });
       setStatusActionTarget(null);
       setStatusComment('');
       queryClient.invalidateQueries({ queryKey: ['issue-detail', selectedIssueId] });
@@ -305,16 +315,16 @@ export const IssuesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
         <div>
-          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
-            <IconAlertTriangle size={18} className="text-[#ff1744]" />
-            <span>Incidents & Triage</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
+            <IconAlertTriangle size={22} className="text-zinc-700" />
+            <span>Incident & Issue Tracker</span>
           </h1>
-          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
+          <p className="text-sm text-zinc-500 mt-1">
             {isStaff
-              ? 'Report equipment breakdowns, safety hazards, and track triage progress'
-              : 'Monitor sector hazards, assign personnel, and verify resolution ledgers'}
+              ? 'Report equipment breakdowns or safety concerns and track resolution progress.'
+              : 'Monitor branch incidents, assign staff, and track resolution ledgers.'}
           </p>
         </div>
 
@@ -325,35 +335,35 @@ export const IssuesPage: React.FC = () => {
             setReportBranchId(isStaff ? user?.primaryBranchId || '' : selectedBranchId);
             setShowReportModal(true);
           }}
-          className="gap-1.5 whitespace-nowrap text-xs"
+          className="gap-1.5 whitespace-nowrap"
         >
-          <IconAlertTriangle size={14} />
-          <span>Report Incident</span>
+          <IconAlertTriangle size={15} />
+          <span>Report Issue</span>
         </Button>
       </div>
 
       {/* Alert banner */}
       {alert && (
         <div
-          className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
+          className={`p-4 rounded-xl text-sm border flex items-center justify-between shadow-2xs ${
             alert.type === 'success'
-              ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
-              : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border-rose-200'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {alert.type === 'success' ? (
-              <IconCheck size={14} className="text-[#00e676]" />
+              <IconCheck size={16} className="text-emerald-600 flex-shrink-0" />
             ) : (
-              <IconAlertTriangle size={14} className="text-[#ff1744]" />
+              <IconAlertTriangle size={16} className="text-rose-600 flex-shrink-0" />
             )}
-            <span>{alert.message}</span>
+            <span className="font-medium">{alert.message}</span>
           </div>
           <button
             onClick={() => setAlert(null)}
-            className="text-[#606c80] hover:text-white cursor-pointer"
+            className="text-zinc-400 hover:text-zinc-700 cursor-pointer p-1"
           >
-            <IconClose size={13} />
+            <IconClose size={14} />
           </button>
         </div>
       )}
@@ -362,12 +372,12 @@ export const IssuesPage: React.FC = () => {
       {!isStaff && (
         <div className="space-y-4">
           {isOwner && branches && branches.length > 0 && (
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <label className="text-[#606c80] font-bold text-[10px] uppercase">SECTOR:</label>
+            <div className="flex items-center gap-2 text-sm">
+              <label className="text-zinc-500 font-semibold uppercase text-xs">Branch:</label>
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+                className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs font-medium"
               >
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>
@@ -397,21 +407,21 @@ export const IssuesPage: React.FC = () => {
       {isStaff && (
         <div>
           {isLoadingMyIssues ? (
-            <div className="py-12 text-center text-xs font-mono text-[#8a94a6]">
+            <div className="py-12 text-center text-sm text-zinc-500 bg-white border border-zinc-200/80 rounded-xl">
               Loading incident reports...
             </div>
           ) : !myIssues || myIssues.length === 0 ? (
-            <Card className="py-12 text-center text-[#8a94a6] border border-[#262c38] bg-[#11141a]" chamfer>
-              <div className="w-8 h-8 bg-[#181c24] border border-[#262c38] flex items-center justify-center text-[#8a94a6] mx-auto mb-2">
-                <IconAlertTriangle size={16} />
+            <Card className="py-12 text-center text-zinc-500">
+              <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 mx-auto mb-2">
+                <IconAlertTriangle size={18} />
               </div>
-              <p className="text-xs font-bold text-white uppercase tracking-wider font-mono">No active incidents</p>
-              <p className="text-[11px] text-[#8a94a6] mt-0.5 font-mono">
-                You haven't reported any issues and none are assigned to you.
+              <p className="text-sm font-semibold text-zinc-800">No active incidents</p>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                You haven&apos;t reported any issues and none are assigned to you.
               </p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {myIssues
                 .filter((iss) => (statusFilter === 'ALL' ? true : iss.status === statusFilter))
                 .map((issue) => (

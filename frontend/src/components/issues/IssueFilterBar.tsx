@@ -21,62 +21,62 @@ export const IssueFilterBar: React.FC<IssueFilterBarProps> = ({
   onPriorityChange,
 }) => {
   return (
-    <div className="bg-[#11141a] border border-[#262c38] p-3.5 mb-5 flex flex-wrap items-center gap-3 text-xs clip-chamfer-btn font-mono">
+    <div className="bg-white border border-zinc-200/80 rounded-xl p-4 mb-5 flex flex-wrap items-center gap-3.5 text-sm shadow-2xs">
       <div className="flex items-center gap-2">
-        <label className="text-[10px] font-bold text-[#606c80] uppercase tracking-wider flex items-center gap-1.5">
-          <IconFilter size={12} className="text-[#00f0ff]" />
-          STATUS:
+        <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
+          <IconFilter size={13} className="text-zinc-400" />
+          Status:
         </label>
         <select
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+          className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
         >
-          <option value="ALL">ALL STATUSES</option>
-          <option value="OPEN">OPEN</option>
-          <option value="ASSIGNED">ASSIGNED</option>
-          <option value="IN_PROGRESS">IN PROGRESS</option>
-          <option value="RESOLVED">RESOLVED</option>
-          <option value="CLOSED">CLOSED</option>
-          <option value="CANCELLED">CANCELLED</option>
+          <option value="ALL">All Statuses</option>
+          <option value="OPEN">Open</option>
+          <option value="ASSIGNED">Assigned</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="CLOSED">Closed</option>
+          <option value="CANCELLED">Cancelled</option>
         </select>
       </div>
 
       {!isStaff && onCategoryChange && onPriorityChange && (
         <>
           <div className="flex items-center gap-2">
-            <label className="text-[10px] font-bold text-[#606c80] uppercase tracking-wider">
-              CATEGORY:
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              Category:
             </label>
             <select
               value={categoryFilter}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+              className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
             >
-              <option value="ALL">ALL CATEGORIES</option>
-              <option value="EQUIPMENT">EQUIPMENT</option>
-              <option value="FACILITY">FACILITY</option>
-              <option value="SAFETY">SAFETY</option>
-              <option value="INVENTORY">INVENTORY</option>
-              <option value="STAFFING">STAFFING</option>
-              <option value="OTHER">OTHER</option>
+              <option value="ALL">All Categories</option>
+              <option value="EQUIPMENT">Equipment</option>
+              <option value="FACILITY">Facility</option>
+              <option value="SAFETY">Safety</option>
+              <option value="INVENTORY">Inventory</option>
+              <option value="STAFFING">Staffing</option>
+              <option value="OTHER">Other</option>
             </select>
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-[10px] font-bold text-[#606c80] uppercase tracking-wider">
-              PRIORITY:
+            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              Priority:
             </label>
             <select
               value={priorityFilter}
               onChange={(e) => onPriorityChange(e.target.value)}
-              className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+              className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
             >
-              <option value="ALL">ALL PRIORITIES</option>
-              <option value="URGENT">URGENT (CRITICAL)</option>
-              <option value="HIGH">HIGH</option>
-              <option value="MEDIUM">MEDIUM</option>
-              <option value="LOW">LOW</option>
+              <option value="ALL">All Priorities</option>
+              <option value="URGENT">Urgent</option>
+              <option value="HIGH">High</option>
+              <option value="NORMAL">Normal</option>
+              <option value="LOW">Low</option>
             </select>
           </div>
         </>

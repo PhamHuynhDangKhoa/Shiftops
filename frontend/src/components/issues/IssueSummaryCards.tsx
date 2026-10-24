@@ -14,45 +14,57 @@ interface IssueSummaryCardsProps {
 
 export const IssueSummaryCards: React.FC<IssueSummaryCardsProps> = ({ metrics }) => {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5 font-mono">
-      <Card compact hazard={metrics.urgentCount > 0 ? 'crimson' : 'none'} className="space-y-1.5 border border-[#262c38] bg-[#11141a]" chamfer>
-        <span className="text-[10px] font-bold text-[#ff1744] uppercase tracking-wider block">
-          CRITICAL THREATS (URGENT)
-        </span>
-        <div className="text-2xl font-bold tabular-nums text-[#ff335c] shadow-[0_0_10px_rgba(255,23,68,0.2)]">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider block">
+            Urgent Issues
+          </span>
+          {metrics.urgentCount > 0 && <span className="w-2 h-2 rounded-full bg-rose-500" />}
+        </div>
+        <div className="text-2xl font-bold text-rose-600 tabular-nums">
           {metrics.urgentCount}
         </div>
-        <span className="text-[10px] text-[#ff6b81] block">Immediate sector triage required</span>
+        <span className="text-xs text-zinc-500 block">Immediate attention required</span>
       </Card>
 
-      <Card compact hazard={metrics.highCount > 0 ? 'amber' : 'none'} className="space-y-1.5 border border-[#262c38] bg-[#11141a]" chamfer>
-        <span className="text-[10px] font-bold text-[#ff6b00] uppercase tracking-wider block">
-          HIGH PRIORITY INCIDENTS
-        </span>
-        <div className="text-2xl font-bold tabular-nums text-[#ff8800]">
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider block">
+            High Priority
+          </span>
+          {metrics.highCount > 0 && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+        </div>
+        <div className="text-2xl font-bold text-amber-600 tabular-nums">
           {metrics.highCount}
         </div>
-        <span className="text-[10px] text-[#9da8b9] block">Triage queue active</span>
+        <span className="text-xs text-zinc-500 block">Action queue active</span>
       </Card>
 
-      <Card compact accent="cyan" className="space-y-1.5 border border-[#262c38] bg-[#11141a]" chamfer>
-        <span className="text-[10px] font-bold text-[#00f0ff] uppercase tracking-wider block">
-          ACTIVE IN-PROGRESS
-        </span>
-        <div className="text-2xl font-bold tabular-nums text-white">
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider block">
+            In Progress
+          </span>
+          <span className="w-2 h-2 rounded-full bg-blue-500" />
+        </div>
+        <div className="text-2xl font-bold text-zinc-900 tabular-nums">
           {metrics.openAssignedCount}
         </div>
-        <span className="text-[10px] text-[#606c80] block">Investigation underway</span>
+        <span className="text-xs text-zinc-500 block">Under active resolution</span>
       </Card>
 
-      <Card compact accent="green" className="space-y-1.5 border border-[#262c38] bg-[#11141a]" chamfer>
-        <span className="text-[10px] font-bold text-[#00e676] uppercase tracking-wider block">
-          RESOLVED INCIDENTS
-        </span>
-        <div className="text-2xl font-bold tabular-nums text-[#00e676]">
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider block">
+            Resolved
+          </span>
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+        </div>
+        <div className="text-2xl font-bold text-emerald-600 tabular-nums">
           {metrics.resolvedCount}
         </div>
-        <span className="text-[10px] text-[#606c80] block">Cleared operational threats</span>
+        <span className="text-xs text-zinc-500 block">Closed and verified</span>
       </Card>
     </div>
   );

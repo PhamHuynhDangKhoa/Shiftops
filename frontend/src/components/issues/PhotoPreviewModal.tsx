@@ -26,26 +26,26 @@ export const PhotoPreviewModal: React.FC<PhotoPreviewModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs font-mono"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
-        className="relative max-w-4xl max-h-[90vh] bg-[#11141a] border border-[#262c38] rounded-sm p-3 overflow-hidden shadow-2xl flex flex-col"
+        className="relative max-w-4xl max-h-[90vh] bg-white border border-zinc-200/90 rounded-2xl p-4 overflow-hidden shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center px-1 py-1 border-b border-[#262c38] mb-3">
-          <span className="text-xs font-bold text-white uppercase tracking-wider">Photo Evidence</span>
+        <div className="flex justify-between items-center px-1 pb-3 border-b border-zinc-100 mb-3">
+          <span className="text-sm font-bold text-zinc-900">Photo Attachment</span>
           <button
             onClick={onClose}
-            className="text-[#8a94a6] hover:text-white p-1 rounded hover:bg-[#181c24] cursor-pointer transition-colors"
+            className="text-zinc-400 hover:text-zinc-700 p-1 rounded-md hover:bg-zinc-100 cursor-pointer transition-colors"
           >
-            <IconClose size={16} />
+            <IconClose size={18} />
           </button>
         </div>
         <img
           src={imageUrl}
-          alt="Evidence attachment"
-          className="max-h-[80vh] w-auto object-contain rounded-sm border border-[#262c38]"
+          alt="Attachment preview"
+          className="max-h-[75vh] w-auto object-contain rounded-lg border border-zinc-100"
         />
       </div>
     </div>

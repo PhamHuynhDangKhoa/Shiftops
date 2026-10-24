@@ -4,6 +4,7 @@ import { IssuePriorityBadge } from './IssuePriorityBadge';
 import { IssueCategoryBadge } from './IssueCategoryBadge';
 import { IssueStatusBadge } from './IssueStatusBadge';
 import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
 import { IconClock, IconChevronRight } from '../ui/Icons';
 
 interface StaffIssueCardProps {
@@ -15,51 +16,47 @@ export const StaffIssueCard: React.FC<StaffIssueCardProps> = ({
   issue,
   onSelectIssue,
 }) => {
-  const isUrgent = issue.priority === 'URGENT';
-
   return (
-    <div
+    <Card
       onClick={() => onSelectIssue(issue.id)}
-      className={`bg-[#11141a] border border-[#262c38] p-4 flex flex-col justify-between gap-3 clip-chamfer-card hover:border-[#00f0ff] transition-colors cursor-pointer group ${
-        isUrgent ? 'border-l-4 border-l-[#ff1744]' : 'border-l-2 border-l-[#2a2f3d]'
-      }`}
+      className="flex flex-col justify-between gap-3 hover:border-zinc-300 transition-colors cursor-pointer group p-5"
     >
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <div className="flex items-start justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-1.5 flex-wrap">
             <IssuePriorityBadge priority={issue.priority} />
             <IssueCategoryBadge category={issue.category} />
             <IssueStatusBadge status={issue.status} />
           </div>
-          <span className="text-[10px] font-mono text-[#606c80] tabular-nums flex items-center gap-1">
-            <IconClock size={11} className="text-[#00f0ff]" />
+          <span className="text-xs text-zinc-500 tabular-nums flex items-center gap-1">
+            <IconClock size={12} className="text-zinc-400" />
             {new Date(issue.createdAt).toLocaleDateString()}
           </span>
         </div>
 
-        <h3 className="font-mono font-bold text-sm text-white group-hover:text-[#00f0ff] transition-colors uppercase">
+        <h3 className="font-bold text-base text-zinc-900 group-hover:text-zinc-700 transition-colors">
           {issue.title}
         </h3>
 
-        <p className="text-xs text-[#9da8b9] line-clamp-2 leading-relaxed font-mono">
-          // {issue.description}
+        <p className="text-xs text-zinc-600 line-clamp-2 leading-relaxed">
+          {issue.description}
         </p>
       </div>
 
-      <div className="pt-2 border-t border-[#1e222b] flex items-center justify-between text-xs font-mono text-[#606c80]">
+      <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
         <div>
           {issue.assignedToName ? (
-            <span>OPERATOR: <strong className="text-white font-bold">{issue.assignedToName}</strong></span>
+            <span>Assigned: <strong className="text-zinc-800 font-semibold">{issue.assignedToName}</strong></span>
           ) : (
-            <span className="italic text-[#606c80]">[ TRIAGE IN PROGRESS ]</span>
+            <span className="italic text-zinc-400">Unassigned (Triage in progress)</span>
           )}
         </div>
 
-        <Button variant="secondary" size="sm" className="gap-1 text-[11px] py-1 px-2.5">
-          <span>[ DETAILS ]</span>
-          <IconChevronRight size={11} />
+        <Button variant="secondary" size="sm" className="gap-1 text-xs py-1 px-2.5">
+          <span>Details</span>
+          <IconChevronRight size={13} />
         </Button>
       </div>
-    </div>
+    </Card>
   );
 };

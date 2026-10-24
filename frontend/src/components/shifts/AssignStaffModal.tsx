@@ -48,23 +48,23 @@ export const AssignStaffModal: React.FC<AssignStaffModalProps> = ({
     <Modal
       isOpen={!!shift}
       onClose={onClose}
-      title={`Assign Personnel to ${shift.name || 'Shift'}`}
+      title={`Assign Staff to ${shift.name || 'Shift'}`}
       description={`Hours: ${formatDateTime(shift.startTime)} → ${formatDateTime(shift.endTime)}`}
     >
       {assignError && (
-        <div className="p-3 mb-4 rounded-sm bg-[#ff1744]/10 border border-[#ff1744]/30 text-xs font-mono text-[#ff335c]">
+        <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium">
           {assignError}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4 font-mono">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Select Available Personnel</label>
+          <label className="text-xs font-semibold text-zinc-700">Select Available Staff Member</label>
           <select
             value={selectedStaffId}
             onChange={(e) => setSelectedStaffId(e.target.value)}
             required
-            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
           >
             <option value="">-- Choose Staff Member --</option>
             {availableStaff.map((s) => (
@@ -74,13 +74,13 @@ export const AssignStaffModal: React.FC<AssignStaffModalProps> = ({
             ))}
           </select>
           {availableStaff.length === 0 && (
-            <span className="text-[11px] text-[#8a94a6]">
-              All active staff members for this branch are currently assigned.
+            <span className="text-xs text-zinc-500 mt-1">
+              All active staff members for this branch are currently assigned to this shift.
             </span>
           )}
         </div>
 
-        <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
           <Button
             type="button"
             variant="secondary"

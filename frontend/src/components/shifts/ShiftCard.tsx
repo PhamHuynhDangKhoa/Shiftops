@@ -3,6 +3,7 @@ import { Shift, ShiftStatus } from '../../lib/types';
 import { ShiftStatusBadge } from './ShiftStatusBadge';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { Card } from '../ui/Card';
 import { IconClock, IconMapPin, IconUsers, IconClose } from '../ui/Icons';
 
 interface ShiftCardProps {
@@ -34,16 +35,16 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
   onDeleteShift,
 }) => {
   return (
-    <div className="bg-[#11141a] border border-[#262c38] p-4 flex flex-col justify-between gap-4 clip-chamfer-card hover:border-[#384152] transition-colors">
+    <Card className="flex flex-col justify-between gap-4 p-5 hover:border-zinc-300 transition-colors">
       <div className="space-y-3">
         {/* Top: Shift Name & Status */}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-mono font-bold text-sm text-white tracking-wider uppercase">
+            <h3 className="font-bold text-base text-zinc-900">
               {shift.name || 'General Shift'}
             </h3>
-            <div className="flex items-center gap-1.5 text-[11px] font-mono text-[#9da8b9] mt-0.5">
-              <IconMapPin size={11} className="text-[#00f0ff]" />
+            <div className="flex items-center gap-1 text-xs text-zinc-500 mt-0.5">
+              <IconMapPin size={12} className="text-zinc-400" />
               <span>{shift.branchName}</span>
             </div>
           </div>
@@ -51,49 +52,49 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
         </div>
 
         {/* Time Interval & Overnight Tag */}
-        <div className="flex items-center gap-2 flex-wrap text-xs font-mono">
-          <span className="flex items-center gap-1.5 text-[#00f0ff] tabular-nums font-bold bg-[#161922] border border-[#2a2f3d] px-2.5 py-1 rounded-sm">
-            <IconClock size={12} className="text-[#00f0ff]" />
+        <div className="flex items-center gap-2 flex-wrap text-xs">
+          <span className="flex items-center gap-1.5 text-zinc-800 tabular-nums font-semibold bg-zinc-50 border border-zinc-200/80 px-2.5 py-1 rounded-lg">
+            <IconClock size={13} className="text-zinc-500" />
             {formatDateTime(shift.startTime)} → {formatDateTime(shift.endTime)}
           </span>
           {shift.overnight && (
             <Badge variant="cyan" size="sm">
-              OVERNIGHT
+              Overnight
             </Badge>
           )}
         </div>
 
         {/* Notes */}
         {shift.notes && (
-          <p className="text-xs text-[#9da8b9] bg-[#161922] border border-[#262c38] p-2.5 rounded-sm leading-relaxed font-mono">
-            // {shift.notes}
+          <p className="text-xs text-zinc-600 bg-zinc-50/70 border border-zinc-200/60 p-2.5 rounded-lg leading-relaxed">
+            {shift.notes}
           </p>
         )}
 
         {/* Assigned Staff */}
         <div className="pt-1">
-          <div className="flex items-center justify-between text-[10px] font-mono font-bold text-[#606c80] uppercase tracking-wider mb-2">
-            <span className="flex items-center gap-1">
-              <IconUsers size={12} className="text-[#00f0ff]" />
-              ASSIGNED OPERATORS ({shift.assignments.length})
+          <div className="flex items-center justify-between text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            <span className="flex items-center gap-1.5">
+              <IconUsers size={13} className="text-zinc-400" />
+              Assigned Staff ({shift.assignments.length})
             </span>
           </div>
 
           {shift.assignments.length === 0 ? (
-            <span className="text-xs font-mono text-[#606c80] italic">[ NO OPERATORS ASSIGNED ]</span>
+            <span className="text-xs text-zinc-400 italic">No staff assigned</span>
           ) : (
             <div className="flex flex-wrap gap-1.5">
               {shift.assignments.map((a) => (
                 <span
                   key={a.id}
-                  className="inline-flex items-center gap-1.5 text-xs bg-[#181c24] border border-[#2a2f3d] text-[#f1f5f9] px-2.5 py-1 rounded-sm font-mono font-medium"
+                  className="inline-flex items-center gap-1.5 text-xs bg-zinc-100 border border-zinc-200/80 text-zinc-800 px-2.5 py-1 rounded-full font-medium"
                 >
                   <span>{a.userName}</span>
                   {!isStaff && shift.status === 'DRAFT' && (
                     <button
                       onClick={() => onRemoveAssignment(shift.id, a.userId)}
                       title="Remove assignment"
-                      className="text-[#606c80] hover:text-[#ff1744] cursor-pointer ml-1 transition-colors"
+                      className="text-zinc-400 hover:text-rose-600 cursor-pointer ml-0.5 transition-colors"
                     >
                       <IconClose size={12} />
                     </button>
@@ -105,10 +106,10 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
         </div>
       </div>
 
-      {/* Action Footer for Management */}
+      {/* Manager Actions */}
       {!isStaff && (
-        <div className="border-t border-[#1e222b] pt-3 flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
+        <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5">
             {shift.status === 'DRAFT' && (
               <>
                 <Button
@@ -116,14 +117,14 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
                   size="sm"
                   onClick={() => onAssignClick(shift)}
                 >
-                  [ + ASSIGN ]
+                  Assign Staff
                 </Button>
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={() => onUpdateStatus(shift.id, 'PUBLISHED')}
                 >
-                  [ PUBLISH ]
+                  Publish
                 </Button>
               </>
             )}
@@ -131,33 +132,29 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
             {shift.status === 'PUBLISHED' && (
               <>
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => onUpdateStatus(shift.id, 'DRAFT')}
-                >
-                  [ REVERT DRAFT ]
-                </Button>
-                <Button
-                  variant="secondary"
+                  variant="emerald"
                   size="sm"
                   onClick={() => onUpdateStatus(shift.id, 'COMPLETED')}
                 >
-                  [ COMPLETE ]
+                  Complete
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onUpdateStatus(shift.id, 'CANCELLED')}
+                >
+                  Cancel
                 </Button>
               </>
             )}
 
-            {(shift.status === 'DRAFT' || shift.status === 'PUBLISHED') && (
+            {shift.status === 'CANCELLED' && (
               <Button
-                variant="danger"
+                variant="secondary"
                 size="sm"
-                onClick={() => {
-                  if (confirm('Cancel this operational shift?')) {
-                    onUpdateStatus(shift.id, 'CANCELLED');
-                  }
-                }}
+                onClick={() => onUpdateStatus(shift.id, 'DRAFT')}
               >
-                [ CANCEL ]
+                Reopen as Draft
               </Button>
             )}
           </div>
@@ -165,18 +162,17 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
           {shift.status === 'DRAFT' && (
             <button
               onClick={() => {
-                if (confirm('Delete this draft shift permanently?')) {
+                if (window.confirm('Are you sure you want to delete this shift?')) {
                   onDeleteShift(shift.id);
                 }
               }}
-              className="text-xs font-mono text-[#606c80] hover:text-[#ff1744] transition-colors cursor-pointer px-1 py-0.5"
-              title="Delete draft shift"
+              className="text-xs text-rose-600 hover:text-rose-800 font-medium cursor-pointer"
             >
-              [ PURGE ]
+              Delete
             </button>
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 };

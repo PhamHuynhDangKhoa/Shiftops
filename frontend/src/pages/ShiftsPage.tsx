@@ -230,29 +230,29 @@ export const ShiftsPage: React.FC = () => {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-44 bg-[#11141a] animate-pulse border border-[#262c38]" />
+            <div key={i} className="h-44 bg-white rounded-xl border border-zinc-200/80 animate-pulse shadow-2xs" />
           ))}
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="p-3.5 rounded-sm bg-[#ff1744]/10 border border-[#ff1744]/30 text-xs font-mono text-[#ff335c] flex items-center gap-2">
-          <IconAlertTriangle size={15} className="text-[#ff1744] flex-shrink-0" />
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-800 flex items-center gap-2.5 shadow-2xs">
+          <IconAlertTriangle size={16} className="text-rose-600 flex-shrink-0" />
           <span>Failed to load shift rosters. Please verify connectivity.</span>
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && !error && activeShifts && activeShifts.length === 0 && (
-        <Card className="py-12 text-center text-[#8a94a6] border border-[#262c38] bg-[#11141a]" chamfer>
-          <div className="w-9 h-9 bg-[#181c24] border border-[#262c38] flex items-center justify-center text-[#8a94a6] mx-auto mb-2.5">
-            <IconCalendar size={18} />
+        <Card className="py-12 text-center text-zinc-500">
+          <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 mx-auto mb-3">
+            <IconCalendar size={20} />
           </div>
-          <p className="font-bold text-sm text-white font-mono uppercase tracking-wider">No shifts scheduled</p>
-          <p className="text-xs text-[#8a94a6] mt-1 font-mono">
+          <p className="font-bold text-base text-zinc-800">No shifts scheduled</p>
+          <p className="text-xs text-zinc-500 mt-1">
             {isStaff
               ? 'You do not have any published shifts scheduled for this period.'
               : 'Create a new shift to start scheduling staff rosters.'}
@@ -262,7 +262,7 @@ export const ShiftsPage: React.FC = () => {
 
       {/* Shifts Grid */}
       {!isLoading && !error && activeShifts && activeShifts.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {activeShifts.map((shift) => (
             <ShiftCard
               key={shift.id}

@@ -31,77 +31,109 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
   return (
     <div className="space-y-4">
       {/* Title & Top Level Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#262c38]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-zinc-200/80">
         <div>
-          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
-            <IconCalendar size={20} className="text-[#00f0ff]" />
-            <span>{isStaff ? 'PERSONAL SHIFT ROSTER' : 'OPERATIONAL SHIFT SCHEDULING'}</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
+            <IconCalendar size={22} className="text-zinc-700" />
+            <span>{isStaff ? 'My Shift Schedule' : 'Shift Management & Scheduling'}</span>
           </h1>
-          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
+          <p className="text-sm text-zinc-500 mt-1">
             {isStaff
-              ? 'View upcoming published rosters and scheduled operational windows'
-              : 'Author, assign operators, and publish sector shift rosters'}
+              ? 'View your upcoming published shifts and assigned hours.'
+              : 'Create shifts, assign staff members, and publish weekly schedules.'}
           </p>
         </div>
 
         {!isStaff && (
           <div className="flex items-center gap-2.5 flex-wrap">
             {isOwner && branches && branches.length > 0 && (
-              <div className="relative">
-                <select
-                  value={selectedBranchId}
-                  onChange={(e) => onBranchChange(e.target.value)}
-                  className="px-3.5 py-2 text-xs font-mono font-bold rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
-                >
-                  {branches.map((b) => (
-                    <option key={b.id} value={b.id} disabled={!b.active}>
-                      {b.name} {!b.active ? '(Inactive)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={selectedBranchId}
+                onChange={(e) => onBranchChange(e.target.value)}
+                className="px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs font-medium"
+              >
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id} disabled={!b.active}>
+                    {b.name} {!b.active ? '(Inactive)' : ''}
+                  </option>
+                ))}
+              </select>
             )}
 
             <Button
-              variant="amber"
+              variant="primary"
               size="md"
               onClick={onCreateClick}
-              className="gap-2 shadow-[0_0_12px_rgba(255,107,0,0.25)]"
+              className="gap-2 shadow-xs"
             >
-              <IconPlus size={14} />
-              <span>[ CREATE SHIFT ]</span>
+              <IconPlus size={15} />
+              <span>Create Shift</span>
             </Button>
           </div>
         )}
       </div>
 
       {/* Date Window Toolbar */}
-      <div className="bg-[#11141a] border border-[#262c38] p-3.5 flex flex-wrap items-center justify-between gap-3 clip-chamfer-btn">
-        <div className="flex items-center gap-3 flex-wrap text-xs font-mono">
+      <div className="bg-white border border-zinc-200/80 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-sm shadow-2xs">
+        <div className="flex items-center gap-3.5 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-[#606c80] uppercase">WINDOW START:</span>
+            <span className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">
+              From:
+            </span>
             <input
               type="date"
-              value={startDate}
+              value={startDate.slice(0, 10)}
               onChange={(e) => onStartDateChange(e.target.value)}
-              className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+              className="px-2.5 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
             />
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold text-[#606c80] uppercase">WINDOW END:</span>
+            <span className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">
+              To:
+            </span>
             <input
               type="date"
-              value={endDate}
+              value={endDate.slice(0, 10)}
               onChange={(e) => onEndDateChange(e.target.value)}
-              className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+              className="px-2.5 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
             />
           </div>
         </div>
 
-        <span className="text-[10px] font-mono text-[#606c80]">
-          DISPATCH_WINDOW: 7_DAYS_HORIZON
-        </span>
+        {/* Quick presets */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date();
+              d.setDate(d.getDate() - d.getDay());
+              d.setHours(0, 0, 0, 0);
+              onStartDateChange(d.toISOString().slice(0, 10));
+              const end = new Date(d);
+              end.setDate(end.getDate() + 7);
+              onEndDateChange(end.toISOString().slice(0, 10));
+            }}
+            className="px-2.5 py-1 text-xs font-medium rounded-md border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
+          >
+            This Week
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date();
+              d.setDate(d.getDate() - d.getDay());
+              d.setHours(0, 0, 0, 0);
+              onStartDateChange(d.toISOString().slice(0, 10));
+              const end = new Date(d);
+              end.setDate(end.getDate() + 14);
+              onEndDateChange(end.toISOString().slice(0, 10));
+            }}
+            className="px-2.5 py-1 text-xs font-medium rounded-md border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
+          >
+            2 Weeks
+          </button>
+        </div>
       </div>
     </div>
   );

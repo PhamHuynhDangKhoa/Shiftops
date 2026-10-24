@@ -44,33 +44,33 @@ export const DashboardPage: React.FC = () => {
   const isManager = user?.role === 'MANAGER';
   const isStaff = !isOwner && !isManager;
 
-  // Format real-time event descriptions for tactical activity ticker
+  // Format real-time event descriptions cleanly in plain English
   const formatEventSummary = (evt: RealtimeEvent | null) => {
     if (!evt) return '';
     const payload = (evt.payload || {}) as Record<string, unknown>;
     switch (evt.eventType) {
       case 'STAFF_CHECKED_IN':
-        return `OPERATOR DEPLOYED: ${String(payload.staffName || 'Staff Member')}`;
+        return `${String(payload.staffName || 'Staff member')} clocked in`;
       case 'STAFF_CHECKED_OUT':
-        return `OPERATOR CLOCKED OUT: ${String(payload.staffName || 'Staff Member')}`;
+        return `${String(payload.staffName || 'Staff member')} clocked out`;
       case 'TASK_COMPLETED':
-        return `MISSION TASK COMPLETED: ${String(payload.taskTitle || 'Task')}`;
+        return `Task completed: ${String(payload.taskTitle || 'Task')}`;
       case 'TASK_STATUS_CHANGED':
-        return `TASK STATUS TRANSITION: ${String(payload.taskTitle || 'Task')}`;
+        return `Task status updated: ${String(payload.taskTitle || 'Task')}`;
       case 'ISSUE_STATUS_CHANGED':
-        return `INCIDENT UPDATED: ${String(payload.title || 'Issue')} [${String(payload.status || '')}]`;
+        return `Issue updated: ${String(payload.title || 'Issue')} (${String(payload.status || '')})`;
       case 'HANDOVER_SUBMITTED':
-        return `SHIFT DEBRIEF SUBMITTED: ${String(payload.shiftName || '')}`;
+        return `Shift handover submitted: ${String(payload.shiftName || '')}`;
       case 'HANDOVER_ACKNOWLEDGED':
-        return `SHIFT DEBRIEF SIGNED BY SUPERVISOR`;
+        return `Shift handover signed by manager`;
       case 'ANNOUNCEMENT_PUBLISHED':
-        return `BROADCAST TRANSMITTED: ${String(payload.title || '')}`;
+        return `New announcement: ${String(payload.title || '')}`;
       case 'NOTIFICATION_CREATED': {
         const notif = payload.notification as { title?: string } | undefined;
-        return `DISPATCH ALERT: ${notif?.title || ''}`;
+        return `Notification: ${notif?.title || 'New alert'}`;
       }
       default:
-        return `SYSTEM DISPATCH: ${evt.eventType}`;
+        return `Activity: ${evt.eventType.replace(/_/g, ' ').toLowerCase()}`;
     }
   };
 
@@ -187,40 +187,40 @@ export const DashboardPage: React.FC = () => {
 
   // Staff current shift & attendance check
   const latestAttendance = myAttendance?.content?.[0];
-  const isCurrentlyClockedIn = latestAttendance && latestAttendance.checkInAt && !latestAttendance.checkOutAt;
+  const isCurrentlyClockedIn = !!(latestAttendance && latestAttendance.checkInAt && !latestAttendance.checkOutAt);
   const currentShift = myShifts?.[0];
+
+  const completedTasksCount = myTasks?.filter((t) => t.status === 'COMPLETED').length || 0;
+  const totalTasksCount = myTasks?.length || 0;
 
   return (
     <div className="space-y-6">
-      {/* 1. Tactical Command Header & Live Telemetry Strip */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#262c38]">
+      {/* 1. Header & Context Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-zinc-200/80">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
-              <span className={`w-2.5 h-2.5 rounded-none ${isOwner ? 'bg-[#e5c07b]' : isManager ? 'bg-[#ff6b00]' : 'bg-[#00f0ff]'}`} />
-              <span>
-                {isOwner
-                  ? 'Fleet Operations Command'
-                  : isManager
-                  ? 'Sector Dispatch'
-                  : 'Duty Terminal'}
-              </span>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+              {isOwner
+                ? 'Company Overview'
+                : isManager
+                ? 'Branch Dashboard'
+                : 'My Workspace'}
             </h1>
             <Badge
-              variant={isOwner ? 'gold' : isManager ? 'warning' : 'cyan'}
+              variant={isOwner ? 'gold' : isManager ? 'warning' : 'brand'}
               size="sm"
             >
               {user?.role}
             </Badge>
           </div>
-          <div className="flex items-center gap-3 text-xs text-[#8a94a6] mt-1 font-mono">
-            <span className="flex items-center gap-1">
-              <IconMapPin size={12} className="text-[#00f0ff]" />
-              <span>{user?.primaryBranchName ? user.primaryBranchName.toUpperCase() : 'ALL SECTORS'}</span>
+          <div className="flex items-center gap-2 text-sm text-zinc-500 mt-1">
+            <span className="flex items-center gap-1 font-medium text-zinc-700">
+              <IconMapPin size={14} className="text-zinc-400" />
+              <span>{user?.primaryBranchName ? user.primaryBranchName : 'All Branches'}</span>
             </span>
-            <span className="text-[#3c4558]">/</span>
-            <span className="text-[#606c80]">
-              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            <span className="text-zinc-300">·</span>
+            <span>
+              {new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
             </span>
           </div>
         </div>
@@ -229,7 +229,7 @@ export const DashboardPage: React.FC = () => {
         <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
           {(isOwner || isManager) && (
             <Button
-              variant="amber"
+              variant="secondary"
               size="sm"
               onClick={() => {
                 setBroadcastTitle('');
@@ -239,7 +239,7 @@ export const DashboardPage: React.FC = () => {
                 setBroadcastError(null);
                 setIsBroadcastModalOpen(true);
               }}
-              className="gap-1.5 whitespace-nowrap text-xs"
+              className="gap-1.5 whitespace-nowrap"
             >
               <IconMegaphone size={14} />
               <span>Broadcast Notice</span>
@@ -247,141 +247,168 @@ export const DashboardPage: React.FC = () => {
           )}
 
           <Link to="/attendance" className="whitespace-nowrap">
-            <Button variant="cyan" size="sm" className="gap-1.5 text-xs">
+            <Button
+              variant={isStaff && isCurrentlyClockedIn ? 'amber' : 'primary'}
+              size="sm"
+              className="gap-1.5 whitespace-nowrap"
+            >
               <IconClock size={14} />
-              <span>Clock In / Out</span>
+              <span>{isStaff ? (isCurrentlyClockedIn ? 'Clock Out' : 'Clock In') : 'Floor Attendance'}</span>
             </Button>
           </Link>
         </div>
       </div>
 
-      {/* 2. Real-time WebSocket Event Telemetry Ticker */}
+      {/* 2. Real-time Live Event Telemetry Ticker */}
       {lastEvent && (
-        <div className="flex items-center justify-between px-4 py-2.5 bg-[#11141a] border border-[#262c38] text-xs font-mono clip-chamfer-btn">
-          <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center justify-between px-4 py-2.5 bg-white border border-zinc-200/90 rounded-xl text-xs shadow-2xs">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span className="relative flex h-2 w-2 flex-shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00f0ff] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00f0ff]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-[10px] uppercase font-bold text-[#00f0ff] tracking-widest">[ TELEMETRY ]</span>
-            <span className="text-[#f1f5f9] truncate">{formatEventSummary(lastEvent)}</span>
+            <span className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wide">Live Feed</span>
+            <span className="text-zinc-300">·</span>
+            <span className="text-zinc-800 font-medium truncate">{formatEventSummary(lastEvent)}</span>
           </div>
-          <span className="text-[11px] font-mono text-[#606c80] ml-4 flex-shrink-0 tabular-nums">
-            {new Date(lastEvent.timestamp).toLocaleTimeString()}
+          <span className="text-[11px] text-zinc-400 ml-4 flex-shrink-0 tabular-nums">
+            {new Date(lastEvent.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
           </span>
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* 3A. STAFF VIEW — THE "FIELD DEPLOYMENT TERMINAL"                            */}
+      {/* 3A. STAFF VIEW — CLEAN FIELD DESK                                         */}
       {/* ========================================================================= */}
       {isStaff && (
         <div className="space-y-6">
-          {/* Hero Active Shift & Clock-In Cockpit */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Primary HUD Card */}
-            <Card className="lg:col-span-2 p-6 space-y-5 border-l-4 border-l-[#00f0ff] relative overflow-hidden" chamfer>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#262c38]">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Primary Shift Status Card */}
+            <Card className="lg:col-span-2 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-100">
                 <div>
-                  <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#00f0ff] flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 bg-[#00f0ff]" />
-                    <span>Shift Status</span>
+                  <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider block">
+                    Current Shift Status
                   </span>
-                  <h2 className="text-lg font-mono font-bold text-white mt-1">
-                    {isCurrentlyClockedIn ? 'Shift In Progress' : 'Ready to Clock In'}
+                  <h2 className="text-xl font-bold text-zinc-900 mt-1">
+                    {isCurrentlyClockedIn ? 'You are currently on shift' : 'Ready to start your shift'}
                   </h2>
                 </div>
-                <Badge variant={isCurrentlyClockedIn ? 'success' : 'neutral'} size="md">
+                <Badge
+                  variant={isCurrentlyClockedIn ? 'success' : 'neutral'}
+                  size="md"
+                  showDot
+                >
                   {isCurrentlyClockedIn ? 'Clocked In' : 'Off Duty'}
                 </Badge>
               </div>
 
-              {/* Shift Spec Details */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 font-mono text-xs">
-                <div className="p-3 bg-[#161922] border border-[#262c38]">
-                  <span className="text-[#606c80] block text-[10px] uppercase">Assigned Shift</span>
-                  <span className="text-white font-bold truncate block mt-0.5">
+              {/* Shift Details Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/60 rounded-lg">
+                  <span className="text-xs font-medium text-zinc-500 block">Assigned Shift</span>
+                  <span className="text-sm font-semibold text-zinc-900 truncate block mt-1">
                     {currentShift ? currentShift.name : 'No Scheduled Shift'}
                   </span>
                 </div>
-                <div className="p-3 bg-[#161922] border border-[#262c38]">
-                  <span className="text-[#606c80] block text-[10px] uppercase">Scheduled Window</span>
-                  <span className="text-[#00f0ff] font-bold block mt-0.5 whitespace-nowrap">
+                <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/60 rounded-lg">
+                  <span className="text-xs font-medium text-zinc-500 block">Scheduled Hours</span>
+                  <span className="text-sm font-semibold text-zinc-900 block mt-1 tabular-nums whitespace-nowrap">
                     {currentShift
-                      ? `${new Date(currentShift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(currentShift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-                      : 'Standby'}
+                      ? `${new Date(currentShift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} – ${new Date(currentShift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                      : 'Not Scheduled'}
                   </span>
                 </div>
-                <div className="p-3 bg-[#161922] border border-[#262c38] col-span-2 sm:col-span-1">
-                  <span className="text-[#606c80] block text-[10px] uppercase">Last Punch Time</span>
-                  <span className="text-[#e5c07b] font-bold block mt-0.5">
+                <div className="p-3.5 bg-zinc-50/70 border border-zinc-200/60 rounded-lg">
+                  <span className="text-xs font-medium text-zinc-500 block">Last Recorded Punch</span>
+                  <span className="text-sm font-semibold text-zinc-900 block mt-1 tabular-nums">
                     {latestAttendance?.checkInAt
-                      ? new Date(latestAttendance.checkInAt).toLocaleTimeString()
+                      ? new Date(latestAttendance.checkInAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                       : 'None today'}
                   </span>
                 </div>
               </div>
 
-              {/* Tactical Action Buttons */}
+              {/* Action Buttons */}
               <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                 <Link to="/attendance" className="w-full sm:w-auto flex-1">
                   <Button
-                    variant={isCurrentlyClockedIn ? 'amber' : 'primary'}
+                    variant={isCurrentlyClockedIn ? 'amber' : 'emerald'}
                     size="lg"
-                    className="w-full text-xs font-bold tracking-wider gap-2 whitespace-nowrap"
+                    className="w-full gap-2 text-sm font-semibold shadow-xs"
                   >
                     <IconClock size={16} />
-                    <span>{isCurrentlyClockedIn ? 'Clock Out' : 'Clock In Now'}</span>
+                    <span>{isCurrentlyClockedIn ? 'Clock Out of Shift' : 'Clock In Now'}</span>
                   </Button>
                 </Link>
 
                 <Link to="/issues" className="w-full sm:w-auto">
-                  <Button variant="danger" size="lg" className="w-full sm:w-auto gap-2 text-xs font-bold whitespace-nowrap">
-                    <IconAlertTriangle size={15} />
-                    <span>Report Incident</span>
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full sm:w-auto gap-2 text-sm text-rose-700 hover:text-rose-800 hover:border-rose-300"
+                  >
+                    <IconAlertTriangle size={16} className="text-rose-600" />
+                    <span>Report an Issue</span>
                   </Button>
                 </Link>
               </div>
             </Card>
 
-            {/* Shift Tasks Quick Docket */}
-            <Card className="p-5 space-y-4 border border-[#262c38]" chamfer>
-              <div className="flex items-center justify-between pb-3 border-b border-[#262c38]">
-                <div className="flex items-center gap-2">
-                  <IconCheckList size={16} className="text-[#00f0ff]" />
-                  <h3 className="text-xs font-mono font-bold uppercase text-white tracking-wider">
-                    Today's Tasks
-                  </h3>
+            {/* Today's Tasks Quick Card */}
+            <Card className="space-y-4 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+                  <div className="flex items-center gap-2">
+                    <IconCheckList size={16} className="text-zinc-600" />
+                    <h3 className="text-sm font-semibold text-zinc-900">
+                      Today's Tasks
+                    </h3>
+                  </div>
+                  {totalTasksCount > 0 && (
+                    <span className="text-xs font-medium text-zinc-500 tabular-nums">
+                      {completedTasksCount} / {totalTasksCount} done
+                    </span>
+                  )}
                 </div>
-                <Link to="/tasks" className="text-[11px] font-mono text-[#00f0ff] hover:underline flex items-center gap-0.5 whitespace-nowrap">
-                  <span>View All</span>
-                  <IconArrowUpRight size={11} />
-                </Link>
+
+                <div className="space-y-2 mt-3">
+                  {myTasks && myTasks.length > 0 ? (
+                    myTasks.slice(0, 4).map((task) => (
+                      <div
+                        key={task.id}
+                        className="p-3 bg-zinc-50/70 border border-zinc-200/60 rounded-lg flex items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <span className="text-zinc-900 font-medium truncate block">{task.title}</span>
+                          <span className="text-[11px] text-zinc-500 mt-0.5 block">
+                            Priority: {task.priority.toLowerCase()}
+                          </span>
+                        </div>
+                        <Badge
+                          variant={task.status === 'COMPLETED' ? 'success' : 'neutral'}
+                          size="sm"
+                        >
+                          {task.status === 'COMPLETED' ? 'Done' : task.status === 'IN_PROGRESS' ? 'In Progress' : 'Pending'}
+                        </Badge>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="py-8 text-center text-xs text-zinc-500">
+                      No tasks assigned for today.
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="space-y-2">
-                {myTasks && myTasks.length > 0 ? (
-                  myTasks.slice(0, 4).map((task) => (
-                    <div
-                      key={task.id}
-                      className="p-2.5 bg-[#161922] border border-[#262c38] flex items-center justify-between gap-2 text-xs font-mono"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[#f1f5f9] truncate block">{task.title}</span>
-                        <span className="text-[10px] text-[#606c80] mt-0.5 block">
-                          Priority: {task.priority}
-                        </span>
-                      </div>
-                      <Badge variant={task.status === 'COMPLETED' ? 'success' : 'cyan'} size="sm">
-                        {task.status}
-                      </Badge>
-                    </div>
-                  ))
-                ) : (
-                  <div className="py-6 text-center text-xs font-mono text-[#606c80]">
-                    No tasks assigned for today
-                  </div>
-                )}
+              <div className="pt-3 border-t border-zinc-100">
+                <Link
+                  to="/tasks"
+                  className="text-xs font-medium text-zinc-900 hover:text-zinc-600 flex items-center justify-center gap-1 w-full py-1.5"
+                >
+                  <span>View all task details</span>
+                  <IconArrowUpRight size={13} />
+                </Link>
               </div>
             </Card>
           </div>
@@ -389,108 +416,123 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 3B. MANAGER VIEW — SECTOR DISPATCH & COMBAT DECK                           */}
+      {/* 3B. MANAGER VIEW — BRANCH OPERATIONS DECK                                 */}
       {/* ========================================================================= */}
       {isManager && (
         <div className="space-y-6">
-          {/* Tactical KPI Strips */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#ff6b00]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#ff6b00]">SECTOR ID</span>
-                <IconBuilding size={14} className="text-[#ff6b00]" />
+          {/* Manager KPI Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Branch</span>
+                <IconBuilding size={16} className="text-zinc-400" />
               </div>
-              <div className="text-lg font-bold font-mono text-white truncate">
-                {user?.primaryBranchName || 'ASSIGNED SECTOR'}
+              <div className="text-lg font-bold text-zinc-900 truncate">
+                {user?.primaryBranchName || 'Assigned Branch'}
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                Primary Branch Jurisdiction
+              <div className="text-xs text-zinc-500">
+                Primary jurisdiction
               </div>
             </Card>
 
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#00f0ff]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#00f0ff]">COMMUNICATIONS</span>
-                <IconMegaphone size={14} className="text-[#00f0ff]" />
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Notices</span>
+                <IconMegaphone size={16} className="text-zinc-400" />
               </div>
-              <div className="text-2xl font-bold font-mono text-white">
+              <div className="text-2xl font-bold text-zinc-900 tabular-nums">
                 {announcements ? announcements.length : 0}
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                Active Branch Notices
+              <div className="text-xs text-zinc-500">
+                Active announcements
               </div>
             </Card>
 
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#00e676]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#00e676]">TELEMETRY LINK</span>
-                <div className="w-2 h-2 rounded-full bg-[#00e676] animate-pulse" />
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">System Link</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
               </div>
-              <div className="text-2xl font-bold font-mono text-white">
-                {health?.status || 'ONLINE'}
+              <div className="text-2xl font-bold text-zinc-900">
+                {health?.status || 'Online'}
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                PostgreSQL Core Verified
+              <div className="text-xs text-zinc-500">
+                Database connected
               </div>
             </Card>
 
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#e5c07b]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#e5c07b]">SECURITY CLEARANCE</span>
-                <IconCheck size={14} className="text-[#e5c07b]" />
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Role</span>
+                <IconCheck size={16} className="text-emerald-600" />
               </div>
-              <div className="text-2xl font-bold font-mono text-white">
-                LEVEL 2
+              <div className="text-2xl font-bold text-zinc-900">
+                Manager
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                Sector Command Active
+              <div className="text-xs text-zinc-500">
+                Full branch management
               </div>
             </Card>
           </div>
 
-          {/* Quick Dispatch Modules */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Link to="/shifts" className="p-4 bg-[#11141a] border border-[#262c38] hover:border-[#ff6b00] transition-colors clip-chamfer-btn flex flex-col justify-between min-h-[95px] group">
-              <div className="flex items-center justify-between text-[#9da8b9] group-hover:text-[#ff6b00]">
-                <IconCalendar size={18} />
-                <span className="text-[10px] font-mono">01</span>
+          {/* Quick Action Navigation Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link
+              to="/shifts"
+              className="p-5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-400 hover:shadow-xs transition-all flex flex-col justify-between min-h-[110px] group"
+            >
+              <div className="flex items-center justify-between text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                <IconCalendar size={20} />
+                <IconArrowUpRight size={15} />
               </div>
-              <div>
-                <span className="text-xs font-mono font-bold text-white block uppercase">ROSTER & SCHEDULE</span>
-                <span className="text-[11px] text-[#606c80] font-mono">Author & assign shifts</span>
-              </div>
-            </Link>
-
-            <Link to="/attendance" className="p-4 bg-[#11141a] border border-[#262c38] hover:border-[#00f0ff] transition-colors clip-chamfer-btn flex flex-col justify-between min-h-[95px] group">
-              <div className="flex items-center justify-between text-[#9da8b9] group-hover:text-[#00f0ff]">
-                <IconClock size={18} />
-                <span className="text-[10px] font-mono">02</span>
-              </div>
-              <div>
-                <span className="text-xs font-mono font-bold text-white block uppercase">FLOOR ATTENDANCE</span>
-                <span className="text-[11px] text-[#606c80] font-mono">Realtime check-in radar</span>
+              <div className="mt-4">
+                <span className="text-sm font-semibold text-zinc-900 block">Roster & Shifts</span>
+                <span className="text-xs text-zinc-500">Create & assign shifts</span>
               </div>
             </Link>
 
-            <Link to="/issues" className="p-4 bg-[#11141a] border border-[#262c38] hover:border-[#ff1744] transition-colors clip-chamfer-btn flex flex-col justify-between min-h-[95px] group">
-              <div className="flex items-center justify-between text-[#9da8b9] group-hover:text-[#ff1744]">
-                <IconAlertTriangle size={18} />
-                <span className="text-[10px] font-mono">03</span>
+            <Link
+              to="/attendance"
+              className="p-5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-400 hover:shadow-xs transition-all flex flex-col justify-between min-h-[110px] group"
+            >
+              <div className="flex items-center justify-between text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                <IconClock size={20} />
+                <IconArrowUpRight size={15} />
               </div>
-              <div>
-                <span className="text-xs font-mono font-bold text-white block uppercase">INCIDENT TRIAGE</span>
-                <span className="text-[11px] text-[#606c80] font-mono">Floor issues & evidence</span>
+              <div className="mt-4">
+                <span className="text-sm font-semibold text-zinc-900 block">Floor Attendance</span>
+                <span className="text-xs text-zinc-500">Real-time check-in radar</span>
               </div>
             </Link>
 
-            <Link to="/handovers" className="p-4 bg-[#11141a] border border-[#262c38] hover:border-[#ff6b00] transition-colors clip-chamfer-btn flex flex-col justify-between min-h-[95px] group">
-              <div className="flex items-center justify-between text-[#9da8b9] group-hover:text-[#ff6b00]">
-                <IconHandshake size={18} />
-                <span className="text-[10px] font-mono">04</span>
+            <Link
+              to="/issues"
+              className="p-5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-400 hover:shadow-xs transition-all flex flex-col justify-between min-h-[110px] group"
+            >
+              <div className="flex items-center justify-between text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                <IconAlertTriangle size={20} />
+                <IconArrowUpRight size={15} />
               </div>
-              <div>
-                <span className="text-xs font-mono font-bold text-white block uppercase">SHIFT HANDOVERS</span>
-                <span className="text-[11px] text-[#606c80] font-mono">Supervisor debrief sign-off</span>
+              <div className="mt-4">
+                <span className="text-sm font-semibold text-zinc-900 block">Issue Triage</span>
+                <span className="text-xs text-zinc-500">Track floor incidents & fixes</span>
+              </div>
+            </Link>
+
+            <Link
+              to="/handovers"
+              className="p-5 bg-white border border-zinc-200/80 rounded-xl hover:border-zinc-400 hover:shadow-xs transition-all flex flex-col justify-between min-h-[110px] group"
+            >
+              <div className="flex items-center justify-between text-zinc-400 group-hover:text-zinc-900 transition-colors">
+                <IconHandshake size={20} />
+                <IconArrowUpRight size={15} />
+              </div>
+              <div className="mt-4">
+                <span className="text-sm font-semibold text-zinc-900 block">Shift Handovers</span>
+                <span className="text-xs text-zinc-500">Review & acknowledge debriefs</span>
               </div>
             </Link>
           </div>
@@ -498,96 +540,99 @@ export const DashboardPage: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* 3C. OWNER VIEW — FLEET STRATEGIC COMMAND                                   */}
+      {/* 3C. OWNER VIEW — MULTI-BRANCH COMPANY OVERVIEW                            */}
       {/* ========================================================================= */}
       {isOwner && (
         <div className="space-y-6">
-          {/* Fleet Telemetry Counters */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#e5c07b]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#e5c07b]">FLEET SECTORS</span>
-                <IconBuilding size={14} className="text-[#e5c07b]" />
+          {/* Owner Top Level Metrics */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Total Branches</span>
+                <IconBuilding size={16} className="text-zinc-400" />
               </div>
-              <div className="text-2xl font-bold font-mono text-white">
+              <div className="text-2xl font-bold text-zinc-900 tabular-nums">
                 {branches ? branches.length : '—'}
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                {branches?.filter((b) => b.active).length || 0} active branches online
+              <div className="text-xs text-zinc-500">
+                {branches?.filter((b) => b.active).length || 0} active locations
               </div>
             </Card>
 
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#00f0ff]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#00f0ff]">FLEET BROADCASTS</span>
-                <IconMegaphone size={14} className="text-[#00f0ff]" />
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Announcements</span>
+                <IconMegaphone size={16} className="text-zinc-400" />
               </div>
-              <div className="text-2xl font-bold font-mono text-white">
+              <div className="text-2xl font-bold text-zinc-900 tabular-nums">
                 {announcements ? announcements.length : 0}
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                Organization notices dispatched
+              <div className="text-xs text-zinc-500">
+                Company-wide notices
               </div>
             </Card>
 
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#00e676]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#00e676]">CORE DATABASE</span>
-                <div className="w-2 h-2 rounded-full bg-[#00e676] animate-pulse" />
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">System Health</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
               </div>
-              <div className="text-2xl font-bold font-mono text-white">
-                {health?.status || 'ONLINE'}
+              <div className="text-2xl font-bold text-zinc-900">
+                {health?.status || 'Online'}
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                PostgreSQL 16 · Flyway Migrations V1-V13
+              <div className="text-xs text-zinc-500">
+                PostgreSQL & API Operational
               </div>
             </Card>
 
-            <Card compact className="space-y-1.5 border-l-2 border-l-[#ff6b00]" chamfer>
-              <div className="flex items-center justify-between text-[#9da8b9]">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-[#ff6b00]">GOVERNANCE POLICY</span>
-                <IconCheck size={14} className="text-[#ff6b00]" />
+            <Card compact className="space-y-1">
+              <div className="flex items-center justify-between text-zinc-500">
+                <span className="text-xs font-medium uppercase tracking-wider text-zinc-500">Governance</span>
+                <IconCheck size={16} className="text-emerald-600" />
               </div>
-              <div className="text-2xl font-bold font-mono text-white">
-                ENFORCED
+              <div className="text-2xl font-bold text-zinc-900">
+                Enforced
               </div>
-              <div className="text-[11px] text-[#606c80] font-mono">
-                Role-Based Access Control
+              <div className="text-xs text-zinc-500">
+                Role-based access active
               </div>
             </Card>
           </div>
 
-          {/* Operating Sectors Grid */}
+          {/* Operating Branches Grid */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#9da8b9]">
-                OPERATING FLEET SECTORS (BRANCHES)
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                Company Branches
               </span>
-              <Link to="/branches" className="text-xs font-mono text-[#00f0ff] hover:underline flex items-center gap-1">
-                <span>MANAGE SECTORS</span>
-                <IconArrowUpRight size={12} />
+              <Link to="/branches" className="text-xs font-medium text-zinc-900 hover:text-zinc-600 flex items-center gap-1">
+                <span>Manage branches</span>
+                <IconArrowUpRight size={13} />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {branches?.map((branch) => (
-                <Card key={branch.id} className="p-4 border border-[#262c38] space-y-2.5" chamfer>
+                <Card key={branch.id} className="p-5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <h3 className="font-mono font-bold text-white text-sm">{branch.name}</h3>
-                      <p className="text-[11px] font-mono text-[#9da8b9] flex items-center gap-1 mt-0.5">
-                        <IconMapPin size={11} className="text-[#00f0ff]" />
+                      <h3 className="font-semibold text-zinc-900 text-base">{branch.name}</h3>
+                      <p className="text-xs text-zinc-500 flex items-center gap-1 mt-1">
+                        <IconMapPin size={13} className="text-zinc-400 flex-shrink-0" />
                         <span>{branch.address || 'Address unassigned'}</span>
                       </p>
                     </div>
-                    <Badge variant={branch.active ? 'success' : 'neutral'} size="sm">
-                      {branch.active ? 'ACTIVE' : 'OFFLINE'}
+                    <Badge variant={branch.active ? 'success' : 'neutral'} size="sm" showDot>
+                      {branch.active ? 'Active' : 'Inactive'}
                     </Badge>
                   </div>
-                  <div className="pt-2 border-t border-[#1e222b] flex items-center justify-between text-[11px] font-mono text-[#606c80]">
-                    <span>BRANCH_ID: {branch.id.slice(0, 8)}...</span>
-                    <Link to="/shifts" className="text-[#00f0ff] hover:underline">
-                      VIEW ROSTER →
+                  <div className="pt-3 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+                    <span className="tabular-nums">ID: {branch.id.slice(0, 8)}</span>
+                    <Link to="/shifts" className="font-medium text-zinc-900 hover:text-zinc-600">
+                      View shifts →
                     </Link>
                   </div>
                 </Card>
@@ -600,16 +645,15 @@ export const DashboardPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* 4. ACTIVE OPERATIONAL BROADCASTS (Shared)                                  */}
       {/* ========================================================================= */}
-      <div className="space-y-3 pt-4 border-t border-[#262c38]">
+      <div className="space-y-4 pt-4 border-t border-zinc-200/80">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-3.5 bg-[#00f0ff]" />
-            <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-              OPERATIONAL BROADCASTS
+            <h2 className="text-base font-bold text-zinc-900">
+              Announcements
             </h2>
             {announcements && announcements.length > 0 && (
-              <Badge variant="cyan" size="sm">
-                {announcements.length} TRANSMISSIONS
+              <Badge variant="brand" size="sm">
+                {announcements.length}
               </Badge>
             )}
           </div>
@@ -623,97 +667,97 @@ export const DashboardPage: React.FC = () => {
                 setBroadcastError(null);
                 setIsBroadcastModalOpen(true);
               }}
-              className="text-xs font-mono text-[#00f0ff] hover:underline cursor-pointer flex items-center gap-1 whitespace-nowrap"
+              className="text-xs font-semibold text-zinc-900 hover:text-zinc-600 cursor-pointer flex items-center gap-1"
             >
-              <IconPlus size={13} />
-              <span>Create Announcement</span>
+              <IconPlus size={14} />
+              <span>New Announcement</span>
             </button>
           )}
         </div>
 
         {announcements && announcements.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {announcements.map((ann) => (
-              <Card key={ann.id} accent="blue" className="p-4 space-y-2 border border-[#262c38]" chamfer>
+              <Card key={ann.id} className="p-5 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-mono font-bold text-white text-xs truncate">{ann.title}</h3>
-                    <div className="flex items-center gap-2 text-[10px] font-mono text-[#606c80] mt-0.5">
-                      <span>ORIGIN: {ann.createdByName}</span>
+                    <h3 className="font-semibold text-zinc-900 text-sm truncate">{ann.title}</h3>
+                    <div className="flex items-center gap-2 text-xs text-zinc-500 mt-0.5">
+                      <span>Posted by {ann.createdByName}</span>
                       <span>·</span>
-                      <span>{new Date(ann.publishedAt || ann.createdAt).toLocaleDateString()}</span>
+                      <span className="tabular-nums">{new Date(ann.publishedAt || ann.createdAt).toLocaleDateString()}</span>
                     </div>
                   </div>
-                  <Badge variant={ann.targetType === 'ORGANIZATION' ? 'urgent' : 'cyan'} size="sm">
-                    {ann.targetType === 'ORGANIZATION' ? 'ORG_WIDE' : ann.branchName || 'SECTOR'}
+                  <Badge variant={ann.targetType === 'ORGANIZATION' ? 'warning' : 'brand'} size="sm">
+                    {ann.targetType === 'ORGANIZATION' ? 'All Branches' : ann.branchName || 'Branch'}
                   </Badge>
                 </div>
-                <p className="text-xs text-[#9da8b9] whitespace-pre-line leading-relaxed font-sans">
+                <p className="text-xs text-zinc-600 whitespace-pre-line leading-relaxed font-sans">
                   {ann.content}
                 </p>
                 {ann.targetShiftName && (
-                  <div className="text-[10px] font-mono text-[#00f0ff] bg-[#00f0ff]/10 border border-[#00f0ff]/30 px-2 py-0.5 inline-block">
-                    TARGET_SHIFT: {ann.targetShiftName}
+                  <div className="text-[11px] font-medium text-blue-700 bg-blue-50 border border-blue-200/70 rounded-md px-2.5 py-1 inline-block">
+                    Target shift: {ann.targetShiftName}
                   </div>
                 )}
               </Card>
             ))}
           </div>
         ) : (
-          <Card className="py-8 text-center text-[#606c80] text-xs font-mono" chamfer>
-            <div className="w-8 h-8 bg-[#181c24] border border-[#262c38] flex items-center justify-center text-[#606c80] mx-auto mb-2">
-              <IconMegaphone size={16} />
+          <Card className="py-10 text-center text-zinc-500 text-xs">
+            <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 mx-auto mb-2.5">
+              <IconMegaphone size={18} />
             </div>
-            <p className="font-bold text-white uppercase tracking-wider">NO ACTIVE BROADCASTS</p>
-            <p className="text-[#606c80] text-[11px] mt-0.5">
-              Normal operational conditions reported across all sectors.
+            <p className="font-semibold text-zinc-800 text-sm">No announcements at this time</p>
+            <p className="text-zinc-500 text-xs mt-1">
+              Check back later for company and branch operational updates.
             </p>
           </Card>
         )}
       </div>
 
-      {/* Broadcast Announcement Tactical Modal */}
+      {/* Broadcast Announcement Modal */}
       <Modal
         isOpen={isBroadcastModalOpen}
         onClose={() => setIsBroadcastModalOpen(false)}
-        title="TRANSMIT OPERATIONAL NOTICE"
-        description="Broadcast mission update to shift personnel across sectors"
+        title="Create Announcement"
+        description="Publish an operational notice to branch personnel"
       >
         <form onSubmit={handleBroadcastSubmit} className="space-y-4">
           {broadcastError && (
-            <div className="p-3 text-xs font-mono text-[#ff335c] bg-[#ff1744]/10 border border-[#ff1744]/30 rounded-sm">
-              [TRANSMIT_ERR]: {broadcastError}
+            <div className="p-3 text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 rounded-lg">
+              {broadcastError}
             </div>
           )}
 
           <Input
-            label="NOTICE HEADLINE"
+            label="Title"
             value={broadcastTitle}
             onChange={(e) => setBroadcastTitle(e.target.value)}
-            placeholder="e.g. Mandatory Shift Coverage for Evening Sector"
+            placeholder="e.g. Mandatory Shift Coverage for Evening Shift"
             maxLength={150}
             required
           />
 
           {isOwner && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-mono font-semibold uppercase text-[#9da8b9]">TARGET AUDIENCE</label>
+              <label className="text-xs font-semibold text-zinc-700">Target Audience</label>
               <select
-                className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
                 value={broadcastTargetType}
                 onChange={(e) => setBroadcastTargetType(e.target.value as AnnouncementTargetType)}
               >
-                <option value="BRANCH">Specific Branch Sector</option>
-                <option value="ORGANIZATION">Organization-Wide (All Fleet Sectors)</option>
+                <option value="BRANCH">Specific Branch</option>
+                <option value="ORGANIZATION">Organization-Wide (All Branches)</option>
               </select>
             </div>
           )}
 
           {broadcastTargetType === 'BRANCH' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-mono font-semibold uppercase text-[#9da8b9]">SECTOR SELECTION</label>
+              <label className="text-xs font-semibold text-zinc-700">Branch</label>
               <select
-                className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
                 value={broadcastBranchId}
                 onChange={(e) => setBroadcastBranchId(e.target.value)}
                 disabled={!isOwner && !!user?.primaryBranchId}
@@ -728,17 +772,17 @@ export const DashboardPage: React.FC = () => {
           )}
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-mono font-semibold uppercase text-[#9da8b9]">TRANSMISSION DETAILS</label>
+            <label className="text-xs font-semibold text-zinc-700">Notice Details</label>
             <textarea
-              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff] min-h-[110px]"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs min-h-[110px]"
               value={broadcastContent}
               onChange={(e) => setBroadcastContent(e.target.value)}
-              placeholder="Enter exact operational directives or instructions..."
+              placeholder="Enter announcement details, instructions, or operational updates..."
               required
             />
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
             <Button
               type="button"
               variant="secondary"

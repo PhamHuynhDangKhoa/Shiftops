@@ -47,14 +47,14 @@ export const CreateAdHocTaskModal: React.FC<CreateAdHocTaskModalProps> = ({
           e.preventDefault();
           onSubmit();
         }}
-        className="space-y-4 font-mono"
+        className="space-y-4"
       >
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Assign to Personnel</label>
+          <label className="text-xs font-semibold text-zinc-700">Assign to Staff Member</label>
           <select
             value={assignmentId}
             onChange={(e) => onSelectAssignmentId(e.target.value)}
-            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
           >
             {assignments.map((a) => (
               <option key={a.id} value={a.id}>
@@ -73,22 +73,22 @@ export const CreateAdHocTaskModal: React.FC<CreateAdHocTaskModalProps> = ({
         />
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Description (Optional)</label>
+          <label className="text-xs font-semibold text-zinc-700">Description (Optional)</label>
           <textarea
             value={description}
             onChange={(e) => onChangeDescription(e.target.value)}
             rows={2}
             placeholder="Additional requirements or context..."
-            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff]"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Priority Level</label>
+          <label className="text-xs font-semibold text-zinc-700">Priority Level</label>
           <select
             value={priority}
             onChange={(e) => onChangePriority(e.target.value as TaskPriority)}
-            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
           >
             <option value="LOW">Low</option>
             <option value="NORMAL">Normal</option>
@@ -96,7 +96,7 @@ export const CreateAdHocTaskModal: React.FC<CreateAdHocTaskModalProps> = ({
           </select>
         </div>
 
-        <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
           <Button
             type="button"
             variant="secondary"

@@ -98,7 +98,7 @@ export const TasksPage: React.FC = () => {
     }
   }, [branches, selectedBranchId]);
 
-  // STAFF: "My Tasks" query
+  // Staff query: /tasks/my
   const {
     data: myTasks,
     isLoading: isLoadingMyTasks,
@@ -108,24 +108,33 @@ export const TasksPage: React.FC = () => {
     queryFn: async () => {
       const params: Record<string, string> = {};
       if (statusFilter !== 'ALL') params.status = statusFilter;
-      const res = await api.get<ApiResponse<Task[]>>('/tasks/my-tasks', { params });
+      const res = await api.get<ApiResponse<Task[]>>('/tasks/my', { params });
       return res.data.data;
     },
     enabled: isStaff,
   });
 
-  // MANAGER: Branch shifts query (to filter tasks by shift)
+  // Shifts query for Manager/Owner (to filter tasks by shift and populate Generate modal)
   const { data: branchShifts } = useQuery<Shift[]>({
     queryKey: ['branch-shifts-tasks', selectedBranchId],
     queryFn: async () => {
       if (!selectedBranchId) return [];
-      const res = await api.get<ApiResponse<Shift[]>>(`/branches/${selectedBranchId}/shifts`);
+      const start = new Date();
+      start.setHours(start.getHours() - 48);
+      const end = new Date();
+      end.setHours(end.getHours() + 72);
+      const res = await api.get<ApiResponse<Shift[]>>(`/branches/${selectedBranchId}/shifts`, {
+        params: {
+          startDate: start.toISOString(),
+          endDate: end.toISOString(),
+        },
+      });
       return res.data.data;
     },
     enabled: !isStaff && !!selectedBranchId,
   });
 
-  // MANAGER: Branch tasks query
+  // Branch tasks query for Manager/Owner: /branches/{branchId}/tasks
   const {
     data: branchTasks,
     isLoading: isLoadingBranchTasks,
@@ -134,16 +143,15 @@ export const TasksPage: React.FC = () => {
     queryFn: async () => {
       if (!selectedBranchId) return [];
       const params: Record<string, string> = {};
-      if (statusFilter !== 'ALL') params.status = statusFilter;
       if (selectedShiftId !== 'ALL') params.shiftId = selectedShiftId;
-
+      if (statusFilter !== 'ALL') params.status = statusFilter;
       const res = await api.get<ApiResponse<Task[]>>(`/branches/${selectedBranchId}/tasks`, { params });
       return res.data.data;
     },
     enabled: !isStaff && !!selectedBranchId,
   });
 
-  // MANAGER: Branch templates query
+  // Templates query: /branches/{branchId}/task-templates
   const {
     data: branchTemplates,
     isLoading: isLoadingTemplates,
@@ -161,33 +169,39 @@ export const TasksPage: React.FC = () => {
   // Mutations
   // ==========================================
 
-  // Update Task Status (Staff complete / Manager cancel)
+  // Update Task Status Mutation (Staff & Manager)
   const updateStatusMutation = useMutation({
     mutationFn: async ({ taskId, status }: { taskId: string; status: TaskStatus }) => {
       const res = await api.patch<ApiResponse<Task>>(`/tasks/${taskId}/status`, { status });
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      setAlert({
+        type: 'success',
+        message: `Task updated: "${data.data.title}" is now ${data.data.status}`,
+      });
       queryClient.invalidateQueries({ queryKey: ['my-tasks'] });
       queryClient.invalidateQueries({ queryKey: ['branch-tasks'] });
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
-      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to update task';
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to update task status';
       setAlert({ type: 'error', message: msg });
     },
   });
 
-  // Generate Tasks from Template
+  // Generate Tasks from Template Mutation
   const generateTasksMutation = useMutation({
     mutationFn: async ({ shiftId, templateId }: { shiftId: string; templateId: string }) => {
-      const res = await api.post<ApiResponse<Task[]>>(`/shifts/${shiftId}/generate-tasks`, { templateId });
+      const res = await api.post<ApiResponse<Task[]>>(`/shifts/${shiftId}/generate-tasks`, {
+        templateId,
+      });
       return res.data;
     },
     onSuccess: (data) => {
       setAlert({
         type: 'success',
-        message: `Successfully generated ${data.data.length} tasks for shift crew`,
+        message: `Successfully generated ${data.data.length} tasks from checklist template`,
       });
       setShowGenerateModal(false);
       queryClient.invalidateQueries({ queryKey: ['branch-tasks'] });
@@ -199,7 +213,7 @@ export const TasksPage: React.FC = () => {
     },
   });
 
-  // Create Ad-Hoc Task
+  // Create Ad-Hoc Task Mutation
   const createAdHocMutation = useMutation({
     mutationFn: async ({
       assignmentId,
@@ -211,22 +225,24 @@ export const TasksPage: React.FC = () => {
       const res = await api.post<ApiResponse<Task>>(`/shift-assignments/${assignmentId}/tasks`, data);
       return res.data;
     },
-    onSuccess: () => {
-      setAlert({ type: 'success', message: 'Ad-hoc task assigned successfully' });
+    onSuccess: (data) => {
+      setAlert({
+        type: 'success',
+        message: `Ad-hoc task "${data.data.title}" created successfully`,
+      });
       setShowAdHocModal(false);
       setAdHocTitle('');
       setAdHocDescription('');
-      setAdHocPriority('NORMAL');
       queryClient.invalidateQueries({ queryKey: ['branch-tasks'] });
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
-      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to add task';
+      const msg = axiosErr.response?.data?.error?.message || axiosErr.response?.data?.message || 'Failed to create task';
       setAlert({ type: 'error', message: msg });
     },
   });
 
-  // Save (Create/Update) Task Template
+  // Create / Update Template Mutation
   const saveTemplateMutation = useMutation({
     mutationFn: async () => {
       if (!selectedBranchId) throw new Error('No branch selected');
@@ -316,14 +332,14 @@ export const TasksPage: React.FC = () => {
 
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
           <div>
-            <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
-              <IconCheckList size={18} className="text-[#00f0ff]" />
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
+              <IconCheckList size={22} className="text-zinc-700" />
               <span>My Tasks</span>
             </h1>
-            <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
-              Checklist duties and directives assigned to your active shift
+            <p className="text-sm text-zinc-500 mt-1">
+              Checklist duties and tasks assigned to your active shift.
             </p>
           </div>
 
@@ -331,86 +347,90 @@ export const TasksPage: React.FC = () => {
             variant="secondary"
             size="sm"
             onClick={() => refetchMyTasks()}
-            className="gap-2"
+            className="gap-1.5"
           >
-            <IconRefresh size={13} className="text-[#00f0ff]" />
-            <span>[ RE-SYNC ]</span>
+            <IconRefresh size={14} />
+            <span>Refresh</span>
           </Button>
         </div>
 
         {alert && (
           <div
-            className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
+            className={`p-4 rounded-xl text-sm border flex items-center justify-between shadow-2xs ${
               alert.type === 'success'
-                ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
-                : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-rose-50 text-rose-800 border-rose-200'
             }`}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               {alert.type === 'success' ? (
-                <IconCheck size={14} className="text-[#00e676]" />
+                <IconCheck size={16} className="text-emerald-600 flex-shrink-0" />
               ) : (
-                <IconAlertTriangle size={14} className="text-[#ff1744]" />
+                <IconAlertTriangle size={16} className="text-rose-600 flex-shrink-0" />
               )}
-              <span>{alert.message}</span>
+              <span className="font-medium">{alert.message}</span>
             </div>
             <button
               onClick={() => setAlert(null)}
-              className="text-[#606c80] hover:text-white cursor-pointer"
+              className="text-zinc-400 hover:text-zinc-700 cursor-pointer p-1"
             >
-              <IconClose size={13} />
+              <IconClose size={14} />
             </button>
           </div>
         )}
 
-        {/* Progress Strip */}
-        <Card compact className="space-y-2.5 border border-[#262c38] bg-[#11141a]" chamfer>
-          <div className="flex items-center justify-between text-xs font-mono">
-            <span className="text-[#9da8b9] uppercase font-bold text-[10px]">DIRECTIVE COMPLETION RATE</span>
-            <span className="font-bold text-[#00f0ff] tabular-nums">
-              {completedCount} OF {tasks.length} RESOLVED ({progressPercent}%)
+        {/* Progress Card */}
+        <Card compact className="space-y-2.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-zinc-500 font-semibold uppercase tracking-wider">
+              Shift Task Progress
+            </span>
+            <span className="font-bold text-zinc-900 tabular-nums">
+              {completedCount} of {tasks.length} completed ({progressPercent}%)
             </span>
           </div>
-          <div className="w-full h-2 bg-[#181c24] rounded-none overflow-hidden border border-[#2a2f3d]">
+          <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#00f0ff] shadow-[0_0_8px_rgba(0,240,255,0.6)] transition-all duration-300"
+              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </Card>
 
         {/* Status Filter Segment */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-mono">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
           {['ALL', 'TODO', 'IN_PROGRESS', 'COMPLETED'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-sm text-xs font-mono font-bold tracking-wider uppercase border transition-colors cursor-pointer clip-chamfer-btn ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-colors cursor-pointer border ${
                 statusFilter === st
-                  ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                  : 'bg-[#11141a] text-[#9da8b9] border-[#262c38] hover:border-[#384152] hover:text-white'
+                  ? 'bg-zinc-900 text-white border-zinc-900 shadow-2xs'
+                  : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'
               }`}
             >
-              {st}
+              {st === 'ALL' ? 'All' : st === 'TODO' ? 'Pending' : st === 'IN_PROGRESS' ? 'In Progress' : 'Completed'}
             </button>
           ))}
         </div>
 
         {/* Task List */}
         {isLoadingMyTasks ? (
-          <div className="py-12 text-center text-xs font-mono text-[#8a94a6]">Loading tasks...</div>
+          <div className="py-12 text-center text-sm text-zinc-500 bg-white border border-zinc-200/80 rounded-xl">
+            Loading tasks...
+          </div>
         ) : tasks.length === 0 ? (
-          <div className="py-12 text-center border border-dashed border-[#262c38] bg-[#11141a]">
-            <div className="w-8 h-8 bg-[#181c24] flex items-center justify-center text-[#606c80] mx-auto mb-2">
-              <IconCheckList size={16} />
+          <Card className="py-12 text-center text-zinc-500">
+            <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center text-zinc-400 mx-auto mb-2">
+              <IconCheckList size={18} />
             </div>
-            <p className="text-xs font-medium text-white">No tasks found</p>
-            <p className="text-[11px] text-[#8a94a6] mt-0.5">
+            <p className="font-semibold text-zinc-800 text-sm">No tasks found</p>
+            <p className="text-xs text-zinc-500 mt-0.5">
               Tasks generated for your shift will appear here.
             </p>
-          </div>
+          </Card>
         ) : (
-          <div className="space-y-2.5">
+          <div className="space-y-3">
             {tasks.map((task) => (
               <TaskCard
                 key={task.id}
@@ -433,24 +453,24 @@ export const TasksPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
         <div>
-          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
-            <IconCheckList size={18} className="text-[#00f0ff]" />
-            <span>Shift Directives</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
+            <IconCheckList size={22} className="text-zinc-700" />
+            <span>Task Management</span>
           </h1>
-          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
-            Checklist routines, ad-hoc task delegation, and execution monitoring
+          <p className="text-sm text-zinc-500 mt-1">
+            Checklist procedures, task delegation, and execution tracking
           </p>
         </div>
 
         {branches && branches.length > 1 && (
-          <div className="flex items-center gap-2 text-xs font-mono">
-            <label className="text-[#606c80] uppercase font-bold text-[10px]">SECTOR:</label>
+          <div className="flex items-center gap-2 text-sm">
+            <label className="text-zinc-500 font-semibold uppercase text-xs">Branch:</label>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+              className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs font-medium"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -464,68 +484,68 @@ export const TasksPage: React.FC = () => {
 
       {alert && (
         <div
-          className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
+          className={`p-4 rounded-xl text-sm border flex items-center justify-between shadow-2xs ${
             alert.type === 'success'
-              ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
-              : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border-rose-200'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {alert.type === 'success' ? (
-              <IconCheck size={14} className="text-[#00e676]" />
+              <IconCheck size={16} className="text-emerald-600 flex-shrink-0" />
             ) : (
-              <IconAlertTriangle size={14} className="text-[#ff1744]" />
+              <IconAlertTriangle size={16} className="text-rose-600 flex-shrink-0" />
             )}
-            <span>{alert.message}</span>
+            <span className="font-medium">{alert.message}</span>
           </div>
           <button
             onClick={() => setAlert(null)}
-            className="text-[#606c80] hover:text-white cursor-pointer"
+            className="text-zinc-400 hover:text-zinc-700 cursor-pointer p-1"
           >
-            <IconClose size={13} />
+            <IconClose size={14} />
           </button>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#262c38]">
+      <div className="flex items-center gap-2 border-b border-zinc-200">
         <button
           onClick={() => setActiveTab('MONITORING')}
-          className={`pb-2.5 px-4 text-xs font-mono font-bold tracking-wider uppercase border-b-2 transition-colors cursor-pointer ${
+          className={`pb-2.5 px-4 text-sm font-semibold transition-colors cursor-pointer border-b-2 ${
             activeTab === 'MONITORING'
-              ? 'border-[#00f0ff] text-[#00f0ff]'
-              : 'border-transparent text-[#606c80] hover:text-white'
+              ? 'border-zinc-900 text-zinc-900'
+              : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
-          [ 01 // TASK MONITORING ]
+          Task Monitoring
         </button>
         <button
           onClick={() => setActiveTab('TEMPLATES')}
-          className={`pb-2.5 px-4 text-xs font-mono font-bold tracking-wider uppercase border-b-2 transition-colors cursor-pointer ${
+          className={`pb-2.5 px-4 text-sm font-semibold transition-colors cursor-pointer border-b-2 ${
             activeTab === 'TEMPLATES'
-              ? 'border-[#00f0ff] text-[#00f0ff]'
-              : 'border-transparent text-[#606c80] hover:text-white'
+              ? 'border-zinc-900 text-zinc-900'
+              : 'border-transparent text-zinc-500 hover:text-zinc-800'
           }`}
         >
-          [ 02 // CHECKLIST TEMPLATES ]
+          Checklist Templates
         </button>
       </div>
 
       {/* TAB 1: MONITORING */}
       {activeTab === 'MONITORING' && (
         <div className="space-y-4">
-          <div className="bg-[#11141a] border border-[#262c38] p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs clip-chamfer-btn">
-            <div className="flex items-center gap-3 flex-wrap font-mono">
+          <div className="bg-white border border-zinc-200/80 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-sm shadow-2xs">
+            <div className="flex items-center gap-3.5 flex-wrap">
               <div className="flex items-center gap-2">
-                <label className="text-[10px] text-[#606c80] uppercase font-bold">
-                  SHIFT:
+                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                  Shift:
                 </label>
                 <select
                   value={selectedShiftId}
                   onChange={(e) => setSelectedShiftId(e.target.value)}
-                  className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+                  className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
                 >
-                  <option value="ALL">All Sector Shifts</option>
+                  <option value="ALL">All Branch Shifts</option>
                   {branchShifts?.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name || 'Shift'} ({new Date(s.startTime).toLocaleDateString()} {new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})
@@ -535,19 +555,19 @@ export const TasksPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-[10px] text-[#606c80] uppercase font-bold">
-                  STATUS:
+                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                  Status:
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-1.5 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+                  className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
                 >
                   <option value="ALL">All Statuses</option>
-                  <option value="TODO">TODO</option>
-                  <option value="IN_PROGRESS">IN PROGRESS</option>
-                  <option value="COMPLETED">COMPLETED</option>
-                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="TODO">Pending</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="COMPLETED">Completed</option>
+                  <option value="CANCELLED">Cancelled</option>
                 </select>
               </div>
             </div>
@@ -563,7 +583,7 @@ export const TasksPage: React.FC = () => {
                 disabled={!branchShifts || branchShifts.length === 0}
                 className="gap-1.5"
               >
-                <IconCheckList size={13} />
+                <IconCheckList size={14} />
                 <span>Generate from Template</span>
               </Button>
 
@@ -579,8 +599,8 @@ export const TasksPage: React.FC = () => {
                 disabled={selectedShiftId === 'ALL' || currentAssignments.length === 0}
                 className="gap-1.5"
               >
-                <IconPlus size={13} />
-                <span>Add Ad-Hoc</span>
+                <IconPlus size={14} />
+                <span>Add Ad-Hoc Task</span>
               </Button>
             </div>
           </div>

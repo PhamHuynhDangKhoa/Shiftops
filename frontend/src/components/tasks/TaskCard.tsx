@@ -3,6 +3,7 @@ import { Task, TaskStatus } from '../../lib/types';
 import { TaskStatusBadge } from './TaskStatusBadge';
 import { TaskPriorityBadge } from './TaskPriorityBadge';
 import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
 import { IconMapPin, IconClock, IconCheck } from '../ui/Icons';
 
 interface TaskCardProps {
@@ -19,9 +20,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const isCompleted = task.status === 'COMPLETED';
 
   return (
-    <div
-      className={`bg-[#11141a] border border-[#262c38] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all clip-chamfer-card ${
-        isCompleted ? 'opacity-70 border-l-2 border-l-[#00e676]' : 'hover:border-[#00f0ff] border-l-2 border-l-[#00f0ff]'
+    <Card
+      compact
+      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
+        isCompleted ? 'opacity-75 bg-zinc-50/50' : 'hover:border-zinc-300'
       }`}
     >
       <div className="space-y-1.5 flex-1 min-w-0">
@@ -29,8 +31,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <TaskStatusBadge status={task.status} />
           <TaskPriorityBadge priority={task.priority} />
           <span
-            className={`font-mono font-bold text-sm tracking-wider uppercase ${
-              isCompleted ? 'line-through text-[#606c80]' : 'text-white'
+            className={`font-semibold text-sm ${
+              isCompleted ? 'line-through text-zinc-400' : 'text-zinc-900'
             }`}
           >
             {task.title}
@@ -38,26 +40,26 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
 
         {task.description && (
-          <p className="text-xs text-[#9da8b9] leading-relaxed pr-2 font-mono">
-            // {task.description}
+          <p className="text-xs text-zinc-600 leading-relaxed pr-2">
+            {task.description}
           </p>
         )}
 
-        <div className="flex items-center gap-3 text-[11px] font-mono text-[#606c80] flex-wrap pt-0.5">
+        <div className="flex items-center gap-3 text-xs text-zinc-500 flex-wrap pt-0.5">
           <span className="flex items-center gap-1">
-            <IconMapPin size={11} className="text-[#00f0ff]" />
+            <IconMapPin size={12} className="text-zinc-400" />
             {task.branchName}
           </span>
           {task.shiftName && (
             <span className="flex items-center gap-1">
-              <IconClock size={11} className="text-[#00f0ff]" />
+              <IconClock size={12} className="text-zinc-400" />
               {task.shiftName}
             </span>
           )}
           {task.completedAt && (
-            <span className="text-[#00e676] font-bold flex items-center gap-1">
-              <IconCheck size={11} />
-              RESOLVED {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <span className="text-emerald-700 font-medium flex items-center gap-1">
+              <IconCheck size={12} />
+              Completed at {new Date(task.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </span>
           )}
         </div>
@@ -71,21 +73,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             onClick={() => onUpdateStatus(task.id, 'IN_PROGRESS')}
             disabled={isUpdating}
           >
-            [ RE-OPEN ]
+            Re-open
           </Button>
         ) : (
           <Button
-            variant="cyan"
+            variant="emerald"
             size="sm"
             onClick={() => onUpdateStatus(task.id, 'COMPLETED')}
             disabled={isUpdating}
-            className="gap-1.5 shadow-[0_0_10px_rgba(0,240,255,0.2)]"
+            className="gap-1.5"
           >
-            <IconCheck size={13} />
-            <span>[ RESOLVE ]</span>
+            <IconCheck size={14} />
+            <span>Mark Complete</span>
           </Button>
         )}
       </div>
-    </div>
+    </Card>
   );
 };

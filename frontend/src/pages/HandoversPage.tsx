@@ -208,12 +208,12 @@ export const HandoversPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
-            <IconHandshake size={20} className="text-[#ff6b00]" />
-            <span>OPERATIONAL SHIFT TURNOVER & DEBRIEFS</span>
+          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
+            <IconHandshake size={18} className="text-[#ff6b00]" />
+            <span>Shift Turnover</span>
           </h1>
-          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
-            Transfer operational shift context, log duty debriefs, and prevent coverage blindspots
+          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
+            Relief briefings, pending checklist handovers, and active duty debriefs
           </p>
         </div>
 

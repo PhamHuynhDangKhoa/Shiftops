@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/WebSocketContext';
@@ -8,14 +8,16 @@ import {
   IconMapPin,
   IconLogOut,
   IconAlertTriangle,
+  IconMenu,
+  IconClose,
 } from './ui/Icons';
-import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, logout } = useAuth();
   const { status } = useWebSocket();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -26,324 +28,258 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const isManager = user?.role === 'MANAGER';
   const isOwner = user?.role === 'OWNER';
 
-  // Role Clearance Theme Specs
-  const clearanceData = isOwner
-    ? {
-        label: 'CLEARANCE :: L3_FLEET_DIRECTOR',
-        badgeVariant: 'gold' as const,
-        borderAccent: 'border-b-[#e5c07b]/40',
-        sectorLabel: 'CENTRAL FLEET COMMAND',
-        themeGlow: 'shadow-[0_0_12px_rgba(229,192,123,0.2)]',
-        colorHex: '#e5c07b',
-      }
+  // Navigation Items per role
+  const navItems = isStaff
+    ? [
+        { to: '/', label: 'Terminal', end: true },
+        { to: '/shifts', label: 'Schedule' },
+        { to: '/attendance', label: 'Attendance' },
+        { to: '/tasks', label: 'Tasks' },
+        { to: '/issues', label: 'Incidents' },
+        { to: '/handovers', label: 'Turnover' },
+      ]
+    : [
+        { to: '/', label: isOwner ? 'Fleet Command' : 'Dispatch', end: true },
+        { to: '/shifts', label: 'Roster' },
+        { to: '/attendance', label: 'Attendance' },
+        { to: '/tasks', label: 'Tasks' },
+        { to: '/issues', label: 'Incidents' },
+        { to: '/handovers', label: 'Turnover' },
+        { to: '/staff', label: 'Personnel' },
+        { to: '/branches', label: isOwner ? 'Sectors' : 'Sector' },
+      ];
+
+  // Role tag styling
+  const roleBadgeColor = isOwner
+    ? 'text-[#e5c07b] border-[#e5c07b]/30 bg-[#e5c07b]/10'
     : isManager
-    ? {
-        label: 'CLEARANCE :: L2_SECTOR_COMMANDER',
-        badgeVariant: 'warning' as const,
-        borderAccent: 'border-b-[#ff6b00]/40',
-        sectorLabel: user?.primaryBranchName ? `SECTOR // ${user.primaryBranchName.toUpperCase()}` : 'SECTOR DISPATCH',
-        themeGlow: 'shadow-[0_0_12px_rgba(255,107,0,0.2)]',
-        colorHex: '#ff6b00',
-      }
-    : {
-        label: 'CLEARANCE :: L1_FIELD_OPERATOR',
-        badgeVariant: 'cyan' as const,
-        borderAccent: 'border-b-[#00f0ff]/40',
-        sectorLabel: user?.primaryBranchName ? `STATION // ${user.primaryBranchName.toUpperCase()}` : 'FIELD TERMINAL',
-        themeGlow: 'shadow-[0_0_12px_rgba(0,240,255,0.2)]',
-        colorHex: '#00f0ff',
-      };
+    ? 'text-[#ff6b00] border-[#ff6b00]/30 bg-[#ff6b00]/10'
+    : 'text-[#00f0ff] border-[#00f0ff]/30 bg-[#00f0ff]/10';
+
+  const roleAccentBorder = isOwner
+    ? 'border-b-[#e5c07b]/50'
+    : isManager
+    ? 'border-b-[#ff6b00]/50'
+    : 'border-b-[#00f0ff]/50';
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#090a0d] text-[#f1f5f9] antialiased selection:bg-[#00f0ff]/30 selection:text-white">
-      {/* Top Telemetry Strip */}
-      <div className={`px-4 sm:px-6 py-1 bg-[#0c0d12] border-b border-[#1e222b] text-[10px] font-mono flex items-center justify-between text-[#606c80] select-none ${clearanceData.borderAccent}`}>
+    <div className="min-h-screen flex flex-col bg-[#090a0d] text-[#f1f5f9] antialiased selection:bg-[#00f0ff]/20 selection:text-white">
+      {/* Top Sector & Telemetry Bar */}
+      <div className={`px-4 sm:px-6 py-1.5 bg-[#0d0f14] border-b border-[#1e222b] text-[11px] font-mono flex items-center justify-between text-[#8a94a6] select-none ${roleAccentBorder}`}>
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 text-[#9da8b9]">
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: clearanceData.colorHex }} />
-            <span className="font-bold text-white tracking-widest">SHIFTOPS</span>
-            <span className="text-[#606c80]">// PRTS_TERMINAL_v4.2</span>
-          </span>
-          <span className="hidden md:inline text-[#2a2f3d]">|</span>
-          <span className="hidden md:inline text-[#9da8b9] tracking-wider uppercase">
-            {clearanceData.sectorLabel}
+          <div className="flex items-center gap-2">
+            <span
+              className={`w-2 h-2 rounded-none rotate-45 ${
+                isOwner ? 'bg-[#e5c07b]' : isManager ? 'bg-[#ff6b00]' : 'bg-[#00f0ff]'
+              }`}
+            />
+            <span className="font-bold tracking-widest text-white text-xs">SHIFTOPS</span>
+          </div>
+          <span className="text-[#2a2f3d]">/</span>
+          <span className="hidden sm:inline text-[#8a94a6] tracking-wider uppercase text-[10px]">
+            {user?.primaryBranchName ? `SECTOR: ${user.primaryBranchName}` : 'FLEET WIDE'}
           </span>
         </div>
 
         {isAuthenticated && user && (
-          <div className="flex items-center gap-2">
-            <span className="tracking-wider uppercase font-semibold" style={{ color: clearanceData.colorHex }}>
-              {clearanceData.label}
+          <div className="flex items-center gap-3">
+            <span className={`px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase border ${roleBadgeColor}`}>
+              {user.role}
             </span>
-            <span className="text-[#2a2f3d]">|</span>
-            <span className="hidden sm:inline text-[#9da8b9]">SEC_STATUS: NORMAL</span>
+            <span className="text-[#2a2f3d]">/</span>
+            <div className="flex items-center gap-1.5 text-[10px] text-[#8a94a6]">
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  status === 'CONNECTED' ? 'bg-[#00e676]' : status === 'RECONNECTING' ? 'bg-[#ff6b00] animate-pulse' : 'bg-[#606c80]'
+                }`}
+              />
+              <span className="hidden md:inline uppercase">
+                {status === 'CONNECTED' ? 'TELEMETRY LIVE' : status === 'RECONNECTING' ? 'RE-SYNCING' : 'OFFLINE'}
+              </span>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Main Tactical Header Dock */}
+      {/* Main Navigation Bar */}
       <header className="sticky top-0 z-40 bg-[#11141a]/95 backdrop-blur-md border-b border-[#262c38]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          {/* Left: Brand Glyph + Role-Tailored Navigation Tabs */}
-          <div className="flex items-center gap-6 min-w-0">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          {/* Left: Brand Glyph & Desktop Nav Tabs */}
+          <div className="flex items-center gap-6">
             <Link
               to="/"
-              className="flex items-center gap-2.5 text-white font-mono font-bold tracking-tight text-sm hover:opacity-85 transition-opacity flex-shrink-0 group"
+              className="flex items-center gap-2 text-white font-mono font-bold tracking-tight hover:opacity-90 transition-opacity flex-shrink-0"
             >
-              <span className="w-9 h-9 bg-[#181c24] border border-[#2a2f3d] text-white flex items-center justify-center clip-chamfer-btn group-hover:border-[#00f0ff] group-hover:text-[#00f0ff] transition-colors">
-                <IconLogo size={18} />
-              </span>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-sm tracking-widest text-white leading-none">SHIFTOPS</span>
-                <span className="text-[9px] font-mono tracking-wider text-[#00f0ff] leading-none mt-1">TACTICAL CORE</span>
+              <div className="w-8 h-8 bg-[#181c24] border border-[#2a2f3d] text-[#00f0ff] flex items-center justify-center clip-chamfer-btn">
+                <IconLogo size={16} />
               </div>
+              <span className="font-extrabold text-sm tracking-wider text-white">SHIFTOPS</span>
             </Link>
 
+            {/* Desktop Nav: Zero side-scroll, perfectly constrained items */}
             {isAuthenticated && (
-              <nav className="hidden lg:flex items-center gap-1.5 overflow-x-auto py-1">
-                {/* 1. Home / Cockpit */}
-                <NavLink
-                  to="/"
-                  end
-                  className={({ isActive }) =>
-                    `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                      isActive
-                        ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                        : 'bg-transparent text-[#9da8b9] border-transparent hover:text-white hover:bg-[#161922] hover:border-[#262c38]'
-                    }`
-                  }
-                >
-                  {isStaff ? 'DUTY TERMINAL' : isManager ? 'BRANCH DISPATCH' : 'FLEET COMMAND'}
-                </NavLink>
-
-                {/* 2. Branches (Owner / Manager) */}
-                {(isOwner || isManager) && (
+              <nav className="hidden lg:flex items-center gap-1">
+                {navItems.map((item) => (
                   <NavLink
-                    to="/branches"
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
                     className={({ isActive }) =>
-                      `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
+                      `px-3 py-1.5 text-xs font-mono font-medium tracking-wider uppercase transition-colors whitespace-nowrap ${
                         isActive
-                          ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                          : 'bg-transparent text-[#9da8b9] border-transparent hover:text-white hover:bg-[#161922] hover:border-[#262c38]'
+                          ? 'text-white bg-[#181c24] border-b-2 border-[#00f0ff] font-bold'
+                          : 'text-[#8a94a6] hover:text-white hover:bg-[#161922]'
                       }`
                     }
                   >
-                    {isOwner ? 'SECTORS' : 'SECTOR INFO'}
+                    {item.label}
                   </NavLink>
-                )}
-
-                {/* 3. Staff Directory (Owner / Manager) */}
-                {(isOwner || isManager) && (
-                  <NavLink
-                    to="/staff"
-                    className={({ isActive }) =>
-                      `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                        isActive
-                          ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                          : 'bg-transparent text-[#9da8b9] border-transparent hover:text-white hover:bg-[#161922] hover:border-[#262c38]'
-                      }`
-                    }
-                  >
-                    PERSONNEL
-                  </NavLink>
-                )}
-
-                {/* 4. Shifts / Scheduling */}
-                <NavLink
-                  to="/shifts"
-                  className={({ isActive }) =>
-                    `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                      isActive
-                        ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                        : 'bg-transparent text-[#9da8b9] border-transparent hover:text-white hover:bg-[#161922] hover:border-[#262c38]'
-                    }`
-                  }
-                >
-                  {isStaff ? 'MY SHIFTS' : 'ROSTER'}
-                </NavLink>
-
-                {/* 5. Attendance & Geolocation */}
-                <NavLink
-                  to="/attendance"
-                  className={({ isActive }) =>
-                    `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                      isActive
-                        ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                        : 'bg-transparent text-[#9da8b9] border-transparent hover:text-white hover:bg-[#161922] hover:border-[#262c38]'
-                    }`
-                  }
-                >
-                  ATTENDANCE
-                </NavLink>
-
-                {/* 6. Tasks & Mission Checklists */}
-                <NavLink
-                  to="/tasks"
-                  className={({ isActive }) =>
-                    `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                      isActive
-                        ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                        : 'bg-transparent text-[#9da8b9] border-transparent hover:text-white hover:bg-[#161922] hover:border-[#262c38]'
-                    }`
-                  }
-                >
-                  TASKS
-                </NavLink>
-
-                {/* 7. Issues & Incidents */}
-                <NavLink
-                  to="/issues"
-                  className={({ isActive }) =>
-                    `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                      isActive
-                        ? 'bg-[#181c24] text-[#ff1744] border-[#ff1744] shadow-[0_0_10px_rgba(255,23,68,0.2)]'
-                        : 'bg-transparent text-[#9da8b9] border-transparent hover:text-[#ff1744] hover:bg-[#161922] hover:border-[#262c38]'
-                    }`
-                  }
-                >
-                  INCIDENTS
-                </NavLink>
-
-                {/* 8. Handover Debriefs */}
-                <NavLink
-                  to="/handovers"
-                  className={({ isActive }) =>
-                    `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                      isActive
-                        ? 'bg-[#181c24] text-[#ff6b00] border-[#ff6b00] shadow-[0_0_10px_rgba(255,107,0,0.2)]'
-                        : 'bg-transparent text-[#9da8b9] border-transparent hover:text-[#ff6b00] hover:bg-[#161922] hover:border-[#262c38]'
-                    }`
-                  }
-                >
-                  HANDOVERS
-                </NavLink>
-
-                {/* 9. Profile */}
-                <NavLink
-                  to="/profile"
-                  className={({ isActive }) =>
-                    `h-9 px-3.5 text-xs font-mono uppercase tracking-wider font-semibold transition-all duration-150 flex items-center whitespace-nowrap clip-chamfer-btn border ${
-                      isActive
-                        ? 'bg-[#181c24] text-[#00f0ff] border-[#00f0ff] shadow-[0_0_10px_rgba(0,240,255,0.2)]'
-                        : 'bg-transparent text-[#9da8b9] border-transparent hover:text-white hover:bg-[#161922] hover:border-[#262c38]'
-                    }`
-                  }
-                >
-                  PROFILE
-                </NavLink>
+                ))}
               </nav>
             )}
           </div>
 
-          {/* Right Action Dock */}
+          {/* Right: Operator Dock & Mobile Toggle */}
           <div className="flex items-center gap-3">
             {isAuthenticated && user ? (
               <>
-                {/* Real-time STOMP Link Status */}
-                <div
-                  className={`hidden sm:inline-flex items-center gap-2 h-9 px-3 text-xs font-mono font-bold tracking-wider uppercase border rounded-sm ${
-                    status === 'CONNECTED'
-                      ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/30 shadow-[0_0_8px_rgba(0,230,118,0.15)]'
-                      : status === 'RECONNECTING'
-                      ? 'bg-[#ff6b00]/10 text-[#ff6b00] border-[#ff6b00]/30 animate-pulse'
-                      : 'bg-[#181c24] text-[#606c80] border-[#262c38]'
-                  }`}
-                  title={
-                    status === 'CONNECTED'
-                      ? 'Realtime Telemetry Active'
-                      : status === 'RECONNECTING'
-                      ? 'Reconnecting to dispatch broker...'
-                      : 'Telemetry link offline'
-                  }
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      status === 'CONNECTED'
-                        ? 'bg-[#00e676] shadow-[0_0_6px_#00e676]'
-                        : status === 'RECONNECTING'
-                        ? 'bg-[#ff6b00]'
-                        : 'bg-[#606c80]'
-                    }`}
-                  />
-                  <span>
-                    {status === 'CONNECTED' ? 'SYS // LINKED' : status === 'RECONNECTING' ? 'RE-SYNCING' : 'OFFLINE'}
-                  </span>
-                </div>
-
                 <NotificationBell />
 
                 {/* Operator Identity Capsule */}
-                <div className="hidden md:flex flex-col items-end text-right">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono font-bold text-white tracking-wider">
+                <Link
+                  to="/profile"
+                  className="hidden md:flex items-center gap-2 px-2.5 py-1 bg-[#161922] border border-[#262c38] hover:border-[#384255] transition-colors"
+                >
+                  <div className="w-5 h-5 bg-[#202531] flex items-center justify-center text-[10px] font-mono font-bold text-[#00f0ff]">
+                    {user.fullName.charAt(0)}
+                  </div>
+                  <div className="flex flex-col text-left">
+                    <span className="text-xs font-mono font-bold text-white leading-none whitespace-nowrap">
                       {user.fullName}
                     </span>
-                    <Badge variant={clearanceData.badgeVariant} size="sm">
-                      {user.role}
-                    </Badge>
+                    {user.primaryBranchName && (
+                      <span className="text-[9px] font-mono text-[#8a94a6] leading-none mt-1 flex items-center gap-0.5 whitespace-nowrap">
+                        <IconMapPin size={9} className="text-[#00f0ff]" />
+                        <span>{user.primaryBranchName}</span>
+                      </span>
+                    )}
                   </div>
-                  {user.primaryBranchName && (
-                    <span className="text-[10px] text-[#9da8b9] flex items-center gap-1 mt-0.5 font-mono">
-                      <IconMapPin size={10} className="text-[#00f0ff]" />
-                      <span>{user.primaryBranchName}</span>
-                    </span>
-                  )}
-                </div>
+                </Link>
 
-                {/* Chunky Tactical Logout Button */}
+                {/* Logout Button */}
                 <Button
                   variant="secondary"
                   size="sm"
                   onClick={handleLogout}
-                  title="Sever Terminal Session"
-                  className="gap-2 text-xs"
+                  title="Sign out"
+                  className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono whitespace-nowrap"
                 >
-                  <IconLogOut size={14} className="text-[#9da8b9]" />
-                  <span className="hidden sm:inline">[ LOGOUT ]</span>
+                  <IconLogOut size={13} className="text-[#8a94a6]" />
+                  <span>Sign Out</span>
                 </Button>
+
+                {/* Mobile Menu Hamburger Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="lg:hidden p-2 text-[#8a94a6] hover:text-white hover:bg-[#181c24] border border-[#262c38] transition-colors"
+                  aria-label="Toggle navigation menu"
+                >
+                  {isMobileMenuOpen ? <IconClose size={18} /> : <IconMenu size={18} />}
+                </button>
               </>
             ) : (
               <Link to="/login">
-                <Button variant="primary" size="md">
-                  AUTHENTICATE // SIGN IN
+                <Button variant="primary" size="sm">
+                  Sign In
                 </Button>
               </Link>
             )}
           </div>
         </div>
 
+        {/* Mobile / Tablet Collapsible Menu */}
+        {isAuthenticated && isMobileMenuOpen && (
+          <div className="lg:hidden bg-[#11141a] border-t border-[#262c38] px-4 py-3 space-y-2 font-mono">
+            <div className="grid grid-cols-2 gap-1.5 pb-3 border-b border-[#1e222b]">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `px-3 py-2 text-xs font-medium uppercase tracking-wider transition-colors ${
+                      isActive
+                        ? 'text-[#00f0ff] bg-[#181c24] border-l-2 border-[#00f0ff] font-bold'
+                        : 'text-[#8a94a6] hover:text-white hover:bg-[#161922]'
+                    }`
+                  }
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+              <NavLink
+                to="/profile"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="px-3 py-2 text-xs font-medium uppercase tracking-wider text-[#8a94a6] hover:text-white hover:bg-[#161922]"
+              >
+                Profile
+              </NavLink>
+            </div>
+
+            {/* Mobile Operator Details & Logout */}
+            <div className="pt-2 flex items-center justify-between text-xs">
+              <div className="flex flex-col">
+                <span className="font-bold text-white">{user?.fullName}</span>
+                <span className="text-[10px] text-[#8a94a6]">{user?.primaryBranchName || 'Fleet Operator'}</span>
+              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="gap-1.5 text-xs"
+              >
+                <IconLogOut size={13} />
+                <span>Sign Out</span>
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Password Reset Alert Ribbon */}
         {isAuthenticated && user?.mustChangePassword && (
-          <div className="bg-[#ff6b00]/15 border-t border-b border-[#ff6b00]/40 px-4 py-2 text-center text-xs font-mono text-[#ff8800] flex items-center justify-center gap-2">
-            <IconAlertTriangle size={15} className="text-[#ff6b00] flex-shrink-0" />
-            <span>
-              <strong>[SECURITY PROTOCOL]:</strong> Temporary password in effect. Update password to confirm clearance.
-            </span>
+          <div className="bg-[#ff6b00]/10 border-t border-b border-[#ff6b00]/30 px-4 py-2 text-center text-xs font-mono text-[#ff8800] flex items-center justify-center gap-2">
+            <IconAlertTriangle size={14} className="text-[#ff6b00] flex-shrink-0" />
+            <span>Temporary password in effect. Update your password to secure access.</span>
             <Link
               to="/profile"
               className="text-[#00f0ff] font-bold underline underline-offset-2 hover:text-[#38f3ff] ml-1"
             >
-              [ UPDATE CREDENTIALS → ]
+              Update Credentials →
             </Link>
           </div>
         )}
       </header>
 
-      {/* Main Tactical Viewport */}
+      {/* Main Viewport */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full flex-1">
         {children}
       </main>
 
       {/* Industrial Footer */}
       <footer className="border-t border-[#1e222b] bg-[#0c0d12] py-4 text-center text-[11px] text-[#606c80] font-mono flex flex-col sm:flex-row items-center justify-between px-6 gap-2">
-        <div className="flex items-center gap-2 text-[#9da8b9]">
+        <div className="flex items-center gap-2 text-[#8a94a6]">
           <span className="w-1.5 h-1.5 bg-[#00f0ff]" />
-          <span>SHIFTOPS TACTICAL DISPATCH SYSTEM</span>
+          <span>SHIFTOPS OPERATIONS PLATFORM</span>
           <span>© 2026</span>
         </div>
         <div className="flex items-center gap-4 text-[#606c80]">
-          <span>SECTOR_CLEARANCE: VERIFIED</span>
-          <span>PROTOCOL: HTTPS/WSS ENCRYPTED</span>
+          <span>STATUS: OPERATIONAL</span>
+          <span>DISPATCH ENCRYPTED</span>
         </div>
       </footer>
     </div>

@@ -190,14 +190,14 @@ export const AttendancePage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
-            <IconClock size={20} className="text-[#00f0ff]" />
-            <span>ATTENDANCE & DISPATCH CLOCKING</span>
+          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
+            <IconClock size={18} className="text-[#00f0ff]" />
+            <span>Attendance Ledger</span>
           </h1>
-          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
+          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
             {isStaff
               ? 'Record shift punches and track your personal punctuality ledger'
-              : 'Monitor sector clock-ins, verify punctuality, and track operational coverage'}
+              : 'Monitor floor clock-ins, verify punctuality, and track sector coverage'}
           </p>
         </div>
       </div>

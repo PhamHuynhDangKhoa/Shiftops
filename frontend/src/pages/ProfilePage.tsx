@@ -185,27 +185,27 @@ export const ProfilePage: React.FC = () => {
         </Card>
 
         {/* Change Password Form */}
-        <Card className="p-5 space-y-4">
-          <div className="pb-2 border-b border-zinc-100">
-            <h3 className="text-sm font-semibold text-zinc-950 flex items-center gap-1.5">
-              <IconKey size={14} className="text-zinc-600" />
+        <Card className="p-5 space-y-4 border border-[#262c38] bg-[#11141a]" chamfer>
+          <div className="pb-3 border-b border-[#262c38]">
+            <h3 className="text-sm font-bold font-mono text-white flex items-center gap-1.5 uppercase tracking-wider">
+              <IconKey size={14} className="text-[#00f0ff]" />
               <span>Update Password</span>
             </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Enforce account security and revoke temporary password</p>
+            <p className="text-xs font-mono text-[#8a94a6] mt-0.5">Enforce account security and revoke temporary password</p>
           </div>
 
           {passwordMsg && (
             <div
-              className={`p-3 rounded-md text-xs border flex items-center gap-2 ${
+              className={`p-3 rounded-sm text-xs font-mono border flex items-center gap-2 ${
                 passwordMsg.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200/90'
-                  : 'bg-rose-50 text-rose-800 border-rose-200/90'
+                  ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40'
+                  : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40'
               }`}
             >
               {passwordMsg.type === 'success' ? (
-                <IconCheck size={14} className="text-emerald-600 flex-shrink-0" />
+                <IconCheck size={14} className="text-[#00e676] flex-shrink-0" />
               ) : (
-                <IconAlertTriangle size={14} className="text-rose-600 flex-shrink-0" />
+                <IconAlertTriangle size={14} className="text-[#ff1744] flex-shrink-0" />
               )}
               <span>{passwordMsg.text}</span>
             </div>

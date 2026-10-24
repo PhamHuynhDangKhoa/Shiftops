@@ -55,15 +55,15 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
           e.preventDefault();
           onSubmit();
         }}
-        className="space-y-4"
+        className="space-y-4 font-mono"
       >
         {isOwner && branches && branches.length > 0 && (
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-700">Operating Branch</label>
+            <label className="text-xs font-semibold uppercase text-[#8a94a6]">Operating Sector</label>
             <select
               value={branchId}
               onChange={(e) => onBranchIdChange(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -84,11 +84,11 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-700">Category</label>
+            <label className="text-xs font-semibold uppercase text-[#8a94a6]">Category</label>
             <select
               value={category}
               onChange={(e) => onCategoryChange(e.target.value as IssueCategory)}
-              className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
             >
               <option value="EQUIPMENT">Equipment</option>
               <option value="FACILITY">Facility</option>
@@ -100,11 +100,11 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-700">Priority Level</label>
+            <label className="text-xs font-semibold uppercase text-[#8a94a6]">Priority Level</label>
             <select
               value={priority}
               onChange={(e) => onPriorityChange(e.target.value as IssuePriority)}
-              className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
             >
               <option value="LOW">Low</option>
               <option value="NORMAL">Normal</option>
@@ -115,28 +115,28 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-zinc-700">Detailed Description</label>
+          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Detailed Description</label>
           <textarea
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
             rows={3}
             placeholder="Explain symptoms, exact location, and operational disruption..."
             required
-            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff]"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-zinc-700">Attachment (Optional Image / Log)</label>
+          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Attachment (Optional Image / Log)</label>
           <input
             type="file"
             accept="image/*"
             onChange={(e) => onFileChange(e.target.files?.[0] || null)}
-            className="w-full text-xs text-zinc-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-zinc-100 file:text-zinc-800 hover:file:bg-zinc-200 cursor-pointer"
+            className="w-full text-xs text-[#8a94a6] font-mono file:mr-3 file:py-1.5 file:px-3 file:rounded-sm file:border file:border-[#262c38] file:text-xs file:font-mono file:bg-[#181c24] file:text-white hover:file:border-[#00f0ff] cursor-pointer"
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
           <Button
             type="button"
             variant="secondary"
@@ -151,7 +151,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({
             size="sm"
             disabled={!title.trim() || !description.trim() || isPending}
           >
-            {isPending ? 'Logging Incident...' : 'Submit Incident Report'}
+            {isPending ? 'Logging...' : 'Submit Incident Report'}
           </Button>
         </div>
       </form>

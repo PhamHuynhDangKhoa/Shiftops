@@ -200,10 +200,10 @@ export const DashboardPage: React.FC = () => {
               <span className={`w-2.5 h-2.5 rounded-none ${isOwner ? 'bg-[#e5c07b]' : isManager ? 'bg-[#ff6b00]' : 'bg-[#00f0ff]'}`} />
               <span>
                 {isOwner
-                  ? 'FLEET STRATEGIC COMMAND'
+                  ? 'Fleet Operations Command'
                   : isManager
-                  ? 'SECTOR DISPATCH & COMBAT DECK'
-                  : 'FIELD DEPLOYMENT TERMINAL'}
+                  ? 'Sector Dispatch'
+                  : 'Duty Terminal'}
               </span>
             </h1>
             <Badge
@@ -213,24 +213,24 @@ export const DashboardPage: React.FC = () => {
               {user?.role}
             </Badge>
           </div>
-          <div className="flex items-center gap-3 text-xs text-[#9da8b9] mt-1 font-mono">
+          <div className="flex items-center gap-3 text-xs text-[#8a94a6] mt-1 font-mono">
             <span className="flex items-center gap-1">
               <IconMapPin size={12} className="text-[#00f0ff]" />
-              <span>{user?.primaryBranchName ? `STATION // ${user.primaryBranchName.toUpperCase()}` : 'SECTOR // ALL_FLEET'}</span>
+              <span>{user?.primaryBranchName ? user.primaryBranchName.toUpperCase() : 'ALL SECTORS'}</span>
             </span>
-            <span className="text-[#3c4558]">|</span>
+            <span className="text-[#3c4558]">/</span>
             <span className="text-[#606c80]">
-              SYS_TIME: {new Date().toLocaleTimeString()}
+              {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
             </span>
           </div>
         </div>
 
         {/* Global Header Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
           {(isOwner || isManager) && (
             <Button
               variant="amber"
-              size="md"
+              size="sm"
               onClick={() => {
                 setBroadcastTitle('');
                 setBroadcastContent('');
@@ -239,17 +239,17 @@ export const DashboardPage: React.FC = () => {
                 setBroadcastError(null);
                 setIsBroadcastModalOpen(true);
               }}
-              className="gap-2"
+              className="gap-1.5 whitespace-nowrap text-xs"
             >
               <IconMegaphone size={14} />
-              <span>[ BROADCAST NOTICE ]</span>
+              <span>Broadcast Notice</span>
             </Button>
           )}
 
-          <Link to="/attendance">
-            <Button variant="cyan" size="md" className="gap-2">
+          <Link to="/attendance" className="whitespace-nowrap">
+            <Button variant="cyan" size="sm" className="gap-1.5 text-xs">
               <IconClock size={14} />
-              <span>[ CLOCK TERMINAL ]</span>
+              <span>Clock In / Out</span>
             </Button>
           </Link>
         </div>
@@ -285,14 +285,14 @@ export const DashboardPage: React.FC = () => {
                 <div>
                   <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#00f0ff] flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 bg-[#00f0ff]" />
-                    <span>FIELD OPERATOR STATUS HUD</span>
+                    <span>Shift Status</span>
                   </span>
                   <h2 className="text-lg font-mono font-bold text-white mt-1">
-                    {isCurrentlyClockedIn ? 'DEPLOYMENT ACTIVE // ON DUTY' : 'READY FOR SHIFT PUNCH-IN'}
+                    {isCurrentlyClockedIn ? 'Shift In Progress' : 'Ready to Clock In'}
                   </h2>
                 </div>
-                <Badge variant={isCurrentlyClockedIn ? 'success' : 'cyan'} size="md">
-                  {isCurrentlyClockedIn ? '// CLOCKED_IN' : '// STANDBY'}
+                <Badge variant={isCurrentlyClockedIn ? 'success' : 'neutral'} size="md">
+                  {isCurrentlyClockedIn ? 'Clocked In' : 'Off Duty'}
                 </Badge>
               </div>
 
@@ -306,7 +306,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
                 <div className="p-3 bg-[#161922] border border-[#262c38]">
                   <span className="text-[#606c80] block text-[10px] uppercase">Scheduled Window</span>
-                  <span className="text-[#00f0ff] font-bold block mt-0.5">
+                  <span className="text-[#00f0ff] font-bold block mt-0.5 whitespace-nowrap">
                     {currentShift
                       ? `${new Date(currentShift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${new Date(currentShift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
                       : 'Standby'}
@@ -322,23 +322,23 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Massive Tactical Action Switch */}
+              {/* Tactical Action Buttons */}
               <div className="pt-2 flex flex-col sm:flex-row items-center gap-3">
                 <Link to="/attendance" className="w-full sm:w-auto flex-1">
                   <Button
                     variant={isCurrentlyClockedIn ? 'amber' : 'primary'}
                     size="lg"
-                    className="w-full text-sm font-bold tracking-widest gap-2 shadow-[0_0_20px_rgba(0,240,255,0.25)]"
+                    className="w-full text-xs font-bold tracking-wider gap-2 whitespace-nowrap"
                   >
                     <IconClock size={16} />
-                    <span>{isCurrentlyClockedIn ? '[ PROCEED TO CHECK-OUT ]' : '[ INITIATE SHIFT CLOCK-IN ]'}</span>
+                    <span>{isCurrentlyClockedIn ? 'Clock Out' : 'Clock In Now'}</span>
                   </Button>
                 </Link>
 
-                <Link to="/issues">
-                  <Button variant="danger" size="lg" className="w-full sm:w-auto gap-2">
+                <Link to="/issues" className="w-full sm:w-auto">
+                  <Button variant="danger" size="lg" className="w-full sm:w-auto gap-2 text-xs font-bold whitespace-nowrap">
                     <IconAlertTriangle size={15} />
-                    <span>[ REPORT INCIDENT ]</span>
+                    <span>Report Incident</span>
                   </Button>
                 </Link>
               </div>
@@ -350,11 +350,11 @@ export const DashboardPage: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <IconCheckList size={16} className="text-[#00f0ff]" />
                   <h3 className="text-xs font-mono font-bold uppercase text-white tracking-wider">
-                    MISSION CHECKLIST
+                    Today's Tasks
                   </h3>
                 </div>
-                <Link to="/tasks" className="text-[11px] font-mono text-[#00f0ff] hover:underline flex items-center gap-0.5">
-                  <span>VIEW ALL</span>
+                <Link to="/tasks" className="text-[11px] font-mono text-[#00f0ff] hover:underline flex items-center gap-0.5 whitespace-nowrap">
+                  <span>View All</span>
                   <IconArrowUpRight size={11} />
                 </Link>
               </div>
@@ -379,7 +379,7 @@ export const DashboardPage: React.FC = () => {
                   ))
                 ) : (
                   <div className="py-6 text-center text-xs font-mono text-[#606c80]">
-                    [ NO ACTIVE TASKS ASSIGNED ]
+                    No tasks assigned for today
                   </div>
                 )}
               </div>
@@ -623,10 +623,10 @@ export const DashboardPage: React.FC = () => {
                 setBroadcastError(null);
                 setIsBroadcastModalOpen(true);
               }}
-              className="text-xs font-mono text-[#00f0ff] hover:underline cursor-pointer flex items-center gap-1"
+              className="text-xs font-mono text-[#00f0ff] hover:underline cursor-pointer flex items-center gap-1 whitespace-nowrap"
             >
               <IconPlus size={13} />
-              <span>[ TRANSMIT NOTICE ]</span>
+              <span>Create Announcement</span>
             </button>
           )}
         </div>
@@ -745,7 +745,7 @@ export const DashboardPage: React.FC = () => {
               size="sm"
               onClick={() => setIsBroadcastModalOpen(false)}
             >
-              [ CANCEL ]
+              Cancel
             </Button>
             <Button
               type="submit"
@@ -753,7 +753,7 @@ export const DashboardPage: React.FC = () => {
               size="sm"
               disabled={broadcastMutation.isPending}
             >
-              {broadcastMutation.isPending ? 'TRANSMITTING...' : '[ TRANSMIT NOTICE ]'}
+              {broadcastMutation.isPending ? 'Publishing...' : 'Publish Announcement'}
             </Button>
           </div>
         </form>

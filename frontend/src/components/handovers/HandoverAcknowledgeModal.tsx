@@ -34,9 +34,9 @@ export const HandoverAcknowledgeModal: React.FC<HandoverAcknowledgeModalProps> =
       description="Formally acknowledge receipt of operational directives and responsibilities from previous crew"
       maxWidth="md"
     >
-      <div className="space-y-4">
+      <div className="space-y-4 font-mono">
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-zinc-700">
+          <label className="text-xs font-semibold uppercase text-[#8a94a6]">
             Acknowledgement Notes (Optional)
           </label>
           <textarea
@@ -44,11 +44,11 @@ export const HandoverAcknowledgeModal: React.FC<HandoverAcknowledgeModalProps> =
             onChange={(e) => setAckNotes(e.target.value)}
             rows={3}
             placeholder="e.g. Reviewed task backlog, proceeding with unresolved equipment issue..."
-            className="w-full px-3 py-2 border border-zinc-300 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+            className="w-full px-3 py-2 border border-[#2a2f3d] bg-[#13151a] text-white rounded-sm text-xs placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff]"
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
           <Button variant="secondary" size="sm" onClick={onClose}>
             Cancel
           </Button>

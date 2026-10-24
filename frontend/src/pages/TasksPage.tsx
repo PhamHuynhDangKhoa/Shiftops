@@ -318,12 +318,12 @@ export const TasksPage: React.FC = () => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
           <div>
-            <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
-              <IconCheckList size={20} className="text-[#00f0ff]" />
-              <span>FIELD MISSION CHECKLIST</span>
+            <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
+              <IconCheckList size={18} className="text-[#00f0ff]" />
+              <span>My Tasks</span>
             </h1>
-            <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
-              Operational duties and directives assigned to your active shift
+            <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
+              Checklist duties and directives assigned to your active shift
             </p>
           </div>
 
@@ -398,14 +398,14 @@ export const TasksPage: React.FC = () => {
 
         {/* Task List */}
         {isLoadingMyTasks ? (
-          <div className="py-12 text-center text-xs font-mono text-zinc-400">Loading your tasks...</div>
+          <div className="py-12 text-center text-xs font-mono text-[#8a94a6]">Loading tasks...</div>
         ) : tasks.length === 0 ? (
-          <div className="py-12 text-center border border-dashed border-zinc-200 rounded-lg bg-zinc-50/50">
-            <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-2">
+          <div className="py-12 text-center border border-dashed border-[#262c38] bg-[#11141a]">
+            <div className="w-8 h-8 bg-[#181c24] flex items-center justify-center text-[#606c80] mx-auto mb-2">
               <IconCheckList size={16} />
             </div>
-            <p className="text-xs font-medium text-zinc-800">No tasks found</p>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
+            <p className="text-xs font-medium text-white">No tasks found</p>
+            <p className="text-[11px] text-[#8a94a6] mt-0.5">
               Tasks generated for your shift will appear here.
             </p>
           </div>
@@ -435,12 +435,12 @@ export const TasksPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
-            <IconCheckList size={20} className="text-[#00f0ff]" />
-            <span>OPERATIONAL TASKS & CHECKLIST DIRECTIVES</span>
+          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
+            <IconCheckList size={18} className="text-[#00f0ff]" />
+            <span>Shift Directives</span>
           </h1>
-          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
-            Dispatch checklist routines, assign ad-hoc responsibilities, and monitor shift execution
+          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
+            Checklist routines, ad-hoc task delegation, and execution monitoring
           </p>
         </div>
 

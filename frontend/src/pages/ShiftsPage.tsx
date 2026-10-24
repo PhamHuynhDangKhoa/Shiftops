@@ -232,27 +232,27 @@ export const ShiftsPage: React.FC = () => {
       {isLoading && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-44 rounded-lg bg-zinc-100 animate-pulse border border-zinc-200" />
+            <div key={i} className="h-44 bg-[#11141a] animate-pulse border border-[#262c38]" />
           ))}
         </div>
       )}
 
       {/* Error State */}
       {error && (
-        <div className="p-3.5 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800 flex items-center gap-2">
-          <IconAlertTriangle size={15} className="text-rose-600 flex-shrink-0" />
+        <div className="p-3.5 rounded-sm bg-[#ff1744]/10 border border-[#ff1744]/30 text-xs font-mono text-[#ff335c] flex items-center gap-2">
+          <IconAlertTriangle size={15} className="text-[#ff1744] flex-shrink-0" />
           <span>Failed to load shift rosters. Please verify connectivity.</span>
         </div>
       )}
 
       {/* Empty State */}
       {!isLoading && !error && activeShifts && activeShifts.length === 0 && (
-        <Card className="py-12 text-center text-zinc-500">
-          <div className="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-2.5">
+        <Card className="py-12 text-center text-[#8a94a6] border border-[#262c38] bg-[#11141a]" chamfer>
+          <div className="w-9 h-9 bg-[#181c24] border border-[#262c38] flex items-center justify-center text-[#8a94a6] mx-auto mb-2.5">
             <IconCalendar size={18} />
           </div>
-          <p className="font-semibold text-sm text-zinc-900">No shifts scheduled</p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="font-bold text-sm text-white font-mono uppercase tracking-wider">No shifts scheduled</p>
+          <p className="text-xs text-[#8a94a6] mt-1 font-mono">
             {isStaff
               ? 'You do not have any published shifts scheduled for this period.'
               : 'Create a new shift to start scheduling staff rosters.'}

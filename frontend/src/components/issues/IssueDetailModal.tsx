@@ -1,46 +1,39 @@
 import React from 'react';
-import { Issue, IssueStatus, User } from '../../lib/types';
+import { Issue, User, IssueStatus } from '../../lib/types';
+import { Modal, Button, Badge } from '../ui';
 import { IssuePriorityBadge } from './IssuePriorityBadge';
 import { IssueCategoryBadge } from './IssueCategoryBadge';
 import { IssueStatusBadge } from './IssueStatusBadge';
-import { Modal } from '../ui/Modal';
-import { Button } from '../ui/Button';
-import { Badge } from '../ui/Badge';
 import { IconCheck } from '../ui/Icons';
 
 interface IssueDetailModalProps {
   issueId: string | null;
-  onClose: () => void;
-  issue?: Issue;
+  issue: Issue | null;
   isLoading: boolean;
   isStaff: boolean;
   branchStaff?: User[];
-  // Assignment
   assigneeUserId: string;
   onAssigneeChange: (userId: string) => void;
   onAssign: () => void;
   isAssigning: boolean;
-  // Status update
+  onStartInvestigation: () => void;
   statusActionTarget: IssueStatus | null;
   onSetStatusActionTarget: (status: IssueStatus | null) => void;
   statusComment: string;
   onStatusCommentChange: (comment: string) => void;
   onConfirmStatusChange: () => void;
   isUpdatingStatus: boolean;
-  onStartInvestigation: () => void;
-  // Attachments
   onUploadAttachment: (file: File) => void;
   onViewAttachment: (attachmentId: string) => void;
-  // Comments
   newComment: string;
   onNewCommentChange: (comment: string) => void;
   onAddComment: () => void;
   isAddingComment: boolean;
+  onClose: () => void;
 }
 
 export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   issueId,
-  onClose,
   issue,
   isLoading,
   isStaff,
@@ -49,22 +42,21 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
   onAssigneeChange,
   onAssign,
   isAssigning,
+  onStartInvestigation,
   statusActionTarget,
   onSetStatusActionTarget,
   statusComment,
   onStatusCommentChange,
   onConfirmStatusChange,
   isUpdatingStatus,
-  onStartInvestigation,
   onUploadAttachment,
   onViewAttachment,
   newComment,
   onNewCommentChange,
   onAddComment,
   isAddingComment,
+  onClose,
 }) => {
-  if (!issueId) return null;
-
   return (
     <Modal
       isOpen={!!issueId}
@@ -74,13 +66,13 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
       maxWidth="xl"
     >
       {isLoading || !issue ? (
-        <div className="py-12 text-center text-xs font-mono text-zinc-400">
+        <div className="py-12 text-center text-xs font-mono text-[#8a94a6]">
           Loading incident records...
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-5 font-mono">
           {/* Status & Priority Strip */}
-          <div className="flex items-center gap-2 flex-wrap pb-3 border-b border-zinc-100">
+          <div className="flex items-center gap-2 flex-wrap pb-3 border-b border-[#262c38]">
             <IssuePriorityBadge priority={issue.priority} />
             <IssueCategoryBadge category={issue.category} />
             <IssueStatusBadge status={issue.status} />
@@ -88,63 +80,63 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
 
           {/* Incident Description */}
           <div>
-            <h4 className="text-[11px] font-mono font-medium text-zinc-400 uppercase tracking-wider mb-1.5">
+            <h4 className="text-[10px] font-bold text-[#8a94a6] uppercase tracking-wider mb-1.5">
               Incident Description
             </h4>
-            <div className="p-3 rounded-md bg-zinc-50 border border-zinc-200 text-xs text-zinc-800 whitespace-pre-wrap leading-relaxed">
+            <div className="p-3 bg-[#161922] border border-[#262c38] text-xs text-[#f1f5f9] whitespace-pre-wrap leading-relaxed">
               {issue.description}
             </div>
           </div>
 
           {/* Audit Ledger */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 rounded-md bg-zinc-50 border border-zinc-200 text-xs font-mono">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3 bg-[#161922] border border-[#262c38] text-xs">
             <div>
-              <span className="text-[10px] uppercase text-zinc-400 block">Reported By</span>
-              <span className="font-semibold text-zinc-900">{issue.reportedByName}</span>
-              <div className="text-[10px] text-zinc-500 tabular-nums">
+              <span className="text-[10px] uppercase text-[#8a94a6] block">Reported By</span>
+              <span className="font-bold text-white block mt-0.5">{issue.reportedByName}</span>
+              <div className="text-[10px] text-[#606c80] tabular-nums mt-0.5">
                 {new Date(issue.createdAt).toLocaleDateString()}
               </div>
             </div>
 
             <div>
-              <span className="text-[10px] uppercase text-zinc-400 block">Assigned Staff</span>
+              <span className="text-[10px] uppercase text-[#8a94a6] block">Assigned Staff</span>
               {issue.assignedToName ? (
-                <span className="font-semibold text-zinc-900">{issue.assignedToName}</span>
+                <span className="font-bold text-white block mt-0.5">{issue.assignedToName}</span>
               ) : (
-                <span className="text-zinc-400 italic">Unassigned</span>
+                <span className="text-[#606c80] italic block mt-0.5">Unassigned</span>
               )}
             </div>
 
             <div>
-              <span className="text-[10px] uppercase text-zinc-400 block">Resolved By</span>
+              <span className="text-[10px] uppercase text-[#8a94a6] block">Resolved By</span>
               {issue.resolvedByName ? (
-                <span className="font-semibold text-emerald-800">{issue.resolvedByName}</span>
+                <span className="font-bold text-[#00e676] block mt-0.5">{issue.resolvedByName}</span>
               ) : (
-                <span className="text-zinc-400 italic">Pending</span>
+                <span className="text-[#606c80] italic block mt-0.5">Pending</span>
               )}
             </div>
 
             <div>
-              <span className="text-[10px] uppercase text-zinc-400 block">Closed Status</span>
+              <span className="text-[10px] uppercase text-[#8a94a6] block">Closed Status</span>
               {issue.closedByName ? (
-                <span className="font-semibold text-zinc-900">{issue.closedByName}</span>
+                <span className="font-bold text-white block mt-0.5">{issue.closedByName}</span>
               ) : (
-                <span className="text-zinc-400 italic">Open</span>
+                <span className="text-[#606c80] italic block mt-0.5">Open</span>
               )}
             </div>
           </div>
 
           {/* Assignment Controls */}
           {!isStaff && issue.status !== 'CLOSED' && issue.status !== 'CANCELLED' && (
-            <div className="p-3 border border-zinc-200 rounded-md flex items-center justify-between gap-3 flex-wrap">
-              <label className="text-xs font-medium text-zinc-700">
+            <div className="p-3 border border-[#262c38] bg-[#161922] flex items-center justify-between gap-3 flex-wrap">
+              <label className="text-xs font-semibold text-[#8a94a6] uppercase">
                 Assignee:
               </label>
               <div className="flex items-center gap-2 flex-1 max-w-sm">
                 <select
                   value={assigneeUserId}
                   onChange={(e) => onAssigneeChange(e.target.value)}
-                  className="w-full px-2.5 py-1 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  className="w-full px-2.5 py-1 text-xs border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
                 >
                   <option value="">-- Select staff member --</option>
                   {branchStaff?.map((s) => (
@@ -167,8 +159,8 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
 
           {/* Workflow Status Actions */}
           {issue.status === 'CLOSED' ? (
-            <div className="p-3 rounded-md bg-zinc-100 border border-zinc-200 text-xs text-zinc-600 font-mono">
-              Closed: This incident has been verified and permanently closed.
+            <div className="p-3 bg-[#161922] border border-[#262c38] text-xs text-[#8a94a6]">
+              Verified & Closed: This incident has been resolved and closed.
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
@@ -222,12 +214,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
 
           {/* Sub-form for status confirmation with resolution comment */}
           {statusActionTarget && (
-            <div className="p-3.5 rounded-md bg-zinc-50 border border-zinc-300 space-y-3">
+            <div className="p-3.5 bg-[#161922] border border-[#262c38] space-y-3">
               <div>
-                <h4 className="text-xs font-semibold text-zinc-900">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
                   Confirm Transition to {statusActionTarget}
                 </h4>
-                <p className="text-[11px] text-zinc-500 mt-0.5">
+                <p className="text-[11px] text-[#8a94a6] mt-0.5">
                   Add an optional resolution note or closing comment to record in the audit trail:
                 </p>
               </div>
@@ -236,7 +228,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 value={statusComment}
                 onChange={(e) => onStatusCommentChange(e.target.value)}
                 placeholder="e.g. Replaced faulty circuit breaker; verified stable operation."
-                className="w-full px-3 py-1.5 text-xs rounded border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                className="w-full px-3 py-1.5 text-xs border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
               />
               <div className="flex justify-end gap-2">
                 <Button
@@ -263,12 +255,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
 
           {/* Attachments Section */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
-              <span className="text-xs font-semibold text-zinc-900">
+            <div className="flex items-center justify-between pb-1 border-b border-[#262c38]">
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
                 Evidence Attachments ({issue.attachments?.length || 0})
               </span>
               {issue.status !== 'CLOSED' && (
-                <label className="text-xs font-medium text-zinc-600 hover:text-zinc-950 cursor-pointer">
+                <label className="text-xs font-mono text-[#00f0ff] hover:underline cursor-pointer">
                   + Add Attachment
                   <input
                     type="file"
@@ -289,12 +281,12 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 {issue.attachments.map((att) => (
                   <div
                     key={att.id}
-                    className="p-2.5 rounded-md border border-zinc-200 bg-zinc-50 flex flex-col justify-between gap-1 text-xs"
+                    className="p-2.5 border border-[#262c38] bg-[#161922] flex flex-col justify-between gap-1 text-xs"
                   >
-                    <span className="font-medium text-zinc-900 truncate">
+                    <span className="font-medium text-white truncate">
                       {att.originalFileName}
                     </span>
-                    <span className="text-[10px] font-mono text-zinc-400">
+                    <span className="text-[10px] text-[#606c80] tabular-nums">
                       {(att.fileSizeBytes / 1024).toFixed(1)} KB · {att.uploaderName}
                     </span>
                     <Button
@@ -309,7 +301,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 ))}
               </div>
             ) : (
-              <span className="text-xs text-zinc-400 italic block">
+              <span className="text-xs text-[#606c80] italic block">
                 No attachments uploaded.
               </span>
             )}
@@ -317,30 +309,32 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
 
           {/* Comments & Discussion */}
           <div className="space-y-2 pt-2">
-            <div className="text-xs font-semibold text-zinc-900 pb-1 border-b border-zinc-100">
+            <div className="text-xs font-bold text-white uppercase tracking-wider pb-1 border-b border-[#262c38]">
               Discussion Thread ({issue.comments?.length || 0})
             </div>
 
-            <div className="max-h-56 overflow-y-auto space-y-2 p-2 rounded-md bg-zinc-50 border border-zinc-200">
+            <div className="max-h-56 overflow-y-auto space-y-2 p-2 bg-[#161922] border border-[#262c38]">
               {issue.comments && issue.comments.length > 0 ? (
                 issue.comments.map((c) => (
                   <div
                     key={c.id}
-                    className={`p-2 rounded border text-xs ${
-                      c.systemGenerated ? 'bg-zinc-100/70 border-zinc-200 font-mono text-zinc-600' : 'bg-white border-zinc-200 text-zinc-800'
+                    className={`p-2 border text-xs ${
+                      c.systemGenerated
+                        ? 'bg-[#181c24] border-[#262c38] text-[#8a94a6]'
+                        : 'bg-[#13151a] border-[#2a2f3d] text-[#f1f5f9]'
                     }`}
                   >
                     <div className="flex items-center justify-between text-[11px] mb-1">
                       <div className="flex items-center gap-1.5">
-                        <strong className="text-zinc-950 font-semibold">{c.authorName}</strong>
+                        <strong className="text-white font-bold">{c.authorName}</strong>
                         <Badge variant="neutral" size="sm">
                           {c.authorRole}
                         </Badge>
                         {c.systemGenerated && (
-                          <span className="text-[10px] text-zinc-400 italic">(System)</span>
+                          <span className="text-[10px] text-[#606c80] italic">(System)</span>
                         )}
                       </div>
-                      <span className="text-[10px] font-mono text-zinc-400">
+                      <span className="text-[10px] text-[#606c80] tabular-nums">
                         {new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
@@ -348,7 +342,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="py-4 text-center text-xs text-zinc-400 italic">
+                <div className="py-4 text-center text-xs text-[#606c80] italic">
                   No comment entries yet.
                 </div>
               )}
@@ -366,7 +360,7 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
                 value={newComment}
                 onChange={(e) => onNewCommentChange(e.target.value)}
                 placeholder="Write incident update or note..."
-                className="flex-1 px-3 py-1.5 text-xs rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                className="flex-1 px-3 py-1.5 text-xs border border-[#2a2f3d] bg-[#13151a] text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff]"
               />
               <Button
                 type="submit"

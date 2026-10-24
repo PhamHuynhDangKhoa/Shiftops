@@ -40,14 +40,14 @@ export const GenerateTasksModal: React.FC<GenerateTasksModalProps> = ({
           e.preventDefault();
           onSubmit();
         }}
-        className="space-y-4"
+        className="space-y-4 font-mono"
       >
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-zinc-700">Target Shift</label>
+          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Target Shift</label>
           <select
             value={selectedShiftId}
             onChange={(e) => onSelectShiftId(e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
           >
             <option value="">-- Choose Target Shift --</option>
             {branchShifts.map((s) => (
@@ -59,11 +59,11 @@ export const GenerateTasksModal: React.FC<GenerateTasksModalProps> = ({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-zinc-700">Checklist Template</label>
+          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Checklist Template</label>
           <select
             value={selectedTemplateId}
             onChange={(e) => onSelectTemplateId(e.target.value)}
-            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
           >
             <option value="">-- Choose Template --</option>
             {branchTemplates.filter((t) => t.active).map((t) => (
@@ -74,7 +74,7 @@ export const GenerateTasksModal: React.FC<GenerateTasksModalProps> = ({
           </select>
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
           <Button
             type="button"
             variant="secondary"

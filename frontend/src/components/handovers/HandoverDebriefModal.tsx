@@ -99,19 +99,19 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
       title={isDraft ? 'Prepare Shift Handover Debrief' : 'Shift Handover Details'}
       maxWidth="lg"
     >
-      <div className="space-y-5">
+      <div className="space-y-5 font-mono">
         {errorMessage && (
-          <div className="p-3 bg-rose-50 border border-rose-200/90 text-rose-800 text-xs rounded-md flex items-center gap-2">
-            <IconAlertTriangle size={14} className="text-rose-600 flex-shrink-0" />
+          <div className="p-3 bg-[#ff1744]/10 border border-[#ff1744]/30 text-[#ff335c] text-xs rounded-sm flex items-center gap-2">
+            <IconAlertTriangle size={14} className="text-[#ff1744] flex-shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {handover && (
-          <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
+          <div className="flex items-center justify-between pb-3 border-b border-[#262c38]">
             <div>
-              <h3 className="font-semibold text-sm text-zinc-950">{handover.shiftName || 'Shift'}</h3>
-              <p className="text-xs font-mono text-zinc-500 mt-0.5">
+              <h3 className="font-bold text-sm text-white">{handover.shiftName || 'Shift'}</h3>
+              <p className="text-xs text-[#8a94a6] mt-0.5">
                 {new Date(handover.shiftStartTime).toLocaleString()} —{' '}
                 {new Date(handover.shiftEndTime).toLocaleTimeString()}
               </p>
@@ -122,7 +122,7 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
 
         {/* Operational Notes */}
         <div>
-          <label className="block text-[11px] font-mono font-medium text-zinc-600 uppercase tracking-wider mb-1.5">
+          <label className="block text-[10px] font-bold text-[#8a94a6] uppercase tracking-wider mb-1.5">
             Debrief Notes
           </label>
           <textarea
@@ -131,24 +131,24 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
             disabled={!isDraft}
             rows={3}
             placeholder="Operational updates, inventory low warnings, customer notices..."
-            className="w-full px-3 py-2 border border-zinc-300 rounded-md text-xs text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 disabled:bg-zinc-100 disabled:text-zinc-500"
+            className="w-full px-3 py-2 border border-[#2a2f3d] bg-[#13151a] rounded-sm text-xs text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff] disabled:opacity-50"
           />
         </div>
 
         {/* Handover Items */}
         <div className="space-y-3">
-          <label className="block text-[11px] font-mono font-medium text-zinc-600 uppercase tracking-wider">
-            Structured Operational Items
+          <label className="block text-[10px] font-bold text-[#8a94a6] uppercase tracking-wider">
+            Operational Handover Items
           </label>
 
           {/* Item Builder (Draft only) */}
           {isDraft && (
-            <div className="p-3 bg-zinc-50 rounded-md border border-zinc-200 space-y-2.5">
+            <div className="p-3 bg-[#161922] rounded-sm border border-[#262c38] space-y-2.5">
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
                 <select
                   value={newItemType}
                   onChange={(e) => setNewItemType(e.target.value as HandoverItemType)}
-                  className="px-2 py-1.5 border border-zinc-300 rounded-md text-xs font-medium text-zinc-900 bg-white focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                  className="px-2 py-1.5 border border-[#2a2f3d] rounded-sm text-xs font-medium text-white bg-[#13151a] focus:outline-none focus:border-[#00f0ff]"
                 >
                   <option value="COMPLETED">COMPLETED</option>
                   <option value="PENDING">PENDING</option>
@@ -168,11 +168,11 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
 
               {newItemType === 'ISSUE' && branchIssues && branchIssues.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-zinc-500 font-mono">Link Branch Issue:</span>
+                  <span className="text-xs text-[#8a94a6]">Link Branch Issue:</span>
                   <select
                     value={newItemIssueId}
                     onChange={(e) => setNewItemIssueId(e.target.value)}
-                    className="px-2 py-1 border border-zinc-300 rounded-md text-xs bg-white text-zinc-800 flex-1 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                    className="px-2 py-1.5 border border-[#2a2f3d] rounded-sm text-xs bg-[#13151a] text-white flex-1 focus:outline-none focus:border-[#00f0ff]"
                   >
                     <option value="">-- None (Standalone Issue Item) --</option>
                     {branchIssues.map((bi) => (
@@ -205,17 +205,17 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
               {debriefItems.map((it, idx) => (
                 <div
                   key={idx}
-                  className="p-2.5 bg-white rounded-md border border-zinc-200 flex items-center justify-between gap-3 text-xs"
+                  className="p-2.5 bg-[#161922] rounded-sm border border-[#262c38] flex items-center justify-between gap-3 text-xs"
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <Badge variant={getItemBadgeVariant(it.type)} size="sm">{it.type}</Badge>
-                    <span className="text-zinc-800 truncate">{it.content}</span>
+                    <span className="text-white truncate">{it.content}</span>
                   </div>
                   {isDraft && (
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(idx)}
-                      className="text-zinc-400 hover:text-rose-600 p-1 rounded transition-colors"
+                      className="text-[#8a94a6] hover:text-[#ff335c] p-1 rounded transition-colors"
                       title="Remove item"
                     >
                       <IconClose size={13} />
@@ -225,12 +225,12 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
               ))}
             </div>
           ) : (
-            <p className="text-xs text-zinc-400 italic">No operational items added yet.</p>
+            <p className="text-xs text-[#606c80] italic">No operational items added yet.</p>
           )}
         </div>
 
         {/* Modal Actions */}
-        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-zinc-200">
+        <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-[#262c38]">
           <Button variant="secondary" size="sm" onClick={onClose}>
             Close
           </Button>

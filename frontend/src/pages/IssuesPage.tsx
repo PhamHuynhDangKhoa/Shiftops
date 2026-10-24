@@ -307,11 +307,11 @@ export const IssuesPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
         <div>
-          <h1 className="text-xl font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2.5">
-            <IconAlertTriangle size={20} className="text-[#ff1744]" />
-            <span>INCIDENT LOG & THREAT TRIAGE</span>
+          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
+            <IconAlertTriangle size={18} className="text-[#ff1744]" />
+            <span>Incidents & Triage</span>
           </h1>
-          <p className="text-xs font-mono text-[#9da8b9] mt-0.5">
+          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
             {isStaff
               ? 'Report equipment breakdowns, safety hazards, and track triage progress'
               : 'Monitor sector hazards, assign personnel, and verify resolution ledgers'}
@@ -320,15 +320,15 @@ export const IssuesPage: React.FC = () => {
 
         <Button
           variant="danger"
-          size="md"
+          size="sm"
           onClick={() => {
             setReportBranchId(isStaff ? user?.primaryBranchId || '' : selectedBranchId);
             setShowReportModal(true);
           }}
-          className="gap-2 shadow-[0_0_15px_rgba(255,23,68,0.3)]"
+          className="gap-1.5 whitespace-nowrap text-xs"
         >
-          <IconAlertTriangle size={15} />
-          <span>[ REPORT INCIDENT ]</span>
+          <IconAlertTriangle size={14} />
+          <span>Report Incident</span>
         </Button>
       </div>
 
@@ -397,16 +397,16 @@ export const IssuesPage: React.FC = () => {
       {isStaff && (
         <div>
           {isLoadingMyIssues ? (
-            <div className="py-12 text-center text-xs font-mono text-zinc-400">
+            <div className="py-12 text-center text-xs font-mono text-[#8a94a6]">
               Loading incident reports...
             </div>
           ) : !myIssues || myIssues.length === 0 ? (
-            <Card className="py-12 text-center text-zinc-500">
-              <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-2">
+            <Card className="py-12 text-center text-[#8a94a6] border border-[#262c38] bg-[#11141a]" chamfer>
+              <div className="w-8 h-8 bg-[#181c24] border border-[#262c38] flex items-center justify-center text-[#8a94a6] mx-auto mb-2">
                 <IconAlertTriangle size={16} />
               </div>
-              <p className="text-xs font-medium text-zinc-800">No active incidents</p>
-              <p className="text-[11px] text-zinc-400 mt-0.5">
+              <p className="text-xs font-bold text-white uppercase tracking-wider font-mono">No active incidents</p>
+              <p className="text-[11px] text-[#8a94a6] mt-0.5 font-mono">
                 You haven't reported any issues and none are assigned to you.
               </p>
             </Card>
@@ -462,7 +462,7 @@ export const IssuesPage: React.FC = () => {
           setSelectedIssueId(null);
           setStatusActionTarget(null);
         }}
-        issue={selectedIssue}
+        issue={selectedIssue || null}
         isLoading={isLoadingIssueDetail}
         isStaff={isStaff}
         branchStaff={branchStaff}

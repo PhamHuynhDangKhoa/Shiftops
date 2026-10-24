@@ -201,12 +201,12 @@ export const BranchesPage: React.FC = () => {
             placeholder="e.g. 123 Main Street, Suite 400"
           />
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-700">Operating Timezone</label>
+          <div className="flex flex-col gap-1.5 font-mono">
+            <label className="text-xs font-semibold uppercase text-[#8a94a6]">Operating Timezone</label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
             >
               <option value="UTC">UTC (Universal Coordinated)</option>
               <option value="Asia/Jakarta">Asia/Jakarta (WIB, UTC+7)</option>
@@ -217,7 +217,7 @@ export const BranchesPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
             <Button
               type="button"
               variant="secondary"

@@ -363,12 +363,12 @@ export const StaffPage: React.FC = () => {
               </tr>
             ) : (
               pagedUsers?.content.map((member) => (
-                <tr key={member.id} className="hover:bg-zinc-50/80 transition-colors">
+                <tr key={member.id} className="hover:bg-[#181c24] transition-colors font-mono">
                   <td className="py-2.5 px-3">
-                    <div className="font-semibold text-zinc-950">{member.fullName}</div>
-                    <div className="text-[11px] font-mono text-zinc-400">{member.email}</div>
+                    <div className="font-bold text-white">{member.fullName}</div>
+                    <div className="text-[11px] text-[#8a94a6]">{member.email}</div>
                     {member.mustChangePassword && (
-                      <span className="inline-block mt-1 font-mono text-[10px] text-amber-800 bg-amber-50 border border-amber-200/80 px-1.5 py-0.2 rounded">
+                      <span className="inline-block mt-1 text-[10px] text-[#ff8800] bg-[#ff6b00]/15 border border-[#ff6b00]/40 px-1.5 py-0.5 rounded-sm">
                         Temp Password
                       </span>
                     )}
@@ -378,17 +378,17 @@ export const StaffPage: React.FC = () => {
                       {member.role}
                     </Badge>
                   </td>
-                  <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
+                  <td className="py-2.5 px-3 text-[11px] text-[#8a94a6] whitespace-nowrap">
                     {member.primaryBranchName ? (
                       <span className="flex items-center gap-1">
-                        <IconMapPin size={11} className="text-zinc-400" />
-                        {member.primaryBranchName}
+                        <IconMapPin size={11} className="text-[#00f0ff]" />
+                        <span>{member.primaryBranchName}</span>
                       </span>
                     ) : (
                       '—'
                     )}
                   </td>
-                  <td className="py-2.5 px-3 font-mono text-[11px] text-zinc-600 whitespace-nowrap">
+                  <td className="py-2.5 px-3 text-[11px] text-[#8a94a6] whitespace-nowrap">
                     {member.phone || '—'}
                   </td>
                   <td className="py-2.5 px-3 whitespace-nowrap">
@@ -431,7 +431,7 @@ export const StaffPage: React.FC = () => {
                                 resetPasswordMutation.mutate(member.id);
                               }
                             }}
-                            className="text-[11px] py-0.5 px-2 text-zinc-600"
+                            className="text-[11px] py-0.5 px-2"
                           >
                             Reset
                           </Button>
@@ -528,11 +528,11 @@ export const StaffPage: React.FC = () => {
 
           {isOwner && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-zinc-700">Access Role *</label>
+              <label className="text-xs font-semibold uppercase text-[#8a94a6]">Access Role *</label>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as Role)}
-                className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
               >
                 <option value="STAFF">STAFF (Floor Operations)</option>
                 <option value="MANAGER">MANAGER (Branch Coordinator)</option>
@@ -543,13 +543,13 @@ export const StaffPage: React.FC = () => {
 
           {inviteRole !== 'OWNER' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-medium text-zinc-700">Primary Branch *</label>
+              <label className="text-xs font-semibold uppercase text-[#8a94a6]">Primary Branch *</label>
               {isOwner ? (
                 <select
                   required
                   value={inviteBranchId}
                   onChange={(e) => setInviteBranchId(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
                 >
                   <option value="">Select a Branch...</option>
                   {branches?.filter((b) => b.active).map((b) => (
@@ -563,7 +563,7 @@ export const StaffPage: React.FC = () => {
                   type="text"
                   disabled
                   value={currentUser?.primaryBranchName || 'Assigned Branch'}
-                  className="w-full px-3 py-2 text-sm rounded-md border border-zinc-200 bg-zinc-100 text-zinc-600 cursor-not-allowed"
+                  className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#262c38] bg-[#181c24] text-[#8a94a6] cursor-not-allowed"
                 />
               )}
             </div>
@@ -577,7 +577,7 @@ export const StaffPage: React.FC = () => {
             placeholder="Leave blank for secure auto-generation"
           />
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
             <Button
               type="button"
               variant="secondary"
@@ -592,7 +592,7 @@ export const StaffPage: React.FC = () => {
               size="sm"
               disabled={createMutation.isPending}
             >
-              {createMutation.isPending ? 'Inviting...' : 'Register Staff Member'}
+              {createMutation.isPending ? 'Registering...' : 'Register Operator'}
             </Button>
           </div>
         </form>
@@ -629,11 +629,11 @@ export const StaffPage: React.FC = () => {
           {isOwner && (
             <>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-medium text-zinc-700">Access Role</label>
+                <label className="text-xs font-semibold uppercase text-[#8a94a6]">Access Role</label>
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value as Role)}
-                  className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                  className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
                 >
                   <option value="STAFF">STAFF</option>
                   <option value="MANAGER">MANAGER</option>
@@ -643,11 +643,11 @@ export const StaffPage: React.FC = () => {
 
               {editRole !== 'OWNER' && (
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-medium text-zinc-700">Primary Branch</label>
+                  <label className="text-xs font-semibold uppercase text-[#8a94a6]">Primary Branch</label>
                   <select
                     value={editBranchId}
                     onChange={(e) => setEditBranchId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+                    className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
                   >
                     {branches?.filter((b) => b.active).map((b) => (
                       <option key={b.id} value={b.id}>
@@ -660,7 +660,7 @@ export const StaffPage: React.FC = () => {
             </>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
             <Button
               type="button"
               variant="secondary"
@@ -689,13 +689,13 @@ export const StaffPage: React.FC = () => {
         description={transferUser ? `Reassign ${transferUser.fullName} to another active location` : ''}
         maxWidth="sm"
       >
-        <div className="space-y-4">
+        <div className="space-y-4 font-mono">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-700">Target Branch *</label>
+            <label className="text-xs font-semibold uppercase text-[#8a94a6]">Target Branch *</label>
             <select
               value={targetTransferBranchId}
               onChange={(e) => setTargetTransferBranchId(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900"
+              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
             >
               <option value="">Select target branch...</option>
               {branches
@@ -708,7 +708,7 @@ export const StaffPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
             <Button
               variant="secondary"
               size="sm"
@@ -743,25 +743,25 @@ export const StaffPage: React.FC = () => {
         description={tempPasswordModal ? `Share these credentials securely with ${tempPasswordModal.email}` : ''}
         maxWidth="sm"
       >
-        <div className="space-y-4 text-center">
-          <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-800 mx-auto">
+        <div className="space-y-4 text-center font-mono">
+          <div className="w-10 h-10 rounded-sm bg-[#181c24] border border-[#262c38] flex items-center justify-center text-[#00f0ff] mx-auto">
             <IconKey size={20} />
           </div>
 
-          <div className="p-3 rounded-md bg-zinc-50 border border-zinc-200">
-            <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
+          <div className="p-3 rounded-sm bg-[#161922] border border-[#262c38]">
+            <span className="text-[10px] text-[#8a94a6] uppercase tracking-wider block mb-1">
               One-Time Password
             </span>
-            <code className="text-lg font-mono font-bold tracking-wider text-zinc-950 select-all">
+            <code className="text-lg font-mono font-bold tracking-wider text-[#00f0ff] select-all">
               {tempPasswordModal?.tempPass}
             </code>
           </div>
 
-          <p className="text-[11px] text-zinc-500">
+          <p className="text-[11px] text-[#8a94a6]">
             The user will be required to update this temporary password upon their next session login.
           </p>
 
-          <div className="flex justify-center gap-2 pt-2 border-t border-zinc-100">
+          <div className="flex justify-center gap-2 pt-2 border-t border-[#262c38]">
             <Button
               variant="secondary"
               size="sm"

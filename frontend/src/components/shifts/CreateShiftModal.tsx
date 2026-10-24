@@ -59,12 +59,12 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
       description="Define working hours, notes, and operating schedule for this shift"
     >
       {effectiveError && (
-        <div className="p-3 mb-4 rounded-md bg-rose-50 border border-rose-200/90 text-xs text-rose-800">
+        <div className="p-3 mb-4 rounded-sm bg-[#ff1744]/10 border border-[#ff1744]/30 text-xs font-mono text-[#ff335c]">
           {effectiveError}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 font-mono">
         <Input
           label="Shift Name (Optional)"
           value={shiftName}
@@ -74,40 +74,40 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-700">Start Time</label>
+            <label className="text-xs font-semibold uppercase text-[#8a94a6]">Start Time</label>
             <input
               type="datetime-local"
               required
               value={startDateTime}
               onChange={(e) => setStartDateTime(e.target.value)}
-              className="w-full px-3 py-2 text-xs font-mono rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-zinc-700">End Time</label>
+            <label className="text-xs font-semibold uppercase text-[#8a94a6]">End Time</label>
             <input
               type="datetime-local"
               required
               value={endDateTime}
               onChange={(e) => setEndDateTime(e.target.value)}
-              className="w-full px-3 py-2 text-xs font-mono rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+              className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white focus:outline-none focus:border-[#00f0ff]"
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-zinc-700">Instructions / Notes (Optional)</label>
+          <label className="text-xs font-semibold uppercase text-[#8a94a6]">Instructions / Notes (Optional)</label>
           <textarea
             value={shiftNotes}
             onChange={(e) => setShiftNotes(e.target.value)}
             rows={3}
             placeholder="e.g. Bring key for inventory room, deep cleaning on handoff"
-            className="w-full px-3 py-2 text-sm rounded-md border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900"
+            className="w-full px-3 py-2 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#13151a] text-white placeholder:text-[#606c80] focus:outline-none focus:border-[#00f0ff]"
           />
         </div>
 
-        <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+        <div className="flex justify-end gap-2.5 pt-3 border-t border-[#262c38]">
           <Button
             type="button"
             variant="secondary"
@@ -122,7 +122,7 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
             size="sm"
             disabled={isPending}
           >
-            {isPending ? 'Creating Shift...' : 'Create Shift'}
+            {isPending ? 'Creating...' : 'Create Shift'}
           </Button>
         </div>
       </form>

@@ -16,6 +16,7 @@ import {
   AttendanceFilterBar,
   AttendanceTable,
 } from '../components/attendance';
+import { Card } from '../components/ui/Card';
 import { IconClock, IconAlertTriangle, IconCheck, IconClose } from '../components/ui/Icons';
 
 export const AttendancePage: React.FC = () => {
@@ -152,7 +153,7 @@ export const AttendancePage: React.FC = () => {
     onSuccess: (data) => {
       setActionMessage({
         type: 'success',
-        text: `Check-in recorded successfully. Status: ${data.data.status}${data.data.late ? ' (LATE)' : ''}`,
+        text: `Check-in recorded successfully. Status: ${data.data.status}${data.data.late ? ' (Late)' : ''}`,
       });
       queryClient.invalidateQueries({ queryKey: ['my-attendance'] });
       queryClient.invalidateQueries({ queryKey: ['my-shifts-attendance'] });
@@ -188,16 +189,16 @@ export const AttendancePage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#262c38]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
         <div>
-          <h1 className="text-lg font-mono font-bold tracking-wider text-white uppercase flex items-center gap-2">
-            <IconClock size={18} className="text-[#00f0ff]" />
-            <span>Attendance Ledger</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2">
+            <IconClock size={22} className="text-zinc-700" />
+            <span>Attendance & Punch Log</span>
           </h1>
-          <p className="text-xs font-mono text-[#8a94a6] mt-0.5">
+          <p className="text-sm text-zinc-500 mt-1">
             {isStaff
-              ? 'Record shift punches and track your personal punctuality ledger'
-              : 'Monitor floor clock-ins, verify punctuality, and track sector coverage'}
+              ? 'Clock in or out for your shifts and view your punctuality history.'
+              : 'Monitor real-time floor attendance, punctuality, and staff coverage.'}
           </p>
         </div>
       </div>
@@ -205,25 +206,25 @@ export const AttendancePage: React.FC = () => {
       {/* Action Notification Alert */}
       {actionMessage && (
         <div
-          className={`p-3.5 rounded-sm text-xs font-mono border flex items-center justify-between ${
+          className={`p-4 rounded-xl text-sm border flex items-center justify-between shadow-2xs ${
             actionMessage.type === 'success'
-              ? 'bg-[#00e676]/10 text-[#00e676] border-[#00e676]/40 shadow-[0_0_10px_rgba(0,230,118,0.15)]'
-              : 'bg-[#ff1744]/10 text-[#ff335c] border-[#ff1744]/40 shadow-[0_0_10px_rgba(255,23,68,0.15)]'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border-rose-200'
           }`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             {actionMessage.type === 'success' ? (
-              <IconCheck size={14} className="text-[#00e676]" />
+              <IconCheck size={16} className="text-emerald-600 flex-shrink-0" />
             ) : (
-              <IconAlertTriangle size={14} className="text-[#ff1744]" />
+              <IconAlertTriangle size={16} className="text-rose-600 flex-shrink-0" />
             )}
-            <span>{actionMessage.text}</span>
+            <span className="font-medium">{actionMessage.text}</span>
           </div>
           <button
             onClick={() => setActionMessage(null)}
-            className="text-[#606c80] hover:text-white cursor-pointer"
+            className="text-zinc-400 hover:text-zinc-700 cursor-pointer p-1"
           >
-            <IconClose size={13} />
+            <IconClose size={14} />
           </button>
         </div>
       )}
@@ -242,26 +243,26 @@ export const AttendancePage: React.FC = () => {
             isCheckingOut={checkOutMutation.isPending}
           />
 
-          <div className="bg-[#11141a] border border-[#262c38] p-5 clip-chamfer-card">
-            <div className="flex items-center justify-between flex-wrap gap-3 mb-4 pb-3 border-b border-[#262c38]">
-              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider">
-                PERSONAL ATTENDANCE LEDGER
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-zinc-100">
+              <h2 className="text-base font-bold text-zinc-900">
+                Personal Attendance History
               </h2>
 
-              <div className="flex items-center gap-2 text-xs font-mono">
-                <span className="text-[#606c80] text-[10px] uppercase font-bold">FROM:</span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-zinc-500 font-semibold uppercase">From:</span>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+                  className="px-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
                 />
-                <span className="text-[#606c80] text-[10px] uppercase font-bold">TO:</span>
+                <span className="text-zinc-500 font-semibold uppercase">To:</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-2.5 py-1 text-xs font-mono rounded-sm border border-[#2a2f3d] bg-[#161922] text-white focus:outline-none focus:border-[#00f0ff]"
+                  className="px-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
                 />
               </div>
             </div>
@@ -271,7 +272,7 @@ export const AttendancePage: React.FC = () => {
               isLoading={isLoadingMyAttendance}
               showStaffColumn={false}
             />
-          </div>
+          </Card>
         </div>
       )}
 
@@ -293,9 +294,9 @@ export const AttendancePage: React.FC = () => {
 
           <AttendanceMetricsSummary records={branchAttendanceList} />
 
-          <div className="bg-[#11141a] border border-[#262c38] p-5 clip-chamfer-card">
-            <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider mb-3.5">
-              SECTOR OPERATOR ATTENDANCE LEDGER
+          <Card className="space-y-4">
+            <h2 className="text-base font-bold text-zinc-900">
+              Staff Attendance Records
             </h2>
 
             <AttendanceTable
@@ -303,7 +304,7 @@ export const AttendancePage: React.FC = () => {
               isLoading={isLoadingBranchAttendance}
               showStaffColumn={true}
             />
-          </div>
+          </Card>
         </div>
       )}
     </div>

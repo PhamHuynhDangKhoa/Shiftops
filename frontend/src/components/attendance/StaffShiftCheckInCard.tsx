@@ -3,6 +3,7 @@ import { Shift, Attendance } from '../../lib/types';
 import { AttendanceStatusBadge } from './AttendanceStatusBadge';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { Card } from '../ui/Card';
 import { IconClock, IconMapPin, IconCheck } from '../ui/Icons';
 
 interface StaffShiftCheckInCardProps {
@@ -49,31 +50,31 @@ export const StaffShiftCheckInCard: React.FC<StaffShiftCheckInCardProps> = ({
   isCheckingOut,
 }) => {
   return (
-    <div className="bg-[#11141a] border border-[#262c38] p-5 mb-6 clip-chamfer-card">
-      <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#262c38]">
+    <Card className="mb-6 space-y-4">
+      <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
         <div>
-          <span className="text-[10px] font-mono text-[#00f0ff] uppercase tracking-wider block">
-            // TELEMETRY CLOCK PUNCH TERMINAL
-          </span>
-          <h2 className="text-sm font-mono font-bold text-white tracking-wider uppercase mt-0.5">
-            ACTIVE & UPCOMING ROSTER PUNCH-IN
+          <h2 className="text-base font-bold text-zinc-900">
+            Shift Punch Station
           </h2>
+          <p className="text-xs text-zinc-500 mt-0.5">
+            Clock in or out for your assigned shifts today
+          </p>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="py-8 text-center text-xs text-[#00f0ff] font-mono">
-          [ LOADING ASSIGNED ROSTER... ]
+        <div className="py-8 text-center text-sm text-zinc-500">
+          Loading assigned shifts...
         </div>
       ) : !shifts || shifts.length === 0 ? (
-        <div className="py-8 text-center text-[#606c80] font-mono text-xs">
-          <p className="font-bold text-[#9da8b9] uppercase">[ NO ACTIVE SHIFTS IN DISPATCH WINDOW ]</p>
-          <p className="text-[11px] mt-1">
+        <div className="py-8 text-center text-zinc-500 text-sm">
+          <p className="font-semibold text-zinc-800">No shifts scheduled for today</p>
+          <p className="text-xs text-zinc-500 mt-1">
             Check the Roster tab to inspect upcoming assignments.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {shifts.map((shift) => {
             const assignment = shift.assignments?.find((a) => a.userId === currentUserId);
             if (!assignment) return null;
@@ -96,90 +97,104 @@ export const StaffShiftCheckInCard: React.FC<StaffShiftCheckInCardProps> = ({
             return (
               <div
                 key={shift.id}
-                className="bg-[#161922] border border-[#262c38] border-l-2 border-l-[#00f0ff] p-4 flex flex-col justify-between gap-3 clip-chamfer-btn"
+                className="bg-zinc-50/70 border border-zinc-200/80 rounded-xl p-4 flex flex-col justify-between gap-3 shadow-2xs"
               >
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-mono font-bold text-sm text-white">
-                      {shift.name || 'General Shift'}
-                    </span>
-                    {shift.overnight && (
-                      <Badge variant="cyan" size="sm">
-                        OVERNIGHT
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="font-semibold text-zinc-900 text-sm">{shift.name}</span>
+                    {attendanceRecord ? (
+                      <AttendanceStatusBadge
+                        status={attendanceRecord.status}
+                        late={attendanceRecord.late}
+                        size="sm"
+                      />
+                    ) : (
+                      <Badge variant="neutral" size="sm">
+                        Unconfirmed
                       </Badge>
                     )}
                   </div>
 
-                  <div className="text-xs font-mono space-y-1">
-                    <div className="flex items-center gap-1.5 text-[#9da8b9]">
-                      <IconMapPin size={12} className="text-[#00f0ff]" />
-                      <span>{shift.branchName}</span>
+                  <div className="space-y-1 text-xs text-zinc-600">
+                    <div className="flex items-center gap-1.5">
+                      <IconClock size={13} className="text-zinc-400" />
+                      <span className="font-medium text-zinc-900 tabular-nums">
+                        {formatTimeOnly(shift.startTime)} – {formatTimeOnly(shift.endTime)}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-white tabular-nums">
-                      <IconClock size={12} className="text-[#00f0ff]" />
-                      <span>{formatDateTime(shift.startTime)} → {formatDateTime(shift.endTime)}</span>
-                    </div>
-                    {shift.notes && (
-                      <p className="text-[11px] text-[#606c80] italic mt-1 font-sans">
-                        "{shift.notes}"
-                      </p>
+
+                    {shift.branchName && (
+                      <div className="flex items-center gap-1.5">
+                        <IconMapPin size={13} className="text-zinc-400" />
+                        <span className="truncate">{shift.branchName}</span>
+                      </div>
                     )}
                   </div>
 
-                  {/* Status Indicator Bar */}
-                  <div className="pt-1">
-                    {attendanceRecord ? (
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono text-[#606c80]">STATUS:</span>
-                          <AttendanceStatusBadge status={attendanceRecord.status} late={attendanceRecord.late} />
+                  {attendanceRecord && (
+                    <div className="mt-3 pt-2.5 border-t border-zinc-200/60 text-xs space-y-1">
+                      <div className="flex justify-between text-zinc-500">
+                        <span>Check In:</span>
+                        <span className="font-medium text-zinc-900 tabular-nums">
+                          {formatDateTime(attendanceRecord.checkInAt)}
+                        </span>
+                      </div>
+                      {attendanceRecord.checkOutAt && (
+                        <div className="flex justify-between text-zinc-500">
+                          <span>Check Out:</span>
+                          <span className="font-medium text-zinc-900 tabular-nums">
+                            {formatDateTime(attendanceRecord.checkOutAt)}
+                          </span>
                         </div>
-                        <div className="text-[11px] font-mono text-[#00f0ff] tabular-nums">
-                          IN: {formatTimeOnly(attendanceRecord.checkInAt)}
-                          {attendanceRecord.checkOutAt && ` · OUT: ${formatTimeOnly(attendanceRecord.checkOutAt)}`}
-                        </div>
-                      </div>
-                    ) : isTooEarly ? (
-                      <div className="text-xs font-mono text-[#ff8800] bg-[#ff6b00]/10 border border-[#ff6b00]/30 px-2.5 py-1.5 rounded-sm">
-                        [WINDOW OPENS AT {formatTimeOnly(checkInOpenTime.toISOString())}]
-                      </div>
-                    ) : isPastEnd ? (
-                      <div className="text-xs font-mono text-[#ff335c] bg-[#ff1744]/10 border border-[#ff1744]/30 px-2.5 py-1.5 rounded-sm">
-                        [SCHEDULE CONCLUDED]
-                      </div>
-                    ) : (
-                      <div className="text-xs font-mono text-[#00e676] bg-[#00e676]/10 border border-[#00e676]/30 px-2.5 py-1.5 rounded-sm flex items-center gap-1.5">
-                        <IconCheck size={13} className="text-[#00e676]" />
-                        <span>DISPATCH WINDOW ACTIVE</span>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                {/* Tactical Punch Actions */}
-                <div className="pt-2 border-t border-[#262c38]">
-                  {!attendanceRecord && (
+                <div className="pt-2">
+                  {canCheckIn && (
                     <Button
-                      variant="primary"
-                      size="md"
+                      variant="emerald"
+                      size="sm"
+                      className="w-full gap-1.5 text-xs font-semibold"
+                      isLoading={isCheckingIn}
                       onClick={() => onCheckIn(assignment.id)}
-                      disabled={!canCheckIn || isCheckingIn}
-                      className="w-full justify-center shadow-[0_0_12px_rgba(0,240,255,0.2)] font-bold tracking-wider"
                     >
-                      {isCheckingIn ? 'LOGGING PUNCH...' : '[ CLOCK IN NOW ]'}
+                      <IconClock size={14} />
+                      <span>Clock In Now</span>
                     </Button>
                   )}
 
                   {canCheckOut && (
                     <Button
                       variant="amber"
-                      size="md"
+                      size="sm"
+                      className="w-full gap-1.5 text-xs font-semibold"
+                      isLoading={isCheckingOut}
                       onClick={() => onCheckOut(assignment.id)}
-                      disabled={isCheckingOut}
-                      className="w-full justify-center shadow-[0_0_12px_rgba(255,107,0,0.2)] font-bold tracking-wider"
                     >
-                      {isCheckingOut ? 'RECORDING DEPARTURE...' : '[ CLOCK OUT (END SHIFT) ]'}
+                      <IconClock size={14} />
+                      <span>Clock Out</span>
                     </Button>
+                  )}
+
+                  {!canCheckIn && !canCheckOut && attendanceRecord?.checkOutAt && (
+                    <div className="py-1.5 text-center text-xs font-medium text-emerald-700 bg-emerald-50 rounded-lg flex items-center justify-center gap-1">
+                      <IconCheck size={14} />
+                      <span>Shift Completed</span>
+                    </div>
+                  )}
+
+                  {!canCheckIn && !canCheckOut && !attendanceRecord && isTooEarly && (
+                    <div className="py-1.5 text-center text-xs text-zinc-500 bg-zinc-100 rounded-lg">
+                      Punches open 15m prior
+                    </div>
+                  )}
+
+                  {!canCheckIn && !canCheckOut && !attendanceRecord && isPastEnd && (
+                    <div className="py-1.5 text-center text-xs text-rose-700 bg-rose-50 rounded-lg">
+                      Shift window closed
+                    </div>
                   )}
                 </div>
               </div>
@@ -187,6 +202,6 @@ export const StaffShiftCheckInCard: React.FC<StaffShiftCheckInCardProps> = ({
           })}
         </div>
       )}
-    </div>
+    </Card>
   );
 };

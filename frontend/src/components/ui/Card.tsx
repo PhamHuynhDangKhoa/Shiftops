@@ -9,43 +9,29 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Card: React.FC<CardProps> = ({
   accent = 'none',
-  hazard = 'none',
   compact = false,
-  chamfer = false,
   children,
   className = '',
   ...props
 }) => {
   const accentStyles = {
     none: '',
-    blue: 'border-l-2 border-l-[#00f0ff]',
-    cyan: 'border-l-2 border-l-[#00f0ff]',
-    red: 'border-l-2 border-l-[#ff1744]',
-    orange: 'border-l-2 border-l-[#ff6b00]',
-    amber: 'border-l-2 border-l-[#ff6b00]',
-    green: 'border-l-2 border-l-[#00e676]',
-    gold: 'border-l-2 border-l-[#e5c07b]',
+    blue: 'border-l-4 border-l-blue-500',
+    cyan: 'border-l-4 border-l-emerald-500',
+    red: 'border-l-4 border-l-rose-500',
+    orange: 'border-l-4 border-l-amber-500',
+    amber: 'border-l-4 border-l-amber-500',
+    green: 'border-l-4 border-l-emerald-500',
+    gold: 'border-l-4 border-l-amber-600',
   };
 
-  const paddingStyle = compact ? 'p-3 sm:p-4' : 'p-4 sm:p-5';
-  const chamferClass = chamfer ? 'clip-chamfer-card' : '';
+  const paddingStyle = compact ? 'p-3.5 sm:p-4' : 'p-5 sm:p-6';
 
   return (
     <div
-      className={`relative bg-[#11141a] border border-[#262c38] text-[#f1f5f9] shadow-sm ${paddingStyle} ${accentStyles[accent]} ${chamferClass} ${className}`}
+      className={`relative bg-white border border-zinc-200/80 rounded-xl text-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] transition-all ${paddingStyle} ${accentStyles[accent]} ${className}`}
       {...props}
     >
-      {/* Top Hazard Stripe Ribbon if requested */}
-      {hazard === 'amber' && (
-        <div className="absolute top-0 left-0 right-0 h-1 hazard-stripes-amber" />
-      )}
-      {hazard === 'crimson' && (
-        <div className="absolute top-0 left-0 right-0 h-1 hazard-stripes-crimson" />
-      )}
-      {hazard === 'cyan' && (
-        <div className="absolute top-0 left-0 right-0 h-1 hazard-stripes-cyan" />
-      )}
-
       {children}
     </div>
   );

@@ -3,41 +3,59 @@ import React from 'react';
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: 'brand' | 'cyan' | 'urgent' | 'high' | 'normal' | 'low' | 'success' | 'warning' | 'gold' | 'neutral';
   size?: 'sm' | 'md';
+  showDot?: boolean;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
   variant = 'neutral',
   size = 'md',
+  showDot = false,
   children,
   className = '',
   ...props
 }) => {
   const baseStyles =
-    'inline-flex items-center gap-1.5 font-mono uppercase tracking-wider font-semibold tabular-nums border select-none whitespace-nowrap';
+    'inline-flex items-center gap-1.5 font-medium tabular-nums rounded-full border select-none whitespace-nowrap transition-colors';
 
   const sizeStyles = {
-    sm: 'px-2 py-0.5 text-[10px] leading-tight',
-    md: 'px-2.5 py-1 text-[11px] leading-tight',
+    sm: 'px-2 py-0.5 text-[11px] leading-tight',
+    md: 'px-2.5 py-1 text-xs leading-tight',
   };
 
   const variantStyles = {
-    brand: 'bg-[#00f0ff]/10 text-[#00f0ff] border-[#00f0ff]/40 shadow-[0_0_8px_rgba(0,240,255,0.15)]',
-    cyan: 'bg-[#00f0ff]/10 text-[#00f0ff] border-[#00f0ff]/40 shadow-[0_0_8px_rgba(0,240,255,0.15)]',
-    urgent: 'bg-[#ff1744]/15 text-[#ff335c] border-[#ff1744]/50 shadow-[0_0_8px_rgba(255,23,68,0.2)]',
-    high: 'bg-[#ff6b00]/15 text-[#ff8800] border-[#ff6b00]/50 shadow-[0_0_8px_rgba(255,107,0,0.15)]',
-    warning: 'bg-[#ff6b00]/15 text-[#ff8800] border-[#ff6b00]/50 shadow-[0_0_8px_rgba(255,107,0,0.15)]',
-    success: 'bg-[#00e676]/15 text-[#00e676] border-[#00e676]/40 shadow-[0_0_8px_rgba(0,230,118,0.15)]',
-    gold: 'bg-[#e5c07b]/15 text-[#e5c07b] border-[#e5c07b]/40 shadow-[0_0_8px_rgba(229,192,123,0.15)]',
-    normal: 'bg-[#00f0ff]/10 text-[#00f0ff] border-[#00f0ff]/30',
-    low: 'bg-[#181c24] text-[#9da8b9] border-[#262c38]',
-    neutral: 'bg-[#181c24] text-[#9da8b9] border-[#262c38]',
+    brand: 'bg-blue-50 text-blue-700 border-blue-200/70',
+    cyan: 'bg-teal-50 text-teal-700 border-teal-200/70',
+    urgent: 'bg-rose-50 text-rose-700 border-rose-200/70 font-semibold',
+    high: 'bg-amber-50 text-amber-800 border-amber-200/70 font-medium',
+    warning: 'bg-amber-50 text-amber-800 border-amber-200/70 font-medium',
+    success: 'bg-emerald-50 text-emerald-700 border-emerald-200/70 font-medium',
+    gold: 'bg-amber-50 text-amber-900 border-amber-300/70 font-semibold',
+    normal: 'bg-blue-50 text-blue-700 border-blue-200/70',
+    low: 'bg-zinc-100 text-zinc-600 border-zinc-200/70',
+    neutral: 'bg-zinc-100 text-zinc-700 border-zinc-200/70',
+  };
+
+  const dotColor = {
+    brand: 'bg-blue-500',
+    cyan: 'bg-teal-500',
+    urgent: 'bg-rose-500',
+    high: 'bg-amber-500',
+    warning: 'bg-amber-500',
+    success: 'bg-emerald-500',
+    gold: 'bg-amber-600',
+    normal: 'bg-blue-500',
+    low: 'bg-zinc-400',
+    neutral: 'bg-zinc-400',
   };
 
   return (
     <span
-      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} clip-tag ${className}`}
+      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       {...props}
     >
+      {showDot && (
+        <span className={`w-1.5 h-1.5 rounded-full ${dotColor[variant]}`} />
+      )}
       {children}
     </span>
   );

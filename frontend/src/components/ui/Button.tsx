@@ -1,7 +1,7 @@
 import React from 'react';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'amber' | 'cyan' | 'danger' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'amber' | 'cyan' | 'danger' | 'outline' | 'ghost' | 'emerald';
   size?: 'sm' | 'md' | 'lg';
   isLoading?: boolean;
   chamfer?: boolean;
@@ -11,50 +11,49 @@ export const Button: React.FC<ButtonProps> = ({
   variant = 'primary',
   size = 'md',
   isLoading = false,
-  chamfer = true,
   children,
   className = '',
   disabled,
   ...props
 }) => {
   const baseStyles =
-    'relative inline-flex items-center justify-center font-mono font-semibold uppercase tracking-wider select-none transition-all duration-150 focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98] whitespace-nowrap';
+    'relative inline-flex items-center justify-center font-medium select-none transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:scale-[0.98] whitespace-nowrap';
 
   const sizeStyles = {
-    sm: 'h-8 px-3 text-[11px] gap-1.5',
-    md: 'h-10 px-4 text-xs gap-2',
-    lg: 'h-12 px-6 text-sm gap-2.5 font-bold',
+    sm: 'h-8 px-2.5 text-xs rounded-md gap-1.5',
+    md: 'h-9 px-3.5 text-xs rounded-lg gap-2',
+    lg: 'h-10 px-4 text-sm rounded-lg gap-2 font-medium',
   };
 
   const variantStyles = {
-    // Primary: Rhodes Cyan Tactical switch
+    // Ramp/Stripe Signature: Dark solid ink with subtle shadow
     primary:
-      'bg-[#00f0ff] text-[#090a0d] hover:bg-[#38f3ff] hover:shadow-[0_0_15px_rgba(0,240,255,0.4)] active:bg-[#00c8b3] border border-[#00f0ff]',
-    // Cyan explicit
-    cyan:
-      'bg-[#00f0ff] text-[#090a0d] hover:bg-[#38f3ff] hover:shadow-[0_0_15px_rgba(0,240,255,0.4)] active:bg-[#00c8b3] border border-[#00f0ff]',
-    // Amber: Industrial safety warning
-    amber:
-      'bg-[#ff6b00] text-[#090a0d] hover:bg-[#ff8800] hover:shadow-[0_0_15px_rgba(255,107,0,0.4)] active:bg-[#e05e00] border border-[#ff6b00]',
-    // Secondary: Dark carbon substrate with crisp steel border and hover glow
+      'bg-zinc-900 text-white hover:bg-zinc-800 active:bg-zinc-950 shadow-xs border border-zinc-900',
+    // Secondary: Crisp white with refined border
     secondary:
-      'bg-[#13151a] text-[#f1f5f9] border border-[#2a2f3d] hover:border-[#00f0ff] hover:text-[#00f0ff] hover:bg-[#1a1e27] active:bg-[#11141a]',
-    // Danger: Hazard crimson alert
+      'bg-white text-zinc-900 border border-zinc-200 hover:bg-zinc-50 hover:border-zinc-300 shadow-2xs active:bg-zinc-100',
+    // Cyan/Emerald: For punch clock & active operational confirmations
+    cyan:
+      'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 shadow-xs border border-emerald-600',
+    emerald:
+      'bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 shadow-xs border border-emerald-600',
+    // Amber: Warning, late alerts, and check-out triggers
+    amber:
+      'bg-amber-600 text-white hover:bg-amber-700 active:bg-amber-800 shadow-xs border border-amber-600',
+    // Danger: Incident reports & deactivations
     danger:
-      'bg-[#ff1744] text-white hover:bg-[#ff3d60] hover:shadow-[0_0_15px_rgba(255,23,68,0.4)] active:bg-[#d50028] border border-[#ff1744]',
-    // Outline: Clean framing
+      'bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 shadow-xs border border-rose-600',
+    // Outline: Clean subtle boundary
     outline:
-      'bg-transparent text-[#f1f5f9] border border-[#2a2f3d] hover:border-[#00f0ff] hover:text-[#00f0ff] hover:bg-[#00f0ff]/5',
-    // Ghost: Minimal
+      'bg-transparent text-zinc-700 border border-zinc-300 hover:bg-zinc-100 hover:text-zinc-900',
+    // Ghost: Subtle actions
     ghost:
-      'bg-transparent text-[#9da8b9] hover:text-white hover:bg-[#181c24]',
+      'bg-transparent text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100',
   };
-
-  const chamferClass = chamfer ? 'clip-chamfer-btn' : 'rounded-sm';
 
   return (
     <button
-      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${chamferClass} ${className}`}
+      className={`${baseStyles} ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >
@@ -68,7 +67,7 @@ export const Button: React.FC<ButtonProps> = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span>SYS_BUSY...</span>
+          <span>Loading...</span>
         </span>
       ) : (
         children

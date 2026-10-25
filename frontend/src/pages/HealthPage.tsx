@@ -51,24 +51,24 @@ export const HealthPage: React.FC = () => {
   return (
     <div className="max-w-md mx-auto py-8">
       <Card className="p-6 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+        <div className="flex items-center justify-between pb-3 border-b border-[#f0f1f2]">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <h2 className="text-base font-bold text-zinc-900">System Status: Online</h2>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#1e7b4f]" />
+            <h2 className="text-sm font-semibold text-[#131416]">System status: Online</h2>
           </div>
           <Badge variant="success" size="sm" showDot>
             {data?.data?.status || 'UP'}
           </Badge>
         </div>
 
-        <div className="divide-y divide-zinc-100 text-sm">
-          <div className="py-3 flex justify-between items-center">
-            <span className="text-zinc-500 text-xs font-medium uppercase">Application</span>
-            <span className="font-semibold text-zinc-900">{data?.data?.application}</span>
+        <div className="divide-y divide-[#f0f1f2] text-xs">
+          <div className="py-2.5 flex justify-between items-center">
+            <span className="text-[#5d5f60] text-xs font-normal">Application</span>
+            <span className="font-medium text-[#131416]">{data?.data?.application}</span>
           </div>
-          <div className="py-3 flex justify-between items-center">
-            <span className="text-zinc-500 text-xs font-medium uppercase">Last Checked</span>
-            <span className="text-zinc-600 text-xs tabular-nums">{data?.data?.timestamp}</span>
+          <div className="py-2.5 flex justify-between items-center">
+            <span className="text-[#5d5f60] text-xs font-normal">Last checked</span>
+            <span className="text-[#5d5f60] text-xs tabular-nums">{data?.data?.timestamp}</span>
           </div>
         </div>
       </Card>

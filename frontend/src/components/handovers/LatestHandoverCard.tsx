@@ -22,8 +22,8 @@ export const LatestHandoverCard: React.FC<LatestHandoverCardProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-100">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Incoming Shift Briefing
+            <span className="text-xs font-medium text-[#5d5f60]">
+              Incoming shift briefing
             </span>
             {handover && <HandoverStatusBadge status={handover.status} />}
           </div>
@@ -32,7 +32,7 @@ export const LatestHandoverCard: React.FC<LatestHandoverCardProps> = ({
           </h2>
           {handover && (
             <p className="text-xs text-zinc-500 mt-1 tabular-nums">
-              Shift window: {new Date(handover.shiftStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} –{' '}
+              Shift window: {new Date(handover.shiftStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
               {new Date(handover.shiftEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ·{' '}
               Submitted by <strong className="text-zinc-800 font-semibold">{handover.submittedByName || 'Staff'}</strong> at{' '}
               {handover.submittedAt ? new Date(handover.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
@@ -62,11 +62,11 @@ export const LatestHandoverCard: React.FC<LatestHandoverCardProps> = ({
           <HandoverSummaryCounters summary={handover.summary} />
 
           {handover.notes && (
-            <div className="p-4 bg-zinc-50/80 border border-zinc-200/80 rounded-xl text-xs space-y-1">
-              <span className="text-xs font-semibold text-zinc-700 uppercase tracking-wider block">
-                Shift Debrief Notes:
+            <div className="p-3.5 bg-[#f9fbfc] border border-[#e8eaec] rounded-lg text-xs space-y-1">
+              <span className="text-xs font-medium text-[#131416] block">
+                Shift debrief notes:
               </span>
-              <p className="text-zinc-700 leading-relaxed whitespace-pre-line text-sm">
+              <p className="text-[#131416] leading-relaxed whitespace-pre-line text-xs">
                 {handover.notes}
               </p>
             </div>

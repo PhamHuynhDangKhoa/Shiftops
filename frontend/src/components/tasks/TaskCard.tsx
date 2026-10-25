@@ -22,8 +22,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   return (
     <Card
       compact
-      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all ${
-        isCompleted ? 'opacity-75 bg-zinc-50/50' : 'hover:border-zinc-300'
+      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors duration-150 ${
+        isCompleted ? 'opacity-75 bg-[#f9fbfc]' : 'hover:border-[#5d5f60]'
       }`}
     >
       <div className="space-y-1.5 flex-1 min-w-0">

@@ -30,21 +30,21 @@ export const HandoverHistoryTable: React.FC<HandoverHistoryTableProps> = ({
           Loading handover history...
         </div>
       ) : historyPage && historyPage.content.length > 0 ? (
-        <div className="overflow-x-auto border border-zinc-200/80 bg-white rounded-xl shadow-xs">
-          <table className="w-full text-left text-sm border-collapse">
+        <div className="overflow-x-auto border border-[#e8eaec] bg-white rounded-lg">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
-                <th className="py-3 px-4">Shift & Date</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Task Resolution</th>
-                <th className="py-3 px-4">Submitted By</th>
-                <th className="py-3 px-4">Acknowledged By</th>
-                <th className="py-3 px-4 text-right">Action</th>
+              <tr className="border-b border-[#e8eaec] text-[#5d5f60] text-xs font-normal">
+                <th className="py-2.5 px-3.5 font-normal">Shift & date</th>
+                <th className="py-2.5 px-3.5 font-normal">Status</th>
+                <th className="py-2.5 px-3.5 font-normal">Task resolution</th>
+                <th className="py-2.5 px-3.5 font-normal">Submitted by</th>
+                <th className="py-2.5 px-3.5 font-normal">Acknowledged by</th>
+                <th className="py-2.5 px-3.5 font-normal text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200/70 text-zinc-800">
+            <tbody className="divide-y divide-[#f0f1f2] text-[#131416]">
               {historyPage.content.map((ho) => (
-                <tr key={ho.id} className="hover:bg-zinc-50/70 transition-colors">
+                <tr key={ho.id} className="hover:bg-[#f4f6f8] transition-colors">
                   <td className="py-3.5 px-4">
                     <span className="font-semibold text-zinc-900 block">{ho.shiftName || 'Shift'}</span>
                     <span className="text-xs text-zinc-500">

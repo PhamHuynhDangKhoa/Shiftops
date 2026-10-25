@@ -52,7 +52,7 @@ export const GenerateTasksModal: React.FC<GenerateTasksModalProps> = ({
             <option value="">-- Choose Target Shift --</option>
             {branchShifts.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.name || 'Shift'} ({new Date(s.startTime).toLocaleDateString()} {new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}) — {s.assignments?.length || 0} Staff
+                {s.name || 'Shift'} ({new Date(s.startTime).toLocaleDateString()} {new Date(s.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}) · {s.assignments?.length || 0} Staff
               </option>
             ))}
           </select>

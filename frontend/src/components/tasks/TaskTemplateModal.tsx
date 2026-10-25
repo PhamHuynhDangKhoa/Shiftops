@@ -107,8 +107,8 @@ export const TaskTemplateModal: React.FC<TaskTemplateModalProps> = ({
 
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">
-              Checklist Items ({items.length})
+            <label className="text-xs font-medium text-[#131416]">
+              Checklist items ({items.length})
             </label>
             <Button
               type="button"

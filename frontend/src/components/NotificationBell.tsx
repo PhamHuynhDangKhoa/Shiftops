@@ -108,23 +108,23 @@ export const NotificationBell: React.FC = () => {
     switch (type) {
       case 'SHIFT_ASSIGNED':
       case 'SHIFT_CANCELLED':
-        return <IconCalendar size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />;
+        return <IconCalendar size={16} className="text-[#1b6c80] flex-shrink-0 mt-0.5" />;
       case 'TASK_ASSIGNED':
-        return <IconCheckList size={16} className="text-teal-600 flex-shrink-0 mt-0.5" />;
+        return <IconCheckList size={16} className="text-[#1b6c80] flex-shrink-0 mt-0.5" />;
       case 'ISSUE_REPORTED':
       case 'ISSUE_ASSIGNED':
       case 'ISSUE_RESOLVED':
-        return <IconAlertTriangle size={16} className="text-rose-600 flex-shrink-0 mt-0.5" />;
+        return <IconAlertTriangle size={16} className="text-[#c4242a] flex-shrink-0 mt-0.5" />;
       case 'HANDOVER_SUBMITTED':
       case 'HANDOVER_ACKNOWLEDGED':
-        return <IconHandshake size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />;
+        return <IconHandshake size={16} className="text-[#92400e] flex-shrink-0 mt-0.5" />;
       case 'ANNOUNCEMENT':
-        return <IconMegaphone size={16} className="text-indigo-600 flex-shrink-0 mt-0.5" />;
+        return <IconMegaphone size={16} className="text-[#1b6c80] flex-shrink-0 mt-0.5" />;
       case 'ATTENDANCE_LATE':
       case 'ATTENDANCE_MISSED':
-        return <IconClock size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />;
+        return <IconClock size={16} className="text-[#92400e] flex-shrink-0 mt-0.5" />;
       default:
-        return <IconBell size={16} className="text-zinc-500 flex-shrink-0 mt-0.5" />;
+        return <IconBell size={16} className="text-[#5d5f60] flex-shrink-0 mt-0.5" />;
     }
   };
 
@@ -153,13 +153,13 @@ export const NotificationBell: React.FC = () => {
       {/* Bell Trigger Button */}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
-        className="relative p-2 rounded-lg text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 transition-colors cursor-pointer flex items-center justify-center focus:outline-none"
+        className="relative p-2 rounded-md text-[#5d5f60] hover:text-[#131416] hover:bg-[#ebedee] transition-colors cursor-pointer flex items-center justify-center focus:outline-none"
         title="Notifications"
         aria-label="Notifications"
       >
         <IconBell className="w-4 h-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 bg-rose-500 text-white text-[10px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center shadow-xs">
+          <span className="absolute -top-0.5 -right-0.5 bg-[#c4242a] text-white text-[10px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -168,17 +168,17 @@ export const NotificationBell: React.FC = () => {
       {/* Dropdown Panel */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-zinc-200/90 rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col"
+          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[#e8eaec] rounded-xl shadow-lg z-50 overflow-hidden flex flex-col"
           style={{ maxHeight: '480px' }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 bg-zinc-50/50">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f1f2] bg-[#f9fbfc]">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-zinc-900 text-xs uppercase tracking-wider">
+              <span className="font-medium text-[#131416] text-xs">
                 Notifications
               </span>
               {unreadCount > 0 && (
-                <span className="bg-rose-50 border border-rose-200/70 text-rose-700 text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                <span className="bg-[#ffedea] border border-[#831c1e]/20 text-[#831c1e] text-[10px] font-medium px-1.5 py-0.5 rounded-full">
                   {unreadCount} new
                 </span>
               )}
@@ -187,7 +187,7 @@ export const NotificationBell: React.FC = () => {
               <button
                 onClick={() => markAllAsReadMutation.mutate()}
                 disabled={markAllAsReadMutation.isPending}
-                className="text-xs font-medium text-zinc-500 hover:text-zinc-900 disabled:opacity-40 transition-colors cursor-pointer"
+                className="text-xs font-medium text-[#5d5f60] hover:text-[#131416] disabled:opacity-40 transition-colors cursor-pointer"
               >
                 Mark all read
               </button>

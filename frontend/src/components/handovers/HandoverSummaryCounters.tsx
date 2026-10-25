@@ -10,37 +10,37 @@ export const HandoverSummaryCounters: React.FC<HandoverSummaryCountersProps> = (
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
-          Total Tasks
+        <span className="text-xs font-medium text-[#5d5f60] block">
+          Total tasks
         </span>
-        <span className="text-2xl font-bold tabular-nums text-zinc-900 block">
+        <span className="text-2xl font-normal tabular-nums text-[#131416] block">
           {summary?.totalTasks ?? 0}
         </span>
       </Card>
 
       <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
-          Completed Tasks
+        <span className="text-xs font-medium text-[#5d5f60] block">
+          Completed tasks
         </span>
-        <span className="text-2xl font-bold tabular-nums text-emerald-600 block">
+        <span className="text-2xl font-normal tabular-nums text-[#1e7b4f] block">
           {summary?.completedTasks ?? 0}
         </span>
       </Card>
 
       <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
-          Pending Handover
+        <span className="text-xs font-medium text-[#5d5f60] block">
+          Pending handover
         </span>
-        <span className="text-2xl font-bold tabular-nums text-amber-600 block">
+        <span className="text-2xl font-normal tabular-nums text-[#92400e] block">
           {summary?.pendingTasks ?? 0}
         </span>
       </Card>
 
       <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium uppercase tracking-wider text-zinc-500 block">
-          Open Issues
+        <span className="text-xs font-medium text-[#5d5f60] block">
+          Open incidents
         </span>
-        <span className="text-2xl font-bold tabular-nums text-rose-600 block">
+        <span className="text-2xl font-normal tabular-nums text-[#c4242a] block">
           {summary?.openBranchIssues ?? 0}
         </span>
       </Card>

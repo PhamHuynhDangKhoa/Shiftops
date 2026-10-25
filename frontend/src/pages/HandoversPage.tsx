@@ -122,13 +122,18 @@ export const HandoversPage: React.FC = () => {
 
   // Fetch Open Issues for branch (for linking to handover debrief items)
   const { data: branchIssues } = useQuery<Issue[]>({
-    queryKey: ['open-issues-for-handover', effectiveBranchId],
+    queryKey: ['open-issues-for-handover', effectiveBranchId, isStaff],
     queryFn: async () => {
       if (!effectiveBranchId) return [];
-      const res = await api.get<ApiResponse<PagedResponse<Issue>>>(`/branches/${effectiveBranchId}/issues`, {
-        params: { status: 'OPEN', size: 50 },
-      });
-      return res.data.data.content;
+      if (isStaff) {
+        const res = await api.get<ApiResponse<Issue[]>>('/issues/my');
+        return res.data.data;
+      } else {
+        const res = await api.get<ApiResponse<PagedResponse<Issue>>>(`/branches/${effectiveBranchId}/issues`, {
+          params: { status: 'OPEN', size: 50 },
+        });
+        return res.data.data.content;
+      }
     },
     enabled: !!effectiveBranchId,
   });
@@ -186,7 +191,7 @@ export const HandoversPage: React.FC = () => {
         notes,
         items,
       });
-      const res = await api.post<ApiResponse<ShiftHandover>>(`/handovers/${activeHandover.id}/submit`);
+      const res = await api.patch<ApiResponse<ShiftHandover>>(`/handovers/${activeHandover.id}/submit`);
       return res.data.data;
     },
     onSuccess: (data) => {
@@ -204,7 +209,7 @@ export const HandoversPage: React.FC = () => {
   // Acknowledge Handover Mutation
   const acknowledgeMutation = useMutation({
     mutationFn: async ({ handoverId, notes }: { handoverId: string; notes: string }) => {
-      const res = await api.post<ApiResponse<ShiftHandover>>(`/handovers/${handoverId}/acknowledge`, {
+      const res = await api.patch<ApiResponse<ShiftHandover>>(`/handovers/${handoverId}/acknowledge`, {
         acknowledgementNotes: notes,
       });
       return res.data.data;
@@ -235,12 +240,12 @@ export const HandoversPage: React.FC = () => {
         </div>
 
         {(isOwner || isManager) && branches && branches.length > 0 && (
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-zinc-500 font-semibold uppercase text-xs">Branch:</span>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="text-[#5d5f60] font-medium text-xs">Branch:</span>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs font-medium"
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] font-medium"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>

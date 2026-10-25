@@ -43,36 +43,34 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/40 backdrop-blur-xs transition-opacity"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#131416]/50 transition-opacity"
       onClick={onClose}
     >
       <div
-        className={`w-full ${maxWidthStyles[maxWidth]} bg-white border border-zinc-200/90 rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col transition-all`}
+        className={`w-full ${maxWidthStyles[maxWidth]} bg-white border border-[#e8eaec] rounded-xl shadow-lg overflow-hidden max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Refined Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-white">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#f0f1f2] bg-white">
           <div>
-            <h3 className="text-base font-semibold text-zinc-900">
+            <h3 className="text-sm font-semibold text-[#131416]">
               {title}
             </h3>
             {description && (
-              <p className="text-xs text-zinc-500 mt-0.5">{description}</p>
+              <p className="text-xs text-[#5d5f60] mt-0.5">{description}</p>
             )}
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
-            aria-label="Close"
+            className="p-1 rounded-md text-[#5d5f60] hover:text-[#131416] hover:bg-[#ebedee] transition-colors"
+            aria-label="Close dialog"
           >
             <IconClose size={16} />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-6 overflow-y-auto">
-          {children}
-        </div>
+        {/* Content body */}
+        <div className="p-5 overflow-y-auto flex-1">{children}</div>
       </div>
     </div>
   );

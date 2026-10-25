@@ -9,7 +9,7 @@ interface AttendanceTableProps {
 }
 
 const formatDateTime = (isoString?: string) => {
-  if (!isoString) return '—';
+  if (!isoString) return '-';
   const d = new Date(isoString);
   return d.toLocaleString(undefined, {
     month: 'short',
@@ -42,31 +42,31 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto border border-zinc-200/80 bg-white rounded-xl shadow-xs">
-      <table className="w-full text-left text-sm border-collapse">
+    <div className="overflow-x-auto border border-[#e8eaec] bg-white rounded-lg">
+      <table className="w-full text-left text-xs border-collapse">
         <thead>
-          <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
-            {showStaffColumn && <th className="py-3 px-4">Employee</th>}
-            <th className="py-3 px-4">Shift Date</th>
-            <th className="py-3 px-4">Shift Name</th>
-            <th className="py-3 px-4">Status</th>
-            <th className="py-3 px-4">Clock In</th>
-            <th className="py-3 px-4">Clock Out</th>
-            <th className="py-3 px-4">Notes</th>
+          <tr className="border-b border-[#e8eaec] text-[#5d5f60] text-xs font-normal">
+            {showStaffColumn && <th className="py-2.5 px-3.5 font-normal">Employee</th>}
+            <th className="py-2.5 px-3.5 font-normal">Shift date</th>
+            <th className="py-2.5 px-3.5 font-normal">Shift name</th>
+            <th className="py-2.5 px-3.5 font-normal">Status</th>
+            <th className="py-2.5 px-3.5 font-normal">Clock in</th>
+            <th className="py-2.5 px-3.5 font-normal">Clock out</th>
+            <th className="py-2.5 px-3.5 font-normal">Notes</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200/70 text-zinc-800">
+        <tbody className="divide-y divide-[#f0f1f2] text-[#131416]">
           {records.map((att) => (
-            <tr key={att.id} className="hover:bg-zinc-50/70 transition-colors">
+            <tr key={att.id} className="hover:bg-[#f4f6f8] transition-colors">
               {showStaffColumn && (
-                <td className="py-3.5 px-4 font-semibold text-zinc-900 whitespace-nowrap">
+                <td className="py-3 px-3.5 font-medium text-[#131416] whitespace-nowrap">
                   {att.userName || 'Staff Member'}
                 </td>
               )}
-              <td className="py-3.5 px-4 text-zinc-600 whitespace-nowrap tabular-nums">
+              <td className="py-3 px-3.5 text-[#5d5f60] whitespace-nowrap tabular-nums">
                 {formatDateTime(att.shiftStartTime)}
               </td>
-              <td className="py-3.5 px-4 text-zinc-900 font-medium whitespace-nowrap">
+              <td className="py-3 px-3.5 text-[#131416] font-medium whitespace-nowrap">
                 {att.shiftName || 'Standard Shift'}
               </td>
               <td className="py-3.5 px-4 whitespace-nowrap">
@@ -79,7 +79,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 {formatDateTime(att.checkOutAt)}
               </td>
               <td className="py-3.5 px-4 text-zinc-500 max-w-xs truncate">
-                {att.notes || '—'}
+                {att.notes || '-'}
               </td>
             </tr>
           ))}

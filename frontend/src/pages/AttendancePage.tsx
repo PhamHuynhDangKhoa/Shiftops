@@ -250,19 +250,19 @@ export const AttendancePage: React.FC = () => {
               </h2>
 
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-zinc-500 font-semibold uppercase">From:</span>
+                <span className="text-[#5d5f60] font-medium">From:</span>
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
                 />
-                <span className="text-zinc-500 font-semibold uppercase">To:</span>
+                <span className="text-[#5d5f60] font-medium">To:</span>
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-2.5 py-1.5 text-xs rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
                 />
               </div>
             </div>

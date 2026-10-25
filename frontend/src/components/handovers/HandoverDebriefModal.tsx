@@ -137,8 +137,8 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
 
         {/* Existing Items */}
         <div className="space-y-2">
-          <div className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">
-            Turnover Checklist Items ({debriefItems.length})
+          <div className="text-xs font-medium text-[#131416]">
+            Turnover checklist items ({debriefItems.length})
           </div>
 
           <div className="max-h-52 overflow-y-auto space-y-2 pr-1">

@@ -40,21 +40,21 @@ export const ManagerIssueTable: React.FC<ManagerIssueTableProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto border border-zinc-200/80 bg-white rounded-xl shadow-xs">
-      <table className="w-full text-left text-sm border-collapse">
+    <div className="overflow-x-auto border border-[#e8eaec] bg-white rounded-lg">
+      <table className="w-full text-left text-xs border-collapse">
         <thead>
-          <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
-            <th className="py-3 px-4">Priority</th>
-            <th className="py-3 px-4">Incident Summary</th>
-            <th className="py-3 px-4">Category</th>
-            <th className="py-3 px-4">Status</th>
-            <th className="py-3 px-4">Reported By</th>
-            <th className="py-3 px-4">Assignee</th>
-            <th className="py-3 px-4">Date</th>
-            <th className="py-3 px-4 text-right">Action</th>
+          <tr className="border-b border-[#e8eaec] text-[#5d5f60] text-xs font-normal">
+            <th className="py-2.5 px-3.5 font-normal">Priority</th>
+            <th className="py-2.5 px-3.5 font-normal">Incident summary</th>
+            <th className="py-2.5 px-3.5 font-normal">Category</th>
+            <th className="py-2.5 px-3.5 font-normal">Status</th>
+            <th className="py-2.5 px-3.5 font-normal">Reported by</th>
+            <th className="py-2.5 px-3.5 font-normal">Assignee</th>
+            <th className="py-2.5 px-3.5 font-normal">Date</th>
+            <th className="py-2.5 px-3.5 font-normal text-right">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200/70 text-zinc-800">
+        <tbody className="divide-y divide-[#f0f1f2] text-[#131416]">
           {issues.map((issue) => (
             <tr
               key={issue.id}

@@ -2,13 +2,13 @@ import React from 'react';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   accent?: 'none' | 'blue' | 'cyan' | 'red' | 'orange' | 'amber' | 'green' | 'gold';
-  hazard?: 'none' | 'amber' | 'crimson' | 'cyan';
+  variant?: 'paper' | 'slate';
   compact?: boolean;
-  chamfer?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
   accent = 'none',
+  variant = 'paper',
   compact = false,
   children,
   className = '',
@@ -16,20 +16,25 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const accentStyles = {
     none: '',
-    blue: 'border-l-4 border-l-blue-500',
-    cyan: 'border-l-4 border-l-emerald-500',
-    red: 'border-l-4 border-l-rose-500',
-    orange: 'border-l-4 border-l-amber-500',
-    amber: 'border-l-4 border-l-amber-500',
-    green: 'border-l-4 border-l-emerald-500',
-    gold: 'border-l-4 border-l-amber-600',
+    blue: 'border-l-3 border-l-[#1a73e8]',
+    cyan: 'border-l-3 border-l-[#e84534]',
+    red: 'border-l-3 border-l-[#e84534]',
+    orange: 'border-l-3 border-l-[#b06000]',
+    amber: 'border-l-3 border-l-[#b06000]',
+    green: 'border-l-3 border-l-[#137333]',
+    gold: 'border-l-3 border-l-[#b06000]',
   };
 
-  const paddingStyle = compact ? 'p-3.5 sm:p-4' : 'p-5 sm:p-6';
+  const variantStyles = {
+    paper: 'bg-[#faf7f2] border border-[#ded7cc] text-[#181a1b]',
+    slate: 'bg-[#1f2326] border border-[#31363a] text-white',
+  };
+
+  const paddingStyle = compact ? 'p-4 sm:p-5' : 'p-6 sm:p-7';
 
   return (
     <div
-      className={`relative bg-white border border-zinc-200/80 rounded-xl text-zinc-900 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] transition-all ${paddingStyle} ${accentStyles[accent]} ${className}`}
+      className={`relative rounded-2xl ${variantStyles[variant]} ${paddingStyle} ${accentStyles[accent]} ${className}`}
       {...props}
     >
       {children}

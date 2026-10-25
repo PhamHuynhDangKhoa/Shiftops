@@ -29,17 +29,17 @@ export const AttendanceFilterBar: React.FC<AttendanceFilterBarProps> = ({
   onRefresh,
 }) => {
   return (
-    <div className="bg-white border border-zinc-200/80 rounded-xl p-4 mb-5 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-sm">
-      <div className="flex flex-wrap items-center gap-3.5">
+    <div className="bg-white border border-[#e8eaec] rounded-lg p-3.5 mb-5 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="flex flex-wrap items-center gap-3">
         {/* Branch Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+          <label className="text-xs font-medium text-[#5d5f60]">
             Branch:
           </label>
           <select
             value={selectedBranchId}
             onChange={(e) => onBranchChange(e.target.value)}
-            className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           >
             {branches?.map((b) => (
               <option key={b.id} value={b.id}>
@@ -51,40 +51,40 @@ export const AttendanceFilterBar: React.FC<AttendanceFilterBarProps> = ({
 
         {/* Date Window */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-1">
-            <IconCalendar size={13} className="text-zinc-400" />
+          <span className="text-xs font-medium text-[#5d5f60] flex items-center gap-1">
+            <IconCalendar size={13} className="text-[#5d5f60]" />
             From:
           </span>
           <input
             type="date"
             value={startDate}
             onChange={(e) => onStartDateChange(e.target.value)}
-            className="px-2.5 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+          <span className="text-xs font-medium text-[#5d5f60]">
             To:
           </span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => onEndDateChange(e.target.value)}
-            className="px-2.5 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           />
         </div>
 
         {/* Status Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-1">
-            <IconFilter size={13} className="text-zinc-400" />
+          <span className="text-xs font-medium text-[#5d5f60] flex items-center gap-1">
+            <IconFilter size={13} className="text-[#5d5f60]" />
             Status:
           </span>
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs"
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           >
             <option value="ALL">All Statuses</option>
             <option value="PRESENT">Present</option>

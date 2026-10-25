@@ -18,7 +18,7 @@ interface StaffShiftCheckInCardProps {
 }
 
 const formatDateTime = (isoString?: string) => {
-  if (!isoString) return '—';
+  if (!isoString) return '-';
   const d = new Date(isoString);
   return d.toLocaleString(undefined, {
     month: 'short',
@@ -30,7 +30,7 @@ const formatDateTime = (isoString?: string) => {
 };
 
 const formatTimeOnly = (isoString?: string) => {
-  if (!isoString) return '—';
+  if (!isoString) return '-';
   const d = new Date(isoString);
   return d.toLocaleTimeString(undefined, {
     hour: '2-digit',

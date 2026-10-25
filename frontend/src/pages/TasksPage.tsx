@@ -382,16 +382,16 @@ export const TasksPage: React.FC = () => {
         {/* Progress Card */}
         <Card compact className="space-y-2.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-zinc-500 font-semibold uppercase tracking-wider">
-              Shift Task Progress
+            <span className="text-[#5d5f60] font-medium">
+              Shift task progress
             </span>
-            <span className="font-bold text-zinc-900 tabular-nums">
+            <span className="font-medium text-[#131416] tabular-nums">
               {completedCount} of {tasks.length} completed ({progressPercent}%)
             </span>
           </div>
-          <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-[#f0f1f2] rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+              className="h-full bg-[#1e7b4f] rounded-full transition-colors duration-150"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -403,10 +403,10 @@ export const TasksPage: React.FC = () => {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wide uppercase transition-colors cursor-pointer border ${
+              className={`h-7 px-3 rounded-md text-xs font-medium transition-colors cursor-pointer border ${
                 statusFilter === st
-                  ? 'bg-zinc-900 text-white border-zinc-900 shadow-2xs'
-                  : 'bg-white text-zinc-600 border-zinc-200/80 hover:bg-zinc-50'
+                  ? 'bg-[#131416] text-white border-[#131416]'
+                  : 'bg-white text-[#5d5f60] border-[#cdced1] hover:bg-[#f4f6f8]'
               }`}
             >
               {st === 'ALL' ? 'All' : st === 'TODO' ? 'Pending' : st === 'IN_PROGRESS' ? 'In Progress' : 'Completed'}
@@ -465,12 +465,12 @@ export const TasksPage: React.FC = () => {
         </div>
 
         {branches && branches.length > 1 && (
-          <div className="flex items-center gap-2 text-sm">
-            <label className="text-zinc-500 font-semibold uppercase text-xs">Branch:</label>
+          <div className="flex items-center gap-2 text-xs">
+            <label className="text-[#5d5f60] font-medium text-xs">Branch:</label>
             <select
               value={selectedBranchId}
               onChange={(e) => setSelectedBranchId(e.target.value)}
-              className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs font-medium"
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] font-medium"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -534,16 +534,16 @@ export const TasksPage: React.FC = () => {
       {/* TAB 1: MONITORING */}
       {activeTab === 'MONITORING' && (
         <div className="space-y-4">
-          <div className="bg-white border border-zinc-200/80 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3 text-sm shadow-2xs">
-            <div className="flex items-center gap-3.5 flex-wrap">
+          <div className="bg-white border border-[#e8eaec] rounded-lg p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-3 flex-wrap">
               <div className="flex items-center gap-2">
-                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                <label className="text-xs font-medium text-[#5d5f60]">
                   Shift:
                 </label>
                 <select
                   value={selectedShiftId}
                   onChange={(e) => setSelectedShiftId(e.target.value)}
-                  className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
                 >
                   <option value="ALL">All Branch Shifts</option>
                   {branchShifts?.map((s) => (
@@ -555,13 +555,13 @@ export const TasksPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                <label className="text-xs font-medium text-[#5d5f60]">
                   Status:
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="TODO">Pending</option>

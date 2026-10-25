@@ -1,31 +1,68 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #f8f9fa;
-  --color-surface: #ffffff;
-  --color-border-subtle: #e2e8f0;
-  --color-border-strong: #cbd5e1;
+  --color-canvas: #f2ece4;
+  --color-surface: #faf7f2;
+  --color-raised: #ffffff;
+  --color-slate: #1f2326;
+  --color-slate-hover: #2a2f33;
+  --color-border-subtle: #ded7cc;
+  --color-border-strong: #c8c0b2;
+  --color-rule: #ded7cc;
 
-  --color-ink-primary: #09090b;
-  --color-ink-secondary: #475569;
-  --color-ink-muted: #94a3b8;
+  --color-ink-primary: #181a1b;
+  --color-ink-secondary: #666159;
+  --color-ink-muted: #948e84;
 
-  --color-brand-primary: #18181b;
-  --color-brand-indigo: #4f46e5;
+  --color-brand-primary: #e84534;
+  --color-brand-vermilion: #e84534;
+  --color-brand-red: #e84534;
+  --color-brand-wash: #fae8e5;
 
-  --color-status-success: #10b981;
-  --color-status-warning: #f59e0b;
-  --color-status-danger: #ef4444;
-  --color-status-info: #3b82f6;
+  --color-status-success: #137333;
+  --color-status-warning: #b06000;
+  --color-status-danger: #c5221f;
+  --color-status-info: #1a73e8;
 }
 
 :root {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ground: #f2ece4;
+  --surface: #faf7f2;
+  --raised: #ffffff;
+  --slate: #1f2326;
+  --border: #ded7cc;
+  --rule: #ded7cc;
+  --control: #ded7cc;
+  --text: #181a1b;
+  --muted: #666159;
+  --faint: #948e84;
+  --accent: #e84534;
+  --primary: #e84534;
+  --primary-ink: #ffffff;
+
+  --positive: #137333;
+  --negative: #c5221f;
+  --warning: #b06000;
+
+  --pill-positive-bg: #e6f4ea;
+  --pill-positive-ink: #137333;
+  --pill-negative-bg: #fce8e6;
+  --pill-negative-ink: #c5221f;
+  --pill-warning-bg: #fef7e0;
+  --pill-warning-ink: #b06000;
+  --pill-neutral-bg: #ece6dc;
+  --pill-neutral-ink: #555048;
+  --pill-accent-bg: #fae8e5;
+  --pill-accent-ink: #e84534;
+
+  --radius-card: 20px;
+  --radius-control: 8px;
+
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #09090b;
-  background-color: #f8f9fa;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  color: #181a1b;
+  background-color: #f2ece4;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -39,30 +76,45 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #f8f9fa;
-  color: #09090b;
+  background-color: #f2ece4;
+  color: #181a1b;
 }
 
-/* Tabular figures for operational timestamps, counts, and hours */
-.num-tabular, time, [data-tabular], .font-mono {
+/* Tabular figures for operational timestamps, counts, ratios and currency */
+.num-tabular, time, [data-tabular], .kpi-value, table {
   font-variant-numeric: tabular-nums;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-/* Custom modern scrollbars */
+/* Monospace font strictly reserved for IDs and cryptographic keys */
+.font-mono, [data-mono] {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Concentric circle line-art graphic illustration */
+.editorial-concentric {
+  background-image: repeating-radial-gradient(
+    circle at center,
+    transparent 0,
+    transparent 5px,
+    rgba(24, 26, 27, 0.12) 5.5px,
+    transparent 6px
+  );
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f2ece4;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #ded7cc;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #e84534;
 }
 
 input, select, textarea, button {

@@ -80,10 +80,10 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
 
           {/* Incident Description */}
           <div>
-            <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1.5">
+            <h4 className="text-xs font-medium text-[#5d5f60] mb-1.5">
               Description
             </h4>
-            <div className="p-3.5 bg-zinc-50/80 border border-zinc-200/80 rounded-xl text-sm text-zinc-800 whitespace-pre-wrap leading-relaxed">
+            <div className="p-3.5 bg-[#f9fbfc] border border-[#e8eaec] rounded-lg text-xs text-[#131416] whitespace-pre-wrap leading-relaxed">
               {issue.description}
             </div>
           </div>
@@ -217,10 +217,10 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
           {statusActionTarget && (
             <div className="p-4 bg-zinc-50 border border-zinc-200/90 rounded-xl space-y-3">
               <div>
-                <h4 className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
-                  Confirm Transition to {statusActionTarget}
+                <h4 className="text-xs font-semibold text-[#131416]">
+                  Confirm transition to {statusActionTarget}
                 </h4>
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-xs text-[#5d5f60] mt-0.5">
                   Add an optional resolution note or closing comment to record in the audit trail:
                 </p>
               </div>
@@ -257,8 +257,8 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
           {/* Attachments Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
-              <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
-                Photo Attachments ({issue.attachments?.length || 0})
+              <span className="text-xs font-semibold text-[#131416]">
+                Photo attachments ({issue.attachments?.length || 0})
               </span>
               {issue.status !== 'CLOSED' && (
                 <label className="text-xs font-semibold text-zinc-900 hover:text-zinc-600 cursor-pointer">
@@ -310,8 +310,8 @@ export const IssueDetailModal: React.FC<IssueDetailModalProps> = ({
 
           {/* Comments & Discussion */}
           <div className="space-y-2 pt-2">
-            <div className="text-xs font-bold text-zinc-900 uppercase tracking-wider pb-1 border-b border-zinc-100">
-              Discussion & Resolution Notes ({issue.comments?.length || 0})
+            <div className="text-xs font-semibold text-[#131416] pb-1 border-b border-zinc-100">
+              Discussion & resolution notes ({issue.comments?.length || 0})
             </div>
 
             <div className="max-h-56 overflow-y-auto space-y-2 p-3 bg-zinc-50/70 border border-zinc-200/80 rounded-xl">

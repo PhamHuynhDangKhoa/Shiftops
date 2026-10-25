@@ -73,10 +73,10 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
 
         {/* Assigned Staff */}
         <div className="pt-1">
-          <div className="flex items-center justify-between text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+          <div className="flex items-center justify-between text-xs font-medium text-[#5d5f60] mb-2">
             <span className="flex items-center gap-1.5">
-              <IconUsers size={13} className="text-zinc-400" />
-              Assigned Staff ({shift.assignments.length})
+              <IconUsers size={13} className="text-[#5d5f60]" />
+              Assigned staff ({shift.assignments.length})
             </span>
           </div>
 

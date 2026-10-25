@@ -26,8 +26,8 @@ export const HandoverItemList: React.FC<HandoverItemListProps> = ({ items }) => 
 
   return (
     <div>
-      <h4 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider mb-2.5">
-        Handover Items ({items.length})
+      <h4 className="text-xs font-medium text-[#131416] mb-2">
+        Handover items ({items.length})
       </h4>
       <div className="space-y-2">
         {items.map((it) => (

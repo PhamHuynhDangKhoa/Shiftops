@@ -284,18 +284,18 @@ const BranchCard: React.FC<{
         </div>
 
         {summary && (
-          <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-zinc-50 border border-zinc-200/70 text-xs">
+          <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-[#f9fbfc] border border-[#e8eaec] text-xs">
             <div>
-              <span className="text-zinc-400 uppercase text-[10px] font-semibold block">Total Staff</span>
-              <span className="font-bold text-zinc-900 text-sm tabular-nums">{summary.totalStaff}</span>
+              <span className="text-[#5d5f60] text-xs font-normal block">Total staff</span>
+              <span className="font-normal text-[#131416] text-sm tabular-nums">{summary.totalStaff}</span>
             </div>
-            <div className="border-l border-zinc-200 pl-2.5">
-              <span className="text-zinc-400 uppercase text-[10px] font-semibold block">Active</span>
-              <span className="font-bold text-emerald-600 text-sm tabular-nums">{summary.activeStaff}</span>
+            <div className="border-l border-[#e8eaec] pl-2.5">
+              <span className="text-[#5d5f60] text-xs font-normal block">Active</span>
+              <span className="font-normal text-[#1e7b4f] text-sm tabular-nums">{summary.activeStaff}</span>
             </div>
-            <div className="border-l border-zinc-200 pl-2.5">
-              <span className="text-zinc-400 uppercase text-[10px] font-semibold block">Managers</span>
-              <span className="font-bold text-zinc-800 text-sm tabular-nums">{summary.managerCount}</span>
+            <div className="border-l border-[#e8eaec] pl-2.5">
+              <span className="text-[#5d5f60] text-xs font-normal block">Managers</span>
+              <span className="font-normal text-[#131416] text-sm tabular-nums">{summary.managerCount}</span>
             </div>
           </div>
         )}

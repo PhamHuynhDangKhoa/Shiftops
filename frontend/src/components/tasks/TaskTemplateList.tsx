@@ -78,8 +78,8 @@ export const TaskTemplateList: React.FC<TaskTemplateListProps> = ({
                 </div>
 
                 <div className="pt-2">
-                  <div className="text-xs font-semibold text-zinc-500 mb-2 uppercase tracking-wider">
-                    Routine Steps ({tpl.items?.length || 0})
+                  <div className="text-xs font-medium text-[#5d5f60] mb-2">
+                    Routine steps ({tpl.items?.length || 0})
                   </div>
                   <div className="space-y-1.5">
                     {tpl.items?.slice(0, 3).map((item, idx) => (

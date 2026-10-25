@@ -69,7 +69,7 @@ export const AssignStaffModal: React.FC<AssignStaffModalProps> = ({
             <option value="">-- Choose Staff Member --</option>
             {availableStaff.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.fullName} ({s.email}) — {s.role}
+                {s.fullName} ({s.email}) · {s.role}
               </option>
             ))}
           </select>

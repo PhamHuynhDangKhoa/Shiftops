@@ -39,20 +39,20 @@ export const ManagerTaskTable: React.FC<ManagerTaskTableProps> = ({
   }
 
   return (
-    <div className="overflow-x-auto border border-zinc-200/80 bg-white rounded-xl shadow-xs">
-      <table className="w-full text-left text-sm border-collapse">
+    <div className="overflow-x-auto border border-[#e8eaec] bg-white rounded-lg">
+      <table className="w-full text-left text-xs border-collapse">
         <thead>
-          <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
-            <th className="py-3 px-4">Task Details</th>
-            <th className="py-3 px-4">Assigned Staff</th>
-            <th className="py-3 px-4">Shift</th>
-            <th className="py-3 px-4">Priority</th>
-            <th className="py-3 px-4">Status</th>
-            <th className="py-3 px-4">Completed At</th>
-            <th className="py-3 px-4 text-right">Action</th>
+          <tr className="border-b border-[#e8eaec] text-[#5d5f60] text-xs font-normal">
+            <th className="py-2.5 px-3.5 font-normal">Task details</th>
+            <th className="py-2.5 px-3.5 font-normal">Assigned staff</th>
+            <th className="py-2.5 px-3.5 font-normal">Shift</th>
+            <th className="py-2.5 px-3.5 font-normal">Priority</th>
+            <th className="py-2.5 px-3.5 font-normal">Status</th>
+            <th className="py-2.5 px-3.5 font-normal">Completed at</th>
+            <th className="py-2.5 px-3.5 font-normal text-right">Action</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-200/70 text-zinc-800">
+        <tbody className="divide-y divide-[#f0f1f2] text-[#131416]">
           {tasks.map((t) => (
             <tr key={t.id} className="hover:bg-zinc-50/70 transition-colors">
               <td className="py-3.5 px-4">
@@ -68,17 +68,17 @@ export const ManagerTaskTable: React.FC<ManagerTaskTableProps> = ({
                   <span className="text-zinc-400 italic">Unassigned</span>
                 )}
               </td>
-              <td className="py-3.5 px-4 text-zinc-600 text-xs">
-                {t.shiftName || '—'}
+              <td className="py-3 px-3.5 text-[#5d5f60] text-xs">
+                {t.shiftName || '-'}
               </td>
-              <td className="py-3.5 px-4 whitespace-nowrap">
+              <td className="py-3 px-3.5 whitespace-nowrap">
                 <TaskPriorityBadge priority={t.priority} />
               </td>
-              <td className="py-3.5 px-4 whitespace-nowrap">
+              <td className="py-3 px-3.5 whitespace-nowrap">
                 <TaskStatusBadge status={t.status} />
               </td>
-              <td className="py-3.5 px-4 tabular-nums text-zinc-500 text-xs whitespace-nowrap">
-                {t.completedAt ? new Date(t.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+              <td className="py-3 px-3.5 tabular-nums text-[#5d5f60] text-xs whitespace-nowrap">
+                {t.completedAt ? new Date(t.completedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '-'}
               </td>
               <td className="py-3.5 px-4 text-right whitespace-nowrap">
                 {t.status !== 'COMPLETED' && t.status !== 'CANCELLED' && (

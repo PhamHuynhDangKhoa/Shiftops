@@ -295,14 +295,14 @@ export const StaffPage: React.FC = () => {
 
         {isOwner && (
           <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Branch:</label>
+            <label className="text-xs font-medium text-[#5d5f60]">Branch:</label>
             <select
               value={selectedBranchId}
               onChange={(e) => {
                 setSelectedBranchId(e.target.value);
                 setPage(0);
               }}
-              className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
             >
               <option value="">All Branches</option>
               {branches?.map((b) => (
@@ -315,14 +315,14 @@ export const StaffPage: React.FC = () => {
         )}
 
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Role:</label>
+          <label className="text-xs font-medium text-[#5d5f60]">Role:</label>
           <select
             value={selectedRole}
             onChange={(e) => {
               setSelectedRole(e.target.value);
               setPage(0);
             }}
-            className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
           >
             <option value="">All Roles</option>
             {isOwner && <option value="OWNER">Owner</option>}
@@ -332,14 +332,14 @@ export const StaffPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status:</label>
+          <label className="text-xs font-medium text-[#5d5f60]">Status:</label>
           <select
             value={selectedStatus}
             onChange={(e) => {
               setSelectedStatus(e.target.value);
               setPage(0);
             }}
-            className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
           >
             <option value="">All Statuses</option>
             <option value="active">Active Only</option>
@@ -349,16 +349,16 @@ export const StaffPage: React.FC = () => {
       </div>
 
       {/* Staff Table */}
-      <div className="overflow-x-auto border border-zinc-200/80 bg-white rounded-xl shadow-xs">
-        <table className="w-full text-left text-sm border-collapse">
+      <div className="overflow-x-auto border border-[#e8eaec] bg-white rounded-lg">
+        <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-zinc-50 border-b border-zinc-200 text-zinc-500 text-xs font-semibold uppercase tracking-wider">
-              <th className="py-3 px-4">Employee</th>
-              <th className="py-3 px-4">Role</th>
-              <th className="py-3 px-4">Branch</th>
-              <th className="py-3 px-4">Contact Phone</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+            <tr className="border-b border-[#e8eaec] text-[#5d5f60] text-xs font-normal">
+              <th className="py-2.5 px-3.5 font-normal">Employee</th>
+              <th className="py-2.5 px-3.5 font-normal">Role</th>
+              <th className="py-2.5 px-3.5 font-normal">Branch</th>
+              <th className="py-2.5 px-3.5 font-normal">Contact phone</th>
+              <th className="py-2.5 px-3.5 font-normal">Status</th>
+              <th className="py-2.5 px-3.5 font-normal text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-200/70 text-zinc-800">
@@ -393,16 +393,16 @@ export const StaffPage: React.FC = () => {
                   </td>
                   <td className="py-3.5 px-4 text-zinc-600 text-xs whitespace-nowrap">
                     {member.primaryBranchName ? (
-                      <span className="flex items-center gap-1 font-medium text-zinc-800">
-                        <IconMapPin size={12} className="text-zinc-400" />
+                      <span className="flex items-center gap-1 font-medium text-[#131416]">
+                        <IconMapPin size={12} className="text-[#5d5f60]" />
                         <span>{member.primaryBranchName}</span>
                       </span>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </td>
-                  <td className="py-3.5 px-4 text-zinc-500 text-xs whitespace-nowrap">
-                    {member.phone || '—'}
+                  <td className="py-2.5 px-3.5 text-[#5d5f60] text-xs whitespace-nowrap">
+                    {member.phone || '-'}
                   </td>
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <Badge variant={member.active ? 'success' : 'neutral'} size="sm" showDot>
@@ -583,7 +583,7 @@ export const StaffPage: React.FC = () => {
           )}
 
           <Input
-            label="Initial Password (Optional — Auto-generated if left blank)"
+            label="Initial password (optional, auto-generated if left blank)"
             type="password"
             value={invitePassword}
             onChange={(e) => setInvitePassword(e.target.value)}
@@ -761,11 +761,11 @@ export const StaffPage: React.FC = () => {
             <IconKey size={22} />
           </div>
 
-          <div className="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80">
-            <span className="text-xs text-zinc-500 font-semibold uppercase tracking-wider block mb-1">
-              One-Time Temporary Password
+          <div className="p-3.5 rounded-lg bg-[#f9fbfc] border border-[#e8eaec]">
+            <span className="text-xs text-[#5d5f60] font-medium block mb-1">
+              Temporary password
             </span>
-            <code className="text-xl font-mono font-bold tracking-wider text-zinc-900 select-all">
+            <code className="text-lg font-mono font-medium text-[#131416] select-all">
               {tempPasswordModal?.tempPass}
             </code>
           </div>

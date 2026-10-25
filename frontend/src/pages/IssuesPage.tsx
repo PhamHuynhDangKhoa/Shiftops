@@ -169,18 +169,25 @@ export const IssuesPage: React.FC = () => {
       const effectiveBranchId = reportBranchId || user?.primaryBranchId || selectedBranchId;
       if (!effectiveBranchId) throw new Error('Operating branch required');
 
-      const formData = new FormData();
-      formData.append('title', reportTitle.trim());
-      formData.append('description', reportDescription.trim());
-      formData.append('category', reportCategory);
-      formData.append('priority', reportPriority);
-      if (reportFile) {
+      const payload = {
+        branchId: effectiveBranchId,
+        title: reportTitle.trim(),
+        description: reportDescription.trim(),
+        category: reportCategory,
+        priority: reportPriority,
+      };
+
+      const res = await api.post<ApiResponse<Issue>>('/issues', payload);
+      const created = res.data.data;
+
+      if (reportFile && created?.id) {
+        const formData = new FormData();
         formData.append('file', reportFile);
+        await api.post(`/issues/${created.id}/attachments`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
       }
 
-      const res = await api.post<ApiResponse<Issue>>(`/branches/${effectiveBranchId}/issues`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
       return res.data;
     },
     onSuccess: () => {
@@ -372,12 +379,12 @@ export const IssuesPage: React.FC = () => {
       {!isStaff && (
         <div className="space-y-4">
           {isOwner && branches && branches.length > 0 && (
-            <div className="flex items-center gap-2 text-sm">
-              <label className="text-zinc-500 font-semibold uppercase text-xs">Branch:</label>
+            <div className="flex items-center gap-2 text-xs">
+              <label className="text-[#5d5f60] font-medium text-xs">Branch:</label>
               <select
                 value={selectedBranchId}
                 onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs font-medium"
+                className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] font-medium"
               >
                 {branches.map((b) => (
                   <option key={b.id} value={b.id}>

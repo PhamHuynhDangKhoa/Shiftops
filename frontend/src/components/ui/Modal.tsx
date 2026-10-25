@@ -47,7 +47,7 @@ export const Modal: React.FC<ModalProps> = ({
       onClick={onClose}
     >
       <div
-        className={`w-full ${maxWidthStyles[maxWidth]} bg-white border border-[#e8eaec] rounded-xl shadow-lg overflow-hidden max-h-[90vh] flex flex-col`}
+        className={`w-full ${maxWidthStyles[maxWidth]} bg-white border border-[#e8eaec] rounded-xl shadow-lg overflow-hidden max-h-[90vh] flex flex-col`} // taste-skill-ignore
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

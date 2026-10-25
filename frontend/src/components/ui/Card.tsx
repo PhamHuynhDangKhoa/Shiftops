@@ -16,25 +16,25 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const accentStyles = {
     none: '',
-    blue: 'border-l-3 border-l-[#1a73e8]',
-    cyan: 'border-l-3 border-l-[#e84534]',
-    red: 'border-l-3 border-l-[#e84534]',
-    orange: 'border-l-3 border-l-[#b06000]',
-    amber: 'border-l-3 border-l-[#b06000]',
-    green: 'border-l-3 border-l-[#137333]',
-    gold: 'border-l-3 border-l-[#b06000]',
+    blue: 'border-l-3 border-l-[#2f70bb]',
+    cyan: 'border-l-3 border-l-[#1b6c80]',
+    red: 'border-l-3 border-l-[#c4242a]',
+    orange: 'border-l-3 border-l-[#92400e]',
+    amber: 'border-l-3 border-l-[#92400e]',
+    green: 'border-l-3 border-l-[#1e7b4f]',
+    gold: 'border-l-3 border-l-[#92400e]',
   };
 
   const variantStyles = {
-    paper: 'bg-[#faf7f2] border border-[#ded7cc] text-[#181a1b]',
-    slate: 'bg-[#1f2326] border border-[#31363a] text-white',
+    paper: 'bg-[#ffffff] border border-[#e8eaec] text-[#131416]',
+    slate: 'bg-[#131416] border border-[#2a2f33] text-white',
   };
 
   const paddingStyle = compact ? 'p-4 sm:p-5' : 'p-6 sm:p-7';
 
   return (
     <div
-      className={`relative rounded-2xl ${variantStyles[variant]} ${paddingStyle} ${accentStyles[accent]} ${className}`}
+      className={`relative rounded-xl ${variantStyles[variant]} ${paddingStyle} ${accentStyles[accent]} ${className}`}
       {...props}
     >
       {children}

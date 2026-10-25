@@ -16,33 +16,33 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    'relative inline-flex items-center justify-center font-medium select-none transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#e84534] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer active:translate-y-px whitespace-nowrap rounded-xl';
+    'relative inline-flex items-center justify-center font-medium select-none transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap rounded-md';
 
   const sizeStyles = {
     sm: 'h-8 px-3 text-xs gap-1.5',
     md: 'h-9 px-3.5 text-xs gap-2',
-    lg: 'h-11 px-5 text-sm gap-2 font-bold',
+    lg: 'h-10 px-4 text-sm gap-2 font-medium',
   };
 
   const variantStyles = {
     primary:
-      'bg-[#e84534] text-white hover:bg-[#d43827] border border-[#e84534] shadow-xs',
+      'bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80]',
     secondary:
-      'bg-[#faf7f2] text-[#181a1b] border border-[#ded7cc] hover:bg-[#f2ece4]',
+      'bg-[#ffffff] text-[#131416] border border-[#cdced1] hover:bg-[#f4f6f8]',
     dark:
-      'bg-[#1f2326] text-white border border-[#31363a] hover:bg-[#2a2f33]',
+      'bg-[#131416] text-white border border-[#131416] hover:bg-[#1f2326]',
     cyan:
-      'bg-[#e84534] text-white hover:bg-[#d43827] border border-[#e84534]',
+      'bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80]',
     emerald:
-      'bg-[#137333] text-white hover:bg-[#0d5926] border border-[#137333]',
+      'bg-[#1e7b4f] text-white hover:bg-[#165c3b] border border-[#1e7b4f]',
     amber:
-      'bg-[#b06000] text-white hover:bg-[#945100] border border-[#b06000]',
+      'bg-[#92400e] text-white hover:bg-[#78350f] border border-[#92400e]',
     danger:
-      'bg-[#c5221f] text-white hover:bg-[#a61c19] border border-[#c5221f]',
+      'bg-[#c4242a] text-white hover:bg-[#991b1b] border border-[#c4242a]',
     outline:
-      'bg-transparent text-[#181a1b] border border-[#ded7cc] hover:bg-[#faf7f2]',
+      'bg-transparent text-[#131416] border border-[#cdced1] hover:bg-[#f4f6f8]',
     ghost:
-      'bg-transparent text-[#666159] hover:text-[#181a1b] hover:bg-[#ded7cc]/40 border border-transparent',
+      'bg-transparent text-[#5d5f60] hover:text-[#131416] hover:bg-[#e8eaec]/60 border border-transparent',
   };
 
   return (

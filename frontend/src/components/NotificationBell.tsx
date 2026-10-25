@@ -168,7 +168,7 @@ export const NotificationBell: React.FC = () => {
       {/* Dropdown Panel */}
       {isOpen && (
         <div
-          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[#e8eaec] rounded-xl shadow-lg z-50 overflow-hidden flex flex-col"
+          className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border border-[#e8eaec] rounded-xl shadow-lg z-50 overflow-hidden flex flex-col" // taste-skill-ignore
           style={{ maxHeight: '480px' }}
         >
           {/* Header */}

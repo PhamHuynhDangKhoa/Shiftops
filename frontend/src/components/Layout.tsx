@@ -31,159 +31,197 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   };
 
   const isStaff = user?.role === 'STAFF';
-  const isManager = user?.role === 'MANAGER';
   const isOwner = user?.role === 'OWNER';
 
-  // Navigation Items per role
-  const navItems = isStaff
+  interface NavItem {
+    to: string;
+    label: string;
+    icon: React.ComponentType<{ size?: number | string; className?: string }>;
+    end?: boolean;
+  }
+
+  // Structured operations navigation (Apple macOS sidebar grouping)
+  const primaryNav: NavItem[] = isStaff
     ? [
         { to: '/', label: 'Overview', end: true, icon: IconLogo },
         { to: '/shifts', label: 'My Schedule', icon: IconCalendar },
-        { to: '/attendance', label: 'Attendance', icon: IconClock },
-        { to: '/tasks', label: 'Tasks', icon: IconCheckList },
-        { to: '/issues', label: 'Incidents', icon: IconAlertTriangle },
-        { to: '/handovers', label: 'Turnover', icon: IconHandshake },
+        { to: '/attendance', label: 'Time Clock', icon: IconClock },
+        { to: '/tasks', label: 'Checklist & Tasks', icon: IconCheckList },
       ]
     : [
-        { to: '/', label: isOwner ? 'Command' : 'Overview', end: true, icon: IconLogo },
-        { to: '/shifts', label: 'Roster', icon: IconCalendar },
+        { to: '/', label: 'Overview', end: true, icon: IconLogo },
+        { to: '/shifts', label: 'Shift Roster', icon: IconCalendar },
         { to: '/attendance', label: 'Attendance', icon: IconClock },
-        { to: '/tasks', label: 'Tasks', icon: IconCheckList },
-        { to: '/issues', label: 'Incidents', icon: IconAlertTriangle },
-        { to: '/handovers', label: 'Turnover', icon: IconHandshake },
-        { to: '/staff', label: 'Personnel', icon: IconUsers },
-        { to: '/branches', label: isOwner ? 'Branches' : 'Branch', icon: IconMapPin },
+        { to: '/tasks', label: 'Checklist & Tasks', icon: IconCheckList },
       ];
 
-  // Role pill styling per framed-sheet palette
-  const roleBadgeStyle = isOwner
-    ? 'bg-[#fffbeb] text-[#92400e] border-[#92400e]/20'
-    : isManager
-    ? 'bg-[#e9f4f7] text-[#1b6c80] border-[#1b6c80]/20'
-    : 'bg-[#dcfae5] text-[#04250e] border-[#1e7b4f]/20';
+  const secondaryNav: NavItem[] = isStaff
+    ? [
+        { to: '/issues', label: 'Report Incident', icon: IconAlertTriangle },
+        { to: '/handovers', label: 'Shift Turnover', icon: IconHandshake },
+      ]
+    : [
+        { to: '/issues', label: 'Incident Radar', icon: IconAlertTriangle },
+        { to: '/handovers', label: 'Shift Turnover', icon: IconHandshake },
+        { to: '/staff', label: 'Team Directory', icon: IconUsers },
+        { to: '/branches', label: isOwner ? 'All Branches' : 'Store Settings', icon: IconMapPin },
+      ];
 
-  // Resolve current section name for breadcrumb
-  const currentNav = navItems.find((n) => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to) && n.to !== '/'));
-  const currentTitle = currentNav ? currentNav.label : location.pathname === '/profile' ? 'Profile' : 'Operations';
+  const allNav = [...primaryNav, ...secondaryNav];
+  const currentNav = allNav.find((n) => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to) && n.to !== '/'));
+  const currentTitle = currentNav ? currentNav.label : location.pathname === '/profile' ? 'Profile' : 'Store Operations';
 
   return (
-    <div className="min-h-screen bg-[#f9fbfc] text-[#131416] antialiased flex flex-col md:flex-row selection:bg-[#1b6c80] selection:text-white">
-      {/* Sidebar: 228px on crisp neutral ground (#f9fbfc) */}
-      <aside className="hidden md:flex flex-col w-[228px] flex-shrink-0 bg-[#f9fbfc] border-r border-[#e8eaec] p-4 text-xs select-none">
-        {/* Brand Monogram & Workspace Scope */}
-        <div className="px-2 pt-2 pb-4">
-          <Link to="/" className="flex items-center gap-2.5 text-[#131416] hover:opacity-90 transition-opacity">
-            <div className="w-8 h-8 rounded-lg bg-[#1b6c80] text-white flex items-center justify-center font-bold text-xs">
-              SO
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] antialiased flex flex-col md:flex-row">
+      {/* Apple-styled macOS Sidebar: 240px */}
+      <aside className="hidden md:flex flex-col w-[240px] flex-shrink-0 bg-[#fbfbfd] border-r border-[#e5e5ea] p-4 text-xs select-none">
+        {/* Workspace Brand Pill */}
+        <div className="px-1.5 pt-1.5 pb-4">
+          <Link to="/" className="flex items-center gap-3 text-[#1d1d1f] hover:opacity-85 transition-opacity">
+            <div className="w-8 h-8 rounded-xl bg-[#1d1d1f] text-white flex items-center justify-center font-semibold text-xs">
+              <IconLogo size={16} />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-sm leading-tight text-[#131416]">ShiftOps</span>
-              <span className="text-xs text-[#5d5f60] leading-tight truncate">
-                {user?.primaryBranchName ? user.primaryBranchName : 'Fleet Operations'}
+              <span className="font-semibold text-sm leading-tight text-[#1d1d1f]">ShiftOps</span>
+              <span className="text-xs text-[#86868b] leading-tight truncate">
+                {user?.primaryBranchName ? user.primaryBranchName : 'Shibuya Flagship'}
               </span>
             </div>
           </Link>
         </div>
 
-        {/* Navigation list */}
+        {/* Navigation Groups */}
         {isAuthenticated && (
-          <nav className="flex-1 mt-3 space-y-1" aria-label="Main Navigation">
-            <div className="px-2 pb-1 text-xs font-semibold text-[#727477]">
-              Operations
+          <nav className="flex-1 mt-2 space-y-5" aria-label="Main Navigation">
+            <div>
+              <div className="px-2 pb-1.5 text-xs font-medium text-[#86868b]">
+                Operations
+              </div>
+              <div className="space-y-0.5">
+                {primaryNav.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) =>
+                        `flex items-center gap-2.5 h-8.5 px-2.5 text-xs rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-white border border-[#e5e5ea] text-[#1d1d1f] font-semibold'
+                            : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/5 font-medium'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <Icon size={15} className={`flex-shrink-0 ${isActive ? 'text-[#1d1d1f]' : 'text-[#86868b]'}`} />
+                          <span className="flex-1 truncate">{item.label}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </div>
             </div>
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    `flex items-center gap-2.5 h-9 px-3 text-xs rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-[#ffffff] border border-[#e8eaec] text-[#131416] font-semibold'
-                        : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#ffffff]/60 font-medium'
-                    }`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <Icon size={16} className={`flex-shrink-0 stroke-[1.8] ${isActive ? 'text-[#1b6c80]' : 'text-[#5d5f60]'}`} />
-                      <span className="flex-1 truncate">{item.label}</span>
-                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#1b6c80]" aria-hidden="true" />}
-                    </>
-                  )}
-                </NavLink>
-              );
-            })}
+
+            <div>
+              <div className="px-2 pb-1.5 text-xs font-medium text-[#86868b]">
+                Management
+              </div>
+              <div className="space-y-0.5">
+                {secondaryNav.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) =>
+                        `flex items-center gap-2.5 h-8.5 px-2.5 text-xs rounded-lg transition-colors ${
+                          isActive
+                            ? 'bg-white border border-[#e5e5ea] text-[#1d1d1f] font-semibold'
+                            : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/5 font-medium'
+                        }`
+                      }
+                    >
+                      {({ isActive }) => (
+                        <>
+                          <Icon size={15} className={`flex-shrink-0 ${isActive ? 'text-[#1d1d1f]' : 'text-[#86868b]'}`} />
+                          <span className="flex-1 truncate">{item.label}</span>
+                        </>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
         )}
 
-        {/* User Card & Sign Out at Sidebar Foot */}
+        {/* User Card at Footer */}
         {isAuthenticated && user && (
-          <div className="pt-3 border-t border-[#e8eaec] mt-auto space-y-2">
-            <Link
-              to="/profile"
-              className="flex items-center gap-2.5 p-2 rounded-lg bg-[#ffffff] border border-[#e8eaec] hover:bg-[#f4f6f8] transition-colors"
-            >
-              <div className="w-7 h-7 rounded-md bg-[#1b6c80] text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
-                {user.fullName.charAt(0)}
-              </div>
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className="text-xs font-semibold text-[#131416] truncate leading-tight">
-                  {user.fullName}
-                </span>
-                <span className={`inline-block mt-0.5 px-2 py-0.2 text-xs rounded-md border w-fit leading-tight font-medium ${roleBadgeStyle}`}>
-                  {user.role === 'STAFF' ? 'Staff' : user.role === 'MANAGER' ? 'Manager' : 'Owner'}
-                </span>
-              </div>
-            </Link>
-
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#5d5f60] hover:text-[#c4242a] hover:bg-[#ffffff] rounded-lg transition-colors cursor-pointer text-left"
-            >
-              <IconLogOut size={14} />
-              <span>Sign out</span>
-            </button>
+          <div className="pt-3 border-t border-[#e5e5ea] mt-auto">
+            <div className="flex items-center justify-between p-2 rounded-xl bg-white border border-[#e5e5ea]">
+              <Link to="/profile" className="flex items-center gap-2.5 min-w-0 flex-1 hover:opacity-85 transition-opacity">
+                <div className="w-7 h-7 rounded-lg bg-[#1d1d1f] text-white flex items-center justify-center text-xs font-semibold flex-shrink-0">
+                  {user.fullName.charAt(0)}
+                </div>
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-xs font-semibold text-[#1d1d1f] truncate leading-tight">
+                    {user.fullName}
+                  </span>
+                  <span className="text-[11px] text-[#86868b] leading-tight">
+                    {user.role === 'STAFF' ? 'Store Staff' : user.role === 'MANAGER' ? 'Manager' : 'Executive'}
+                  </span>
+                </div>
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                aria-label="Sign out"
+                title="Sign out"
+                className="p-1 text-[#86868b] hover:text-[#d70015] rounded-md transition-colors cursor-pointer"
+              >
+                <IconLogOut size={15} />
+              </button>
+            </div>
           </div>
         )}
       </aside>
 
-      {/* Main Canvas Area: 52px Top Bar + Content Canvas */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#f9fbfc]">
-        {/* Top Bar: 52px height on neutral ground with clean rule */}
-        <header className="h-13 px-4 md:px-8 flex items-center justify-between gap-4 bg-[#f9fbfc] border-b border-[#e8eaec] text-xs">
-          {/* Left: Mobile Toggle & Scope Breadcrumb */}
+      {/* Main Canvas Area */}
+      <div className="flex-1 flex flex-col min-w-0 bg-[#f5f5f7]">
+        {/* Apple-style 48px Header */}
+        <header className="h-12 px-4 md:px-8 flex items-center justify-between gap-4 bg-white border-b border-[#e5e5ea] text-xs">
+          {/* Left: Mobile Toggle & View Title */}
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-1.5 text-[#5d5f60] hover:text-[#131416] hover:bg-[#ffffff] rounded-md transition-colors"
+              className="md:hidden p-1.5 text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-black/5 rounded-lg transition-colors"
               aria-label="Toggle navigation menu"
             >
               {isMobileMenuOpen ? <IconClose size={18} /> : <IconMenu size={18} />}
             </button>
 
-            <div className="flex items-center gap-2 text-xs text-[#5d5f60]">
-              <span className="font-bold text-[#131416]">ShiftOps</span>
-              <span className="text-[#cdced1]" aria-hidden="true">/</span>
-              <span className="text-[#131416] font-medium">{currentTitle}</span>
-            </div>
+            <span className="text-sm font-semibold text-[#1d1d1f]">
+              {currentTitle}
+            </span>
           </div>
 
           {/* Right: Live Telemetry Indicator & Actions */}
           <div className="flex items-center gap-3">
             {isAuthenticated && (
-              <div className="hidden sm:flex items-center gap-2 text-xs text-[#5d5f60] px-2.5 py-1 rounded-md bg-[#ffffff] border border-[#e8eaec]">
+              <div className="hidden sm:flex items-center gap-2 text-xs text-[#6e6e73] px-2.5 py-1 rounded-full bg-[#f5f5f7]">
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    status === 'CONNECTED' ? 'bg-[#1e7b4f]' : status === 'RECONNECTING' ? 'bg-[#92400e]' : 'bg-[#727477]'
+                    status === 'CONNECTED' ? 'bg-[#34c759]' : status === 'RECONNECTING' ? 'bg-[#ff9500]' : 'bg-[#86868b]'
                   }`}
                   aria-hidden="true"
                 />
-                <span className="font-medium text-[#131416]">
-                  {status === 'CONNECTED' ? 'Live sync' : status === 'RECONNECTING' ? 'Re-syncing' : 'Offline'}
+                <span className="font-medium text-[#1d1d1f]">
+                  {status === 'CONNECTED' ? 'Live sync' : status === 'RECONNECTING' ? 'Reconnecting' : 'Offline'}
                 </span>
               </div>
             )}
@@ -202,42 +240,35 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Mobile Navigation Drawer */}
         {isAuthenticated && isMobileMenuOpen && (
-          <div className="md:hidden bg-[#ffffff] border-b border-[#e8eaec] px-4 py-3 space-y-2">
-            <div className="grid grid-cols-2 gap-1.5 pb-2 border-b border-[#e8eaec]">
-              {navItems.map((item) => (
+          <div className="md:hidden bg-white border-b border-[#e5e5ea] px-4 py-3 space-y-2">
+            <div className="grid grid-cols-2 gap-1.5 pb-2 border-b border-[#e5e5ea]">
+              {allNav.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   end={item.end}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `px-3 py-2 text-xs font-semibold rounded-md transition-colors ${
+                    `px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-[#1b6c80] text-white'
-                        : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#f4f6f8]'
+                        ? 'bg-[#1d1d1f] text-white'
+                        : 'text-[#6e6e73] hover:text-[#1d1d1f] hover:bg-[#f5f5f7]'
                     }`
                   }
                 >
                   {item.label}
                 </NavLink>
               ))}
-              <NavLink
-                to="/profile"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="px-3 py-2 text-xs font-semibold rounded-md text-[#5d5f60] hover:text-[#131416] hover:bg-[#f4f6f8]"
-              >
-                Profile
-              </NavLink>
             </div>
 
             <div className="pt-2 flex items-center justify-between text-xs">
-              <span className="font-bold text-[#131416]">{user?.fullName}</span>
+              <span className="font-semibold text-[#1d1d1f]">{user?.fullName}</span>
               <button
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="text-[#c4242a] font-semibold text-xs cursor-pointer"
+                className="text-[#d70015] font-semibold text-xs cursor-pointer"
               >
                 Sign out
               </button>
@@ -245,21 +276,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
         )}
 
-        {/* Password Reset Warning Ribbon if required */}
-        {isAuthenticated && user?.mustChangePassword && (
-          <div className="mx-4 mt-3 bg-[#fffbeb] border border-[#92400e]/20 rounded-md px-3.5 py-2 text-xs text-[#92400e] flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <IconAlertTriangle size={15} className="text-[#92400e] flex-shrink-0" />
-              <span>Temporary password active. Update password to secure account.</span>
-            </div>
-            <Link to="/profile" className="font-semibold underline underline-offset-2 hover:text-[#131416]">
-              Update
-            </Link>
-          </div>
-        )}
-
-        {/* Operational Canvas */}
-        <main className="flex-1 p-5 sm:p-7 md:p-8 min-h-[calc(100vh-52px)] overflow-y-auto">
+        {/* Main Content */}
+        <main className="flex-1 p-5 sm:p-7 md:p-8 min-h-[calc(100vh-48px)] overflow-y-auto">
           {children}
         </main>
       </div>

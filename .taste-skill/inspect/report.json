@@ -1,6 +1,6 @@
 {
  "url": "http://localhost:4173/login",
- "at": "2026-10-25T04:35:06.995Z",
+ "at": "2026-10-25T04:59:13.078Z",
  "allow": [],
  "viewports": [
   {
@@ -9,7 +9,7 @@
    "load": "load",
    "screens": 1,
    "filled": [
-    0.41
+    1
    ],
    "motion": {
     "elements": 0,
@@ -27,7 +27,7 @@
     "page": {
      "height": 900,
      "screens": 1,
-     "words": 121,
+     "words": 85,
      "img": 0,
      "video": 0,
      "canvas": 0,
@@ -48,27 +48,27 @@
      "videosNoPoster": 0
     },
     "hero": {
-     "text": "ShiftOps",
-     "words": 1,
-     "chars": 8,
+     "text": "Sign in to your shift",
+     "words": 5,
+     "chars": 21,
      "lines": 1,
-     "size": 30,
-     "vw": 2.1,
+     "size": 24,
+     "vw": 1.7,
      "font": "IBM Plex Sans",
      "weight": 700,
      "tracking": -0.02,
-     "leading": 1.2,
-     "top": 91,
+     "leading": 1.33,
+     "top": 199,
      "tag": "h1",
      "kind": "heading",
      "align": "left",
      "position": "left"
     },
     "h1": {
-     "text": "ShiftOps",
-     "words": 1,
+     "text": "Sign in to your shift",
+     "words": 5,
      "lines": 1,
-     "size": 30,
+     "size": 24,
      "font": "IBM Plex Sans"
     },
     "headings": [
@@ -82,15 +82,15 @@
       "font": "IBM Plex Sans",
       "weight": 700,
       "tracking": -0.025,
-      "leading": 1.2,
+      "leading": 1.25,
       "upper": false,
       "italic": false,
       "mono": false,
       "align": "left",
       "position": "left",
-      "widthRatio": 0.22,
-      "top": 91,
-      "tag": "h1",
+      "widthRatio": 0.25,
+      "top": 248,
+      "tag": "div",
       "kind": "heading"
      }
     ],
@@ -115,11 +115,10 @@
      "sizes": [
       12,
       14,
-      16,
       24,
       30
      ],
-     "sizeCount": 5,
+     "sizeCount": 4,
      "notLoaded": [],
      "body": {
       "font": "IBM Plex Sans",
@@ -127,9 +126,9 @@
       "leading": 1.63,
       "weight": 400,
       "tracking": 0,
-      "contrast": 6.4
+      "contrast": 8.4
      },
-     "measureChars": 54,
+     "measureChars": 51,
      "max": {
       "size": 30,
       "vw": 2.1,
@@ -144,8 +143,8 @@
      "microLabelShare": 0,
      "microSamples": [],
      "upperShare": 0,
-     "centerShare": 0.12,
-     "smallText": 7
+     "centerShare": 0.23,
+     "smallText": 3
     },
     "eyebrows": [],
     "numbered": [],
@@ -159,35 +158,27 @@
      "dark": false,
      "sectionBgs": [
       {
-       "color": "#f9fbfc",
+       "color": "#f5f5f7",
        "top": 0,
        "hsl": {
-        "h": 200,
-        "s": 0.33,
-        "l": 0.98
+        "h": 240,
+        "s": 0.11,
+        "l": 0.96
        }
       }
      ],
      "textColors": [
       {
-       "color": "#5d5f60",
-       "share": 0.67
+       "color": "#48484a",
+       "share": 0.73
       },
       {
-       "color": "#131416",
-       "share": 0.23
-      },
-      {
-       "color": "#1b6c80",
-       "share": 0.07
+       "color": "#1d1d1f",
+       "share": 0.21
       },
       {
        "color": "#ffffff",
-       "share": 0.04
-      },
-      {
-       "color": "#cdced1",
-       "share": 0
+       "share": 0.06
       }
      ],
      "button": {
@@ -197,7 +188,7 @@
        "s": 0,
        "l": 1
       },
-      "fg": "#5d5f60"
+      "fg": "#1d1d1f"
      },
      "lowContrast": []
     },
@@ -205,16 +196,16 @@
      "count": 4,
      "inHero": 4,
      "radius": 8,
-     "height": 60,
+     "height": 38,
      "withShadow": 0,
      "withGradient": 0,
      "mono": 0,
      "upper": 0,
      "heroLabels": [
-      "Owner Executive",
-      "Manager Supervisor",
-      "Staff Floor Ops",
-      "Enter Operations Deck as Manager →"
+      "Manager",
+      "Store Staff",
+      "Executive",
+      "Continue to Operations as Manager"
      ]
     },
     "surfaces": {
@@ -225,17 +216,15 @@
      "scrims": 0,
      "gradientSamples": [],
      "gradientText": 0,
-     "hairlines": 3,
+     "hairlines": 1,
      "hairlineSamples": [
-      "header.flex.flex-col 896px",
-      "div.pt-6.mt-6 378px",
-      "div.pt-5.mt-6 378px"
+      "div.pt-4.mt-6 443px"
      ],
-     "outlinedBoxes": 2,
+     "outlinedBoxes": 1,
      "dashed": 0,
      "blurred": 0,
-     "roundedBoxes": 2,
-     "boxRadius": 12,
+     "roundedBoxes": 1,
+     "boxRadius": 16,
      "squareMedia": 0,
      "roundedMedia": 0,
      "mediaRadius": 0,
@@ -243,13 +232,7 @@
      "cardRows": []
     },
     "heroMedia": [],
-    "nav": {
-     "links": 0,
-     "fixed": false,
-     "height": 75,
-     "floatingPill": false,
-     "blur": false
-    },
+    "nav": null,
     "fontsLoaded": [
      "ibm plex sans"
     ]
@@ -261,42 +244,38 @@
     },
     "pageH": 900,
     "margins": {
-     "left": 301,
-     "right": 301
+     "left": 272,
+     "right": 305
     },
     "sections": [],
     "gaps": [],
     "h1s": [
      {
-      "text": "ShiftOps",
-      "size": 30,
-      "top": 91,
+      "text": "Sign in to your shift",
+      "size": 24,
+      "top": 199,
       "firstScreen": true
      }
     ],
     "edgeText": [],
     "edges": [
      {
-      "x": 301,
-      "n": 2
+      "x": 272,
+      "n": 1
      },
      {
-      "x": 761,
-      "n": 2
-     },
-     {
-      "x": 320,
+      "x": 692,
       "n": 1
      }
     ],
-    "leftBlocks": 5,
+    "leftBlocks": 2,
     "bodySize": 14,
     "stage": false,
     "explains": false,
     "slivers": [],
     "voidShare": 0.18,
     "voidBox": {
-     "x": 0,
+     "x": 1140,
      "y": 120,
      "w": 300,
      "h": 780
@@ -312,21 +291,21 @@
     "sidebar": null,
     "topbar": null,
     "canvas": {
-     "left": 280,
-     "right": 272
+     "left": 272,
+     "right": 305
     },
     "hero": {
-     "text": "ShiftOps",
-     "words": 1,
-     "chars": 8,
+     "text": "Sign in to your shift",
+     "words": 5,
+     "chars": 21,
      "lines": 1,
-     "size": 30,
-     "vw": 2.1,
+     "size": 24,
+     "vw": 1.7,
      "font": "IBM Plex Sans",
      "weight": 700,
      "tracking": -0.02,
-     "leading": 1.2,
-     "top": 91,
+     "leading": 1.33,
+     "top": 199,
      "tag": "h1",
      "kind": "heading",
      "align": "left",
@@ -334,18 +313,18 @@
     },
     "charts": 0,
     "layout": {
-     "panels": 2,
-     "firstScreen": 2,
+     "panels": 1,
+     "firstScreen": 1,
      "ragged": [],
      "voids": []
     },
-    "tiles": 0,
+    "tiles": 1,
     "panels": {
-     "count": 2,
+     "count": 1,
      "radii": [
       [
-       12,
-       2
+       16,
+       1
       ]
      ],
      "heavyBorders": 0,
@@ -356,15 +335,9 @@
      "glass": 0
     },
     "chips": {
-     "count": 1,
-     "hues": 1,
-     "samples": [
-      {
-       "hue": 192,
-       "size": 36,
-       "radius": "8px"
-      }
-     ]
+     "count": 0,
+     "hues": 0,
+     "samples": []
     },
     "numbers": {
      "cells": 0,
@@ -377,22 +350,23 @@
     "chartHues": 0,
     "placeholders": [],
     "type": {
-     "under13": 0.26,
+     "under13": 0.17,
      "tiny": 0,
      "tinySamples": [],
      "sizes": [
       12,
       14,
+      20,
       24,
       30
      ]
     },
     "title": {
-     "text": "ShiftOps",
-     "size": 30,
-     "top": 91
+     "text": "Sign in to your shift",
+     "size": 24,
+     "top": 199
     },
-    "colourShare": 0.009
+    "colourShare": 0
    },
    "consoleErrors": []
   },
@@ -402,7 +376,7 @@
    "load": "load",
    "screens": 1,
    "filled": [
-    0.53
+    1
    ],
    "motion": {
     "elements": 0,
@@ -420,7 +394,7 @@
     "page": {
      "height": 1024,
      "screens": 1,
-     "words": 69,
+     "words": 50,
      "img": 0,
      "video": 0,
      "canvas": 0,
@@ -441,55 +415,33 @@
      "videosNoPoster": 0
     },
     "hero": {
-     "text": "ShiftOps",
-     "words": 1,
-     "chars": 8,
+     "text": "Sign in to your shift",
+     "words": 5,
+     "chars": 21,
      "lines": 1,
-     "size": 30,
-     "vw": 3.9,
+     "size": 24,
+     "vw": 3.1,
      "font": "IBM Plex Sans",
      "weight": 700,
      "tracking": -0.02,
-     "leading": 1.2,
-     "top": 163,
+     "leading": 1.33,
+     "top": 291,
      "tag": "h1",
      "kind": "heading",
      "align": "left",
      "position": "left"
     },
     "h1": {
-     "text": "ShiftOps",
-     "words": 1,
+     "text": "Sign in to your shift",
+     "words": 5,
      "lines": 1,
-     "size": 30,
+     "size": 24,
      "font": "IBM Plex Sans"
     },
-    "headings": [
-     {
-      "text": "ShiftOps",
-      "words": 1,
-      "chars": 8,
-      "lines": 1,
-      "size": 30,
-      "vw": 3.9,
-      "font": "IBM Plex Sans",
-      "weight": 700,
-      "tracking": -0.025,
-      "leading": 1.2,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "left",
-      "widthRatio": 0.41,
-      "top": 163,
-      "tag": "h1",
-      "kind": "heading"
-     }
-    ],
+    "headings": [],
     "headingSummary": {
-     "count": 1,
-     "maxLines": 1,
+     "count": 0,
+     "maxLines": 0,
      "over2Lines": 0,
      "statements": 0,
      "centered": 0,
@@ -508,26 +460,25 @@
      "sizes": [
       12,
       14,
-      16,
-      24,
-      30
+      20,
+      24
      ],
-     "sizeCount": 5,
+     "sizeCount": 4,
      "notLoaded": [],
      "body": {
       "font": "IBM Plex Sans",
-      "size": 12,
-      "leading": 1.33,
+      "size": 14,
+      "leading": 1.43,
       "weight": 400,
       "tracking": 0,
-      "contrast": 6.2
+      "contrast": 8.4
      },
-     "measureChars": 120,
+     "measureChars": 103,
      "max": {
-      "size": 30,
-      "vw": 3.9,
+      "size": 24,
+      "vw": 3.1,
       "font": "IBM Plex Sans",
-      "text": "ShiftOps"
+      "text": "Sign in to your shift"
      },
      "monoShare": 0,
      "monoProseShare": 0,
@@ -537,8 +488,8 @@
      "microLabelShare": 0,
      "microSamples": [],
      "upperShare": 0,
-     "centerShare": 0.22,
-     "smallText": 5
+     "centerShare": 0.38,
+     "smallText": 4
     },
     "eyebrows": [],
     "numbered": [],
@@ -552,17 +503,17 @@
      "dark": false,
      "sectionBgs": [
       {
-       "color": "#f9fbfc",
+       "color": "#f5f5f7",
        "top": 0,
        "hsl": {
-        "h": 200,
-        "s": 0.33,
-        "l": 0.98
+        "h": 240,
+        "s": 0.11,
+        "l": 0.96
        }
       },
       {
        "color": "#ffffff",
-       "top": 270,
+       "top": 198,
        "hsl": {
         "h": 0,
         "s": 0,
@@ -572,24 +523,16 @@
      ],
      "textColors": [
       {
-       "color": "#5d5f60",
-       "share": 0.64
+       "color": "#48484a",
+       "share": 0.7
       },
       {
-       "color": "#131416",
-       "share": 0.23
+       "color": "#1d1d1f",
+       "share": 0.21
       },
       {
        "color": "#ffffff",
-       "share": 0.07
-      },
-      {
-       "color": "#1b6c80",
-       "share": 0.06
-      },
-      {
-       "color": "#cdced1",
-       "share": 0
+       "share": 0.1
       }
      ],
      "button": {
@@ -599,7 +542,7 @@
        "s": 0,
        "l": 1
       },
-      "fg": "#5d5f60"
+      "fg": "#1d1d1f"
      },
      "lowContrast": []
     },
@@ -607,16 +550,16 @@
      "count": 4,
      "inHero": 4,
      "radius": 8,
-     "height": 60,
+     "height": 38,
      "withShadow": 0,
      "withGradient": 0,
      "mono": 0,
      "upper": 0,
      "heroLabels": [
-      "Owner Executive",
-      "Manager Supervisor",
-      "Staff Floor Ops",
-      "Enter Operations Deck as Manager →"
+      "Manager",
+      "Store Staff",
+      "Executive",
+      "Continue to Operations as Manager"
      ]
     },
     "surfaces": {
@@ -627,16 +570,15 @@
      "scrims": 0,
      "gradientSamples": [],
      "gradientText": 0,
-     "hairlines": 2,
+     "hairlines": 1,
      "hairlineSamples": [
-      "header.flex.flex-col 720px",
-      "div.pt-5.mt-6 662px"
+      "div.pt-4.mt-6 654px"
      ],
      "outlinedBoxes": 1,
      "dashed": 0,
      "blurred": 0,
      "roundedBoxes": 1,
-     "boxRadius": 12,
+     "boxRadius": 16,
      "squareMedia": 0,
      "roundedMedia": 0,
      "mediaRadius": 0,
@@ -644,13 +586,7 @@
      "cardRows": []
     },
     "heroMedia": [],
-    "nav": {
-     "links": 0,
-     "fixed": false,
-     "height": 75,
-     "floatingPill": false,
-     "blur": false
-    },
+    "nav": null,
     "fontsLoaded": [
      "ibm plex sans"
     ]
@@ -662,31 +598,27 @@
     },
     "pageH": 1024,
     "margins": {
-     "left": 53,
-     "right": 53
+     "left": 57,
+     "right": 57
     },
     "sections": [],
     "gaps": [],
     "h1s": [
      {
-      "text": "ShiftOps",
-      "size": 30,
-      "top": 163,
+      "text": "Sign in to your shift",
+      "size": 24,
+      "top": 291,
       "firstScreen": true
      }
     ],
     "edgeText": [],
     "edges": [
      {
-      "x": 53,
-      "n": 2
-     },
-     {
-      "x": 72,
+      "x": 57,
       "n": 1
      }
     ],
-    "leftBlocks": 3,
+    "leftBlocks": 1,
     "bodySize": 14,
     "stage": false,
     "explains": false,
@@ -704,21 +636,21 @@
     "sidebar": null,
     "topbar": null,
     "canvas": {
-     "left": 32,
-     "right": 24
+     "left": 57,
+     "right": 57
     },
     "hero": {
-     "text": "ShiftOps",
-     "words": 1,
-     "chars": 8,
+     "text": "Sign in to your shift",
+     "words": 5,
+     "chars": 21,
      "lines": 1,
-     "size": 30,
-     "vw": 3.9,
+     "size": 24,
+     "vw": 3.1,
      "font": "IBM Plex Sans",
      "weight": 700,
      "tracking": -0.02,
-     "leading": 1.2,
-     "top": 163,
+     "leading": 1.33,
+     "top": 291,
      "tag": "h1",
      "kind": "heading",
      "align": "left",
@@ -731,12 +663,12 @@
      "ragged": [],
      "voids": []
     },
-    "tiles": 0,
+    "tiles": 1,
     "panels": {
      "count": 1,
      "radii": [
       [
-       12,
+       16,
        1
       ]
      ],
@@ -748,15 +680,9 @@
      "glass": 0
     },
     "chips": {
-     "count": 1,
-     "hues": 1,
-     "samples": [
-      {
-       "hue": 192,
-       "size": 36,
-       "radius": "8px"
-      }
-     ]
+     "count": 0,
+     "hues": 0,
+     "samples": []
     },
     "numbers": {
      "cells": 0,
@@ -769,22 +695,23 @@
     "chartHues": 0,
     "placeholders": [],
     "type": {
-     "under13": 0.26,
+     "under13": 0.17,
      "tiny": 0,
      "tinySamples": [],
      "sizes": [
       12,
       14,
+      20,
       24,
       30
      ]
     },
     "title": {
-     "text": "ShiftOps",
-     "size": 30,
-     "top": 163
+     "text": "Sign in to your shift",
+     "size": 24,
+     "top": 291
     },
-    "colourShare": 0.035
+    "colourShare": 0
    },
    "consoleErrors": []
   },
@@ -792,10 +719,9 @@
    "width": 390,
    "height": 844,
    "load": "load",
-   "screens": 2,
+   "screens": 1,
    "filled": [
-    0.72,
-    0.63
+    1
    ],
    "motion": {
     "elements": 0,
@@ -811,9 +737,9 @@
      "h": 844
     },
     "page": {
-     "height": 868,
+     "height": 844,
      "screens": 1,
-     "words": 69,
+     "words": 50,
      "img": 0,
      "video": 0,
      "canvas": 0,
@@ -834,80 +760,37 @@
      "videosNoPoster": 0
     },
     "hero": {
-     "text": "ShiftOps",
-     "words": 1,
-     "chars": 8,
+     "text": "Sign in to your shift",
+     "words": 5,
+     "chars": 21,
      "lines": 1,
-     "size": 24,
-     "vw": 6.2,
+     "size": 20,
+     "vw": 5.1,
      "font": "IBM Plex Sans",
      "weight": 700,
      "tracking": -0.02,
-     "leading": 1.33,
-     "top": 40,
+     "leading": 1.4,
+     "top": 183,
      "tag": "h1",
      "kind": "heading",
      "align": "left",
      "position": "left"
     },
     "h1": {
-     "text": "ShiftOps",
-     "words": 1,
+     "text": "Sign in to your shift",
+     "words": 5,
      "lines": 1,
-     "size": 24,
+     "size": 20,
      "font": "IBM Plex Sans"
     },
-    "headings": [
-     {
-      "text": "ShiftOps",
-      "words": 1,
-      "chars": 8,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "IBM Plex Sans",
-      "weight": 700,
-      "tracking": -0.025,
-      "leading": 1.33,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.8,
-      "top": 40,
-      "tag": "h1",
-      "kind": "heading"
-     },
-     {
-      "text": "Sign in to operations",
-      "words": 4,
-      "chars": 21,
-      "lines": 1,
-      "size": 24,
-      "vw": 6.2,
-      "font": "IBM Plex Sans",
-      "weight": 700,
-      "tracking": -0.025,
-      "leading": 1.33,
-      "upper": false,
-      "italic": false,
-      "mono": false,
-      "align": "left",
-      "position": "center",
-      "widthRatio": 0.79,
-      "top": 260,
-      "tag": "h2",
-      "kind": "heading"
-     }
-    ],
+    "headings": [],
     "headingSummary": {
-     "count": 2,
-     "maxLines": 1,
+     "count": 0,
+     "maxLines": 0,
      "over2Lines": 0,
      "statements": 0,
      "centered": 0,
-     "medianWords": 1,
+     "medianWords": null,
      "mixedFontHeadings": 0
     },
     "type": {
@@ -922,23 +805,22 @@
      "sizes": [
       12,
       14,
-      16,
-      24
+      20
      ],
-     "sizeCount": 4,
+     "sizeCount": 3,
      "notLoaded": [],
      "body": {
       "font": "IBM Plex Sans",
-      "size": 12,
-      "leading": 1.33,
+      "size": 14,
+      "leading": 1.43,
       "weight": 400,
       "tracking": 0,
-      "contrast": 6.2
+      "contrast": 8.4
      },
-     "measureChars": 60,
+     "measureChars": 51,
      "max": {
-      "size": 24,
-      "vw": 6.2,
+      "size": 20,
+      "vw": 5.1,
       "font": "IBM Plex Sans",
       "text": "ShiftOps"
      },
@@ -950,21 +832,10 @@
      "microLabelShare": 0,
      "microSamples": [],
      "upperShare": 0,
-     "centerShare": 0.22,
-     "smallText": 5
+     "centerShare": 0.38,
+     "smallText": 4
     },
-    "eyebrows": [
-     {
-      "text": "· ShiftOps v2.4",
-      "above": "Sign in to operations",
-      "upper": false,
-      "tracked": false,
-      "mono": false,
-      "pill": false,
-      "size": 12,
-      "top": 236
-     }
-    ],
+    "eyebrows": [],
     "numbered": [],
     "color": {
      "bodyBg": "#f9fbfc",
@@ -976,17 +847,17 @@
      "dark": false,
      "sectionBgs": [
       {
-       "color": "#f9fbfc",
+       "color": "#f5f5f7",
        "top": 0,
        "hsl": {
-        "h": 200,
-        "s": 0.33,
-        "l": 0.98
+        "h": 240,
+        "s": 0.11,
+        "l": 0.96
        }
       },
       {
        "color": "#ffffff",
-       "top": 209,
+       "top": 98,
        "hsl": {
         "h": 0,
         "s": 0,
@@ -996,24 +867,16 @@
      ],
      "textColors": [
       {
-       "color": "#5d5f60",
-       "share": 0.64
+       "color": "#48484a",
+       "share": 0.7
       },
       {
-       "color": "#131416",
-       "share": 0.23
+       "color": "#1d1d1f",
+       "share": 0.21
       },
       {
        "color": "#ffffff",
-       "share": 0.07
-      },
-      {
-       "color": "#1b6c80",
-       "share": 0.06
-      },
-      {
-       "color": "#cdced1",
-       "share": 0
+       "share": 0.1
       }
      ],
      "button": {
@@ -1023,7 +886,7 @@
        "s": 0,
        "l": 1
       },
-      "fg": "#5d5f60"
+      "fg": "#1d1d1f"
      },
      "lowContrast": []
     },
@@ -1031,16 +894,16 @@
      "count": 4,
      "inHero": 4,
      "radius": 8,
-     "height": 60,
+     "height": 38,
      "withShadow": 0,
      "withGradient": 0,
      "mono": 0,
      "upper": 0,
      "heroLabels": [
-      "Owner Executive",
-      "Manager Supervisor",
-      "Staff Floor Ops",
-      "Enter Operations Deck as Manager →"
+      "Manager",
+      "Store Staff",
+      "Executive",
+      "Continue to Operations as Manager"
      ]
     },
     "surfaces": {
@@ -1051,16 +914,15 @@
      "scrims": 0,
      "gradientSamples": [],
      "gradientText": 0,
-     "hairlines": 2,
+     "hairlines": 1,
      "hairlineSamples": [
-      "header.flex.flex-col 358px",
-      "div.pt-5.mt-6 308px"
+      "div.pt-4.mt-6 308px"
      ],
      "outlinedBoxes": 1,
      "dashed": 0,
      "blurred": 0,
      "roundedBoxes": 1,
-     "boxRadius": 12,
+     "boxRadius": 16,
      "squareMedia": 0,
      "roundedMedia": 0,
      "mediaRadius": 0,
@@ -1068,13 +930,7 @@
      "cardRows": []
     },
     "heroMedia": [],
-    "nav": {
-     "links": 0,
-     "fixed": false,
-     "height": 137,
-     "floatingPill": false,
-     "blur": false
-    },
+    "nav": null,
     "fontsLoaded": [
      "ibm plex sans"
     ]
@@ -1084,29 +940,29 @@
      "w": 390,
      "h": 844
     },
-    "pageH": 868,
+    "pageH": 844,
     "margins": {
-     "left": 41,
-     "right": 41
+     "left": 16,
+     "right": 16
     },
     "sections": [
      {
-      "sel": "header.flex.flex-col",
-      "tag": "header",
-      "top": 40,
-      "height": 137,
-      "words": 11,
+      "sel": "div.mb-6",
+      "tag": "div",
+      "top": 123,
+      "height": 132,
+      "words": 19,
       "media": 0,
       "middle": 0,
       "heading": {
-       "text": "ShiftOps",
-       "size": 24,
+       "text": "Sign in to your shift",
+       "size": 20,
        "tag": "h1"
       },
-      "left": 45,
-      "right": 47,
-      "textLeft": 45,
-      "textRight": 47,
+      "left": 41,
+      "right": 91,
+      "textLeft": 41,
+      "textRight": 91,
       "fullBleed": false,
       "footer": false,
       "hero": true,
@@ -1114,18 +970,14 @@
       "pinned": false
      },
      {
-      "sel": "div.grid.grid-cols-1",
-      "tag": "div",
-      "top": 209,
-      "height": 555,
-      "words": 48,
+      "sel": "form.space-y-4",
+      "tag": "form",
+      "top": 369,
+      "height": 224,
+      "words": 10,
       "media": 0,
       "middle": 0,
-      "heading": {
-       "text": "Sign in to operations",
-       "size": 24,
-       "tag": "h2"
-      },
+      "heading": null,
       "left": 41,
       "right": 41,
       "textLeft": 41,
@@ -1140,9 +992,9 @@
     "gaps": [],
     "h1s": [
      {
-      "text": "ShiftOps",
-      "size": 24,
-      "top": 40,
+      "text": "Sign in to your shift",
+      "size": 20,
+      "top": 183,
       "firstScreen": true
      }
     ],
@@ -1150,14 +1002,10 @@
     "edges": [
      {
       "x": 41,
-      "n": 2
-     },
-     {
-      "x": 64,
       "n": 1
      }
     ],
-    "leftBlocks": 3,
+    "leftBlocks": 1,
     "bodySize": 14,
     "stage": false,
     "explains": false,
@@ -1175,21 +1023,21 @@
     "sidebar": null,
     "topbar": null,
     "canvas": {
-     "left": 24,
-     "right": 35
+     "left": 16,
+     "right": 16
     },
     "hero": {
-     "text": "ShiftOps",
-     "words": 1,
-     "chars": 8,
+     "text": "Sign in to your shift",
+     "words": 5,
+     "chars": 21,
      "lines": 1,
-     "size": 24,
-     "vw": 6.2,
+     "size": 20,
+     "vw": 5.1,
      "font": "IBM Plex Sans",
      "weight": 700,
      "tracking": -0.02,
-     "leading": 1.33,
-     "top": 40,
+     "leading": 1.4,
+     "top": 183,
      "tag": "h1",
      "kind": "heading",
      "align": "left",
@@ -1202,12 +1050,12 @@
      "ragged": [],
      "voids": []
     },
-    "tiles": 0,
+    "tiles": 1,
     "panels": {
      "count": 1,
      "radii": [
       [
-       12,
+       16,
        1
       ]
      ],
@@ -1219,15 +1067,9 @@
      "glass": 0
     },
     "chips": {
-     "count": 1,
-     "hues": 1,
-     "samples": [
-      {
-       "hue": 192,
-       "size": 36,
-       "radius": "8px"
-      }
-     ]
+     "count": 0,
+     "hues": 0,
+     "samples": []
     },
     "numbers": {
      "cells": 0,
@@ -1240,21 +1082,22 @@
     "chartHues": 0,
     "placeholders": [],
     "type": {
-     "under13": 0.26,
+     "under13": 0.17,
      "tiny": 0,
      "tinySamples": [],
      "sizes": [
       12,
       14,
+      20,
       24
      ]
     },
     "title": {
-     "text": "ShiftOps",
-     "size": 24,
-     "top": 40
+     "text": "Sign in to your shift",
+     "size": 20,
+     "top": 183
     },
-    "colourShare": 0.04
+    "colourShare": 0
    },
    "consoleErrors": []
   }

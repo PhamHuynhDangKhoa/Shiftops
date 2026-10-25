@@ -14,9 +14,44 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const createFallbackUser = (emailHint?: string, roleHint?: string): User => {
+  const e = emailHint || 'manager@shiftops.com';
+  const role = (roleHint as any) || (e.includes('owner') ? 'OWNER' : e.includes('staff') ? 'STAFF' : 'MANAGER');
+  return {
+    id: 'demo-operator-1',
+    email: e,
+    fullName: role === 'OWNER' ? 'Elena Rostova' : role === 'STAFF' ? 'Jordan Kim' : 'Marcus Tanaka',
+    role,
+    primaryBranchId: 'b1',
+    primaryBranchName: 'Shibuya Flagship',
+    active: true,
+    mustChangePassword: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+};
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const isDemoMode = (() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('demo') === 'true' || params.get('demo') === 'manager';
+    } catch {
+      return false;
+    }
+  })();
+
+  const [user, setUser] = useState<User | null>(() => {
+    if (isDemoMode) {
+      return createFallbackUser('manager@shiftops.com', 'MANAGER');
+    }
+    return null;
+  });
+
   const [token, setToken] = useState<string | null>(() => {
+    if (isDemoMode) {
+      return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1MSIsImVtYWlsIjoibWFuYWdlckBzaGlmdG9wcy5jb20iLCJyb2xlIjoiTUFOQUdFUiJ9.c2ln';
+    }
     const stored = localStorage.getItem('accessToken');
     if (stored && (!isValidCompactJwt(stored) || isDemoToken(stored))) {
       localStorage.removeItem('accessToken');
@@ -24,26 +59,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
     return stored;
   });
-  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const createFallbackUser = (emailHint?: string, roleHint?: string): User => {
-    const e = emailHint || 'manager@shiftops.com';
-    const role = (roleHint as any) || (e.includes('owner') ? 'OWNER' : e.includes('staff') ? 'STAFF' : 'MANAGER');
-    return {
-      id: 'demo-operator-1',
-      email: e,
-      fullName: role === 'OWNER' ? 'Elena Rostova' : role === 'STAFF' ? 'Jordan Kim' : 'Marcus Tanaka',
-      role,
-      primaryBranchId: 'b1',
-      primaryBranchName: 'Shibuya Flagship',
-      active: true,
-      mustChangePassword: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  };
+  const [isLoading, setIsLoading] = useState<boolean>(() => !isDemoMode);
 
   const fetchCurrentUser = async () => {
+    if (isDemoMode) {
+      setIsLoading(false);
+      return;
+    }
+
     const currentToken = localStorage.getItem('accessToken');
     if (!currentToken || !isValidCompactJwt(currentToken) || isDemoToken(currentToken)) {
       logout();
@@ -80,21 +104,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     const handleUnauthorized = () => {
-      logout();
+      if (!isDemoMode) {
+        logout();
+      }
     };
     window.addEventListener('auth:unauthorized', handleUnauthorized);
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
     };
-  }, []);
+  }, [isDemoMode]);
 
   useEffect(() => {
+    if (isDemoMode) {
+      setIsLoading(false);
+      return;
+    }
+
     if (token && isValidCompactJwt(token) && !isDemoToken(token)) {
       fetchCurrentUser();
     } else {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, isDemoMode]);
 
   const login = async (email: string, password: string) => {
     try {

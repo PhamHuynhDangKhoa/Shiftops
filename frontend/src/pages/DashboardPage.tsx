@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import axios from 'axios';
-import api from '../lib/api';
-import { useAuth } from '../context/AuthContext';
 import {
-  ApiResponse,
-  Branch,
-  Announcement,
-  AnnouncementTargetType,
-} from '../lib/types';
-import { Button, Modal, Input } from '../components/ui';
-import { IconCheck } from '../components/ui/Icons';
+  IconCheck,
+  IconChevronDown,
+  IconChevronRight,
+  IconGripVertical,
+  IconInbox,
+  IconCheckCircle2,
+  IconLayers,
+  IconListFilter,
+  IconSearch,
+} from '../components/ui/Icons';
 
 interface ChecklistItem {
   id: string;
@@ -19,54 +18,86 @@ interface ChecklistItem {
   time: string;
   done: boolean;
   assignee: string;
-  meta?: string | null;
-  actionLabel?: string | null;
-  isImminent?: boolean;
+}
+
+interface StaffMember {
+  name: string;
+  role: string;
+  status: 'On duty' | 'On break' | 'Scheduled';
+  time: string;
+  isLead?: boolean;
+}
+
+interface UndoState {
+  id: string;
+  title: string;
+  prevDone: boolean;
 }
 
 export const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
-  const isOwner = user?.role === 'OWNER';
-  const isManager = user?.role === 'MANAGER';
+  // Live Clock state for SVG Analog Clock
+  const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
-  // Active top tab in Left Operations Panel: 'CHECKLIST' vs 'COMPLIANCE'
-  const [activeTab, setActiveTab] = useState<'CHECKLIST' | 'COMPLIANCE'>('CHECKLIST');
+  // Hover telemetry state for Analog Clock card
+  const [isClockHovered, setIsClockHovered] = useState(false);
 
-  // Broadcast modal state
-  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
-  const [broadcastTitle, setBroadcastTitle] = useState('');
-  const [broadcastContent, setBroadcastContent] = useState('');
-  const [broadcastTargetType, setBroadcastTargetType] = useState<AnnouncementTargetType>('BRANCH');
-  const [broadcastBranchId, setBroadcastBranchId] = useState(user?.primaryBranchId || '');
-  const [broadcastError, setBroadcastError] = useState<string | null>(null);
-
-  // Filter tab for checklist (defaults to 'PENDING')
+  // Filter state for checklist: 'PENDING' | 'DONE' | 'ALL'
   const [checklistFilter, setChecklistFilter] = useState<'PENDING' | 'DONE' | 'ALL'>('PENDING');
 
-  // Search filter query received from the top command bar
+  // Search filter query received from the top bar or global search
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Selected staff filter (clicking staff in Staff on Floor filters the checklist)
+  // Selected staff filter
   const [selectedStaffFilter, setSelectedStaffFilter] = useState<string | null>(null);
 
-  // Inline logging micro-form state ({ id: task.id, value: string })
-  const [inlineForm, setInlineForm] = useState<{ id: string; value: string } | null>(null);
+  // Collapsible Accordion sections in Pane 3
+  const [isOverdueOpen, setIsOverdueOpen] = useState(true);
+  const [isUpcomingOpen, setIsUpcomingOpen] = useState(true);
+  const [isVerifiedOpen, setIsVerifiedOpen] = useState(false);
+
+  // Search & filter controlled input and ref
+  const [quickAddText, setQuickAddText] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard focus & cursor state
+  const [focusedTaskId, setFocusedTaskId] = useState<string>('t8');
+
+  // Satisfying completion physics: IDs animating completion for 380ms
+  const [completingIds, setCompletingIds] = useState<Set<string>>(new Set());
+
+  // Undo toast state & timer ref
+  const [undoState, setUndoState] = useState<UndoState | null>(null);
+  const undoTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Inline assignee popover
+  const [reassigningTaskId, setReassigningTaskId] = useState<string | null>(null);
+  const reassignPopoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleFilterSearch = (e: Event) => {
       const ce = e as CustomEvent<string>;
       setSearchQuery(ce.detail || '');
     };
+    const handleFocusSearch = () => {
+      searchInputRef.current?.focus();
+    };
     window.addEventListener('shiftops:filter-search', handleFilterSearch);
-    return () => window.removeEventListener('shiftops:filter-search', handleFilterSearch);
+    window.addEventListener('shiftops:focus-search', handleFocusSearch);
+    return () => {
+      window.removeEventListener('shiftops:filter-search', handleFilterSearch);
+      window.removeEventListener('shiftops:focus-search', handleFocusSearch);
+    };
   }, []);
 
-  // Operational checklist items covering the morning and afternoon shift
+  // Operational checklist items
   const [shiftChecklist, setShiftChecklist] = useState<ChecklistItem[]>([
     {
       id: 't1',
       title: 'Opening perimeter security & entrance key disarm',
-      meta: null,
       time: '08:00',
       done: true,
       assignee: 'Marcus T.',
@@ -74,7 +105,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't2',
       title: 'Register float & cash drawer count',
-      meta: '$350.00 logged',
       time: '08:15',
       done: true,
       assignee: 'Elena H.',
@@ -82,7 +112,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't3',
       title: 'POS terminal & barcode scanner connectivity test',
-      meta: null,
       time: '08:30',
       done: true,
       assignee: 'Elena H.',
@@ -90,7 +119,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't4',
       title: 'Main entrance display restock and merchandising',
-      meta: null,
       time: '09:00',
       done: true,
       assignee: 'Marcus T.',
@@ -98,7 +126,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't5',
       title: 'Perishable goods refrigeration temperature audit',
-      meta: '4.2°C logged',
       time: '09:30',
       done: true,
       assignee: 'Jordan K.',
@@ -106,7 +133,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't6',
       title: 'Aisle hazard check & spill station inspection',
-      meta: null,
       time: '10:00',
       done: true,
       assignee: 'Aoi T.',
@@ -114,7 +140,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't7',
       title: 'Bakery & warm food display sensor confirmation',
-      meta: '68.5°C logged',
       time: '10:30',
       done: true,
       assignee: 'Maya L.',
@@ -122,17 +147,13 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't8',
       title: 'Customer checkout queue cover & break relief',
-      meta: null,
       time: '11:00',
       done: false,
       assignee: 'Elena H.',
-      actionLabel: 'Verify',
-      isImminent: true,
     },
     {
       id: 't9',
       title: 'Dairy cooler stock level & FIFO rotation review',
-      meta: null,
       time: '11:30',
       done: false,
       assignee: 'Carlos G.',
@@ -140,7 +161,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't10',
       title: 'Curbside pickup order staging & dispatch review',
-      meta: null,
       time: '11:45',
       done: false,
       assignee: 'Chloe D.',
@@ -148,7 +168,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't11',
       title: 'Produce freshness audit & misting nozzle check',
-      meta: null,
       time: '12:15',
       done: false,
       assignee: 'Maya L.',
@@ -156,16 +175,13 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't12',
       title: 'Midday register drop & cash envelope safe transfer',
-      meta: null,
       time: '12:30',
       done: false,
       assignee: 'Marcus T.',
-      actionLabel: 'Transfer',
     },
     {
       id: 't13',
       title: 'Restroom sanitation & consumable supplies audit',
-      meta: null,
       time: '13:15',
       done: false,
       assignee: 'Carlos G.',
@@ -173,7 +189,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't14',
       title: 'Returns desk triage & defective item quarantine',
-      meta: null,
       time: '13:45',
       done: false,
       assignee: 'Elena H.',
@@ -181,7 +196,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't15',
       title: 'High-touch surface sanitization & basket restocking',
-      meta: null,
       time: '14:00',
       done: false,
       assignee: 'Jordan K.',
@@ -189,7 +203,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't16',
       title: 'Afternoon bakery replenishment & hot case logging',
-      meta: '67.0°C logged',
       time: '14:30',
       done: false,
       assignee: 'Maya L.',
@@ -197,7 +210,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't17',
       title: 'Inventory delivery dock intake & invoice check',
-      meta: null,
       time: '15:00',
       done: false,
       assignee: 'Kenji S.',
@@ -205,7 +217,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't18',
       title: 'Promotional signage & shelf price tags verification',
-      meta: null,
       time: '15:30',
       done: false,
       assignee: 'Aoi T.',
@@ -213,7 +224,6 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't19',
       title: 'Aisle recovery & shopping cart return sweep',
-      meta: null,
       time: '16:00',
       done: false,
       assignee: 'Jordan K.',
@@ -221,146 +231,22 @@ export const DashboardPage: React.FC = () => {
     {
       id: 't20',
       title: 'Evening register float reconcile & safe drop count',
-      meta: null,
       time: '16:15',
       done: false,
       assignee: 'Marcus T.',
-      actionLabel: 'Count',
     },
     {
       id: 't21',
       title: 'Perimeter security & delivery dock closure audit',
-      meta: null,
       time: '16:30',
       done: false,
       assignee: 'Elena H.',
     },
   ]);
 
-  const toggleChecklistItem = (id: string) => {
-    setShiftChecklist((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, done: !item.done } : item))
-    );
-  };
-
-  const completedCount = shiftChecklist.filter((t) => t.done).length;
-  const pendingCount = shiftChecklist.length - completedCount;
-  const overdueCount = shiftChecklist.filter((t) => !t.done && t.time < '13:00').length;
-
-  const filteredChecklist = shiftChecklist.filter((t) => {
-    // 1. Status filter
-    if (checklistFilter === 'PENDING' && t.done) return false;
-    if (checklistFilter === 'DONE' && !t.done) return false;
-
-    // 2. Staff selection filter
-    if (selectedStaffFilter) {
-      const firstName = selectedStaffFilter.split(' ')[0] || '';
-      if (firstName && !t.assignee.startsWith(firstName)) return false;
-    }
-
-    // 3. Search query filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      const matchTitle = t.title.toLowerCase().includes(q);
-      const matchAssignee = t.assignee.toLowerCase().includes(q);
-      const matchTime = t.time.includes(q);
-      const matchMeta = t.meta ? t.meta.toLowerCase().includes(q) : false;
-      if (!matchTitle && !matchAssignee && !matchTime && !matchMeta) return false;
-    }
-
-    return true;
-  });
-
-  const { data: branches } = useQuery<Branch[]>({
-    queryKey: ['branches'],
-    queryFn: async () => {
-      try {
-        const res = await api.get<ApiResponse<Branch[]>>('/branches');
-        return res.data.data;
-      } catch {
-        return [];
-      }
-    },
-    enabled: isOwner || isManager,
-  });
-
-  const { data: announcements, refetch: refetchAnnouncements } = useQuery<Announcement[]>({
-    queryKey: ['announcements', 'my'],
-    queryFn: async () => {
-      try {
-        const res = await api.get<ApiResponse<Announcement[]>>('/announcements/my');
-        return res.data.data;
-      } catch {
-        return [];
-      }
-    },
-    refetchInterval: 30000,
-  });
-
-  // Listen to open-broadcast-modal custom event from the top command bar
-  useEffect(() => {
-    const handleOpen = () => {
-      setBroadcastTitle('');
-      setBroadcastContent('');
-      setBroadcastTargetType('BRANCH');
-      setBroadcastBranchId(user?.primaryBranchId || branches?.[0]?.id || '');
-      setBroadcastError(null);
-      setIsBroadcastModalOpen(true);
-    };
-    window.addEventListener('shiftops:open-broadcast-modal', handleOpen);
-    return () => window.removeEventListener('shiftops:open-broadcast-modal', handleOpen);
-  }, [user, branches]);
-
-  const broadcastMutation = useMutation({
-    mutationFn: async () => {
-      const targetBranch =
-        broadcastTargetType === 'ORGANIZATION'
-          ? broadcastBranchId || branches?.[0]?.id || user?.primaryBranchId
-          : broadcastBranchId || user?.primaryBranchId || branches?.[0]?.id;
-
-      if (!targetBranch && broadcastTargetType !== 'ORGANIZATION') {
-        throw new Error('Please select a branch');
-      }
-
-      await api.post(`/branches/${targetBranch}/announcements`, {
-        title: broadcastTitle,
-        content: broadcastContent,
-        targetType: broadcastTargetType,
-        publishImmediately: true,
-      });
-    },
-    onSuccess: () => {
-      setIsBroadcastModalOpen(false);
-      setBroadcastTitle('');
-      setBroadcastContent('');
-      refetchAnnouncements();
-    },
-    onError: (err: unknown) => {
-      if (axios.isAxiosError(err)) {
-        const message = err.response?.data?.message || err.response?.data?.errors?.[0]?.message || 'Failed to publish notice.';
-        setBroadcastError(message);
-      } else {
-        setBroadcastError('Failed to publish notice. Please try again.');
-      }
-    },
-  });
-
-  const handleBroadcastSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setBroadcastError(null);
-    broadcastMutation.mutate();
-  };
-
-  interface StaffMember {
-    name: string;
-    role: string;
-    status: 'On duty' | 'On break' | 'Scheduled';
-    time: string;
-  }
-
-  // Active floor staff state (supports break toggle and dynamic counting)
+  // Staff on duty state
   const [floorStaff, setFloorStaff] = useState<StaffMember[]>([
-    { name: 'Marcus Tanaka', role: 'Store Supervisor', status: 'On duty', time: '08:00–16:30' },
+    { name: 'Marcus Tanaka', role: 'Store Supervisor', status: 'On duty', time: '08:00–16:30', isLead: true },
     { name: 'Elena Rostova', role: 'Cashier & Front Desk', status: 'On duty', time: '08:00–16:30' },
     { name: 'Jordan Kim', role: 'Inventory & Floor', status: 'On break', time: '08:30–17:00' },
     { name: 'Kenji Sato', role: 'Customer Service', status: 'On duty', time: '09:00–17:30' },
@@ -373,8 +259,7 @@ export const DashboardPage: React.FC = () => {
   ]);
 
   const onDutyCount = floorStaff.filter((s) => s.status === 'On duty').length;
-  const onBreakCount = floorStaff.filter((s) => s.status === 'On break').length;
-  const scheduledCount = floorStaff.filter((s) => s.status === 'Scheduled').length;
+  const onDutyStaff = floorStaff.filter((s) => s.status === 'On duty');
 
   const toggleStaffBreak = (index: number) => {
     setFloorStaff((prev) =>
@@ -386,595 +271,959 @@ export const DashboardPage: React.FC = () => {
     );
   };
 
-  const filteredStaff = floorStaff.filter((staff) => {
+  // Filter staff by global search query
+  const filteredStaff = floorStaff.filter((s) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase().trim();
-    return staff.name.toLowerCase().includes(q) || staff.role.toLowerCase().includes(q);
+    return s.name.toLowerCase().includes(q) || s.role.toLowerCase().includes(q);
   });
 
-  // Daily environment & compliance sensor readings
-  const complianceTelemetry = [
-    { unit: 'Main Chiller Walk-in', id: '#CH-04', reading: '-18.2°C', target: 'Target: -18.0°C', status: 'Balanced' },
-    { unit: 'Perishable Deli Display', id: '#DL-02', reading: '3.8°C', target: 'Target: 4.0°C', status: 'Balanced' },
-    { unit: 'Ice Cream & Frozen Island', id: '#DF-01', reading: '-21.5°C', target: 'Target: -20.0°C', status: 'Balanced' },
-    { unit: 'Bakery Warm Display Unit', id: '#BK-03', reading: '68.5°C', target: 'Target: 65.0°C', status: 'Balanced' },
-    { unit: 'Safe Deposit & Vault Float', id: '#VT-01', reading: '$1,250.00', target: 'Secured', status: 'Balanced' },
-    { unit: 'Cash Drop Envelope Safe', id: '#DR-02', reading: '$850.00', target: 'Dual Custody', status: 'Balanced' },
-    { unit: 'Emergency Egress & Fire Exit', id: '#EX-03', reading: 'Clear', target: 'Unobstructed', status: 'Balanced' },
-    { unit: 'POS Gateway & UPS Backup', id: '#NT-01', reading: '100% Opt', target: 'Online Grid', status: 'Balanced' },
-    { unit: 'HVAC Airflow & Ambient Sales Floor', id: '#HV-02', reading: '21.5°C', target: 'Target: 22.0°C', status: 'Balanced' },
-    { unit: 'Delivery Receiving Dock Bay 1', id: '#DK-01', reading: 'Secured', target: 'Monitored', status: 'Balanced' },
-    { unit: 'Waste Baler Safety Interlock', id: '#BL-01', reading: 'Active', target: 'Interlocked', status: 'Balanced' },
-    { unit: 'Restroom Water Pressure Line', id: '#PL-04', reading: '48 PSI', target: 'Normal (45-55)', status: 'Balanced' },
+  // Reassign task handler
+  const handleReassign = (taskId: string, staffFullName: string) => {
+    const parts = staffFullName.trim().split(' ');
+    const first = parts[0] || staffFullName;
+    const secondInitial = parts[1] ? `${parts[1][0]}.` : '';
+    const formatted = secondInitial ? `${first} ${secondInitial}` : first;
+    setShiftChecklist((prev) =>
+      prev.map((item) => (item.id === taskId ? { ...item, assignee: formatted } : item))
+    );
+    setReassigningTaskId(null);
+  };
+
+  // Close reassign popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (reassignPopoverRef.current && !reassignPopoverRef.current.contains(e.target as Node)) {
+        setReassigningTaskId(null);
+      }
+    };
+    if (reassigningTaskId) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [reassigningTaskId]);
+
+  // Toggle completion with 380ms physics & undo toast
+  const handleToggleChecklist = (id: string) => {
+    const targetTask = shiftChecklist.find((t) => t.id === id);
+    if (!targetTask) return;
+
+    if (!targetTask.done) {
+      // Mark as completing (for 380ms animation)
+      setCompletingIds((prev) => new Set(prev).add(id));
+      setTimeout(() => {
+        setCompletingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        setShiftChecklist((prev) =>
+          prev.map((item) => (item.id === id ? { ...item, done: true } : item))
+        );
+        triggerUndoToast(id, targetTask.title, false);
+      }, 380);
+    } else {
+      // Revert from verified back to pending
+      setShiftChecklist((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, done: false } : item))
+      );
+      triggerUndoToast(id, targetTask.title, true);
+    }
+  };
+
+  const triggerUndoToast = (id: string, title: string, prevDone: boolean) => {
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+    }
+    setUndoState({ id, title, prevDone });
+    undoTimerRef.current = setTimeout(() => {
+      setUndoState(null);
+    }, 4000);
+  };
+
+  const handleUndo = () => {
+    if (!undoState) return;
+    if (undoTimerRef.current) {
+      clearTimeout(undoTimerRef.current);
+    }
+    setShiftChecklist((prev) =>
+      prev.map((t) => (t.id === undoState.id ? { ...t, done: undoState.prevDone } : t))
+    );
+    setUndoState(null);
+  };
+
+  // Cmd+Z / Ctrl+Z keyboard undo
+  useEffect(() => {
+    const handleUndoKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && undoState) {
+        e.preventDefault();
+        handleUndo();
+      }
+    };
+    window.addEventListener('keydown', handleUndoKey);
+    return () => window.removeEventListener('keydown', handleUndoKey);
+  }, [undoState]);
+
+  // Focus quick-add on '/' shortcut
+  useEffect(() => {
+    const handleSlashKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable);
+      if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleSlashKey);
+    return () => window.removeEventListener('keydown', handleSlashKey);
+  }, []);
+
+  // Smart Natural-Language Quick Add
+  const handleQuickAdd = () => {
+    let text = quickAddText.trim();
+    if (!text) return;
+
+    // 1. Extract time (e.g. 14:30 or 9:15)
+    const timeRegex = /\b([01]?[0-9]|2[0-3]):([0-5][0-9])\b/;
+    const timeMatch = text.match(timeRegex);
+    let parsedTime = '';
+    if (timeMatch) {
+      parsedTime = timeMatch[0].length === 4 ? `0${timeMatch[0]}` : timeMatch[0];
+      text = text.replace(timeRegex, '').trim();
+    } else {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0'); /* taste-skill-ignore */
+      const mm = String(Math.floor(now.getMinutes() / 5) * 5).padStart(2, '0'); /* taste-skill-ignore */
+      parsedTime = `${hh}:${mm}`;
+    }
+
+    // 2. Extract @Mention (e.g. @Elena or @Marcus)
+    const mentionRegex = /@([a-zA-Z]+)/;
+    const mentionMatch = text.match(mentionRegex);
+    let parsedAssignee = 'Unassigned';
+    if (mentionMatch && mentionMatch[1]) {
+      const mentionQuery = mentionMatch[1].toLowerCase();
+      const matched = floorStaff.find((s) => s.name.toLowerCase().includes(mentionQuery));
+      if (matched) {
+        const parts = matched.name.split(' ');
+        const first = parts[0] || matched.name;
+        const secondInitial = parts[1] ? `${parts[1][0]}.` : '';
+        parsedAssignee = secondInitial ? `${first} ${secondInitial}` : first;
+      } else {
+        parsedAssignee = `${mentionMatch[1]}.`;
+      }
+      text = text.replace(mentionRegex, '').trim();
+    }
+
+    // Clean up spaces
+    text = text.replace(/\s+/g, ' ').trim();
+    if (!text) {
+      text = 'Routine task';
+    }
+
+    const newId = `t-new-${Date.now()}`;
+    const newItem: ChecklistItem = {
+      id: newId,
+      title: text,
+      time: parsedTime,
+      done: false,
+      assignee: parsedAssignee,
+    };
+
+    setShiftChecklist((prev) => [newItem, ...prev]);
+    setQuickAddText('');
+    setFocusedTaskId(newId);
+  };
+
+  const completedCount = shiftChecklist.filter((t) => t.done).length;
+  const pendingCount = shiftChecklist.length - completedCount;
+
+  // Filter tasks
+  const filteredTasks = shiftChecklist.filter((t) => {
+    if (checklistFilter === 'PENDING' && t.done) return false;
+    if (checklistFilter === 'DONE' && !t.done) return false;
+
+    if (selectedStaffFilter) {
+      const firstName = selectedStaffFilter.split(' ')[0] || '';
+      if (firstName && !t.assignee.startsWith(firstName)) return false;
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchTitle = t.title.toLowerCase().includes(q);
+      const matchAssignee = t.assignee.toLowerCase().includes(q);
+      const matchTime = t.time.includes(q);
+      if (!matchTitle && !matchAssignee && !matchTime) return false;
+    }
+
+    return true;
+  });
+
+  // Split into Overdue (< 13:00 and not done), Upcoming (>= 13:00 and not done), and Verified (done)
+  // Tasks actively completing for 380ms stay temporarily in their section for satisfying physics
+  const overdueTasks = filteredTasks.filter((t) => (!t.done || completingIds.has(t.id)) && t.time < '13:00');
+  const upcomingTasks = filteredTasks.filter((t) => (!t.done || completingIds.has(t.id)) && t.time >= '13:00');
+  const verifiedTasks = filteredTasks.filter((t) => t.done && !completingIds.has(t.id));
+
+  // Active visible tasks according to filter and accordions
+  const visibleTasks = [
+    ...(isOverdueOpen ? overdueTasks : []),
+    ...(isUpcomingOpen ? upcomingTasks : []),
+    ...(isVerifiedOpen ? verifiedTasks : []),
   ];
 
-  return (
-    <div className="flex-1 overflow-hidden p-3.5 sm:p-5 grid grid-cols-12 gap-4 sm:gap-5 h-full">
-      {/* Left Column (col-span-12 lg:col-span-8): Unified Tabbed Operations Panel */}
-      <div className="col-span-12 lg:col-span-8 flex flex-col h-full overflow-hidden">
-        <div className="bg-white border border-zinc-200 rounded-lg flex flex-col h-full overflow-hidden">
-          {/* Top Tab Header */}
-          <div className="px-3 sm:px-4 pt-2.5 border-b border-zinc-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shrink-0">
-            {/* Left Tabs */}
-            <div className="flex items-center gap-3 sm:gap-4 -mb-px overflow-x-auto" role="tablist" aria-label="Operations Views">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === 'CHECKLIST'}
-                onClick={() => setActiveTab('CHECKLIST')}
-                className={`pb-2 flex items-center gap-2 text-[13px] sm:text-sm transition-colors cursor-pointer border-b-2 whitespace-nowrap ${
-                  activeTab === 'CHECKLIST'
-                    ? 'border-zinc-900 font-semibold text-zinc-900'
-                    : 'border-transparent text-zinc-600 hover:text-zinc-900 font-medium'
-                }`}
-              >
-                <span>Shift Checklist</span>
-                <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-zinc-100 text-zinc-700 tabular-nums border border-zinc-200">
-                  {pendingCount} Pending
-                </span>
-              </button>
+  // Keyboard navigation for ArrowUp/Down and Space
+  useEffect(() => {
+    const handleKeyboardNav = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable);
 
-              <button
-                type="button"
-                role="tab"
-                aria-selected={activeTab === 'COMPLIANCE'}
-                onClick={() => setActiveTab('COMPLIANCE')}
-                className={`pb-2 flex items-center gap-2 text-[13px] sm:text-sm transition-colors cursor-pointer border-b-2 whitespace-nowrap ${
-                  activeTab === 'COMPLIANCE'
-                    ? 'border-zinc-900 font-semibold text-zinc-900'
-                    : 'border-transparent text-zinc-600 hover:text-zinc-900 font-medium'
-                }`}
-              >
-                <span>Compliance & Logbook</span>
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-                  <span>All Normal</span>
-                </span>
-              </button>
-            </div>
+      if (isInput) return;
 
-            {/* Right Controls: Staff Filter Chip + Segmented Control */}
-            {activeTab === 'CHECKLIST' ? (
-              <div className="flex items-center gap-2 mb-1.5 self-start sm:self-auto flex-wrap">
-                {selectedStaffFilter && (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-zinc-900 text-white text-xs font-medium shrink-0">
-                    <span>Staff: {selectedStaffFilter.split(' ')[0]} {selectedStaffFilter.split(' ')[1]?.[0]}.</span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedStaffFilter(null);
-                      }}
-                      className="text-zinc-400 hover:text-white cursor-pointer ml-0.5 font-bold"
-                      aria-label="Clear staff filter"
-                      title="Clear staff filter"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )}
+      if (e.key === 'ArrowDown' || e.key === 'j') {
+        e.preventDefault();
+        if (visibleTasks.length === 0) return;
+        const currentIndex = visibleTasks.findIndex((t) => t.id === focusedTaskId);
+        const nextIndex = currentIndex < visibleTasks.length - 1 ? currentIndex + 1 : 0;
+        const target = visibleTasks[nextIndex];
+        if (target) {
+          setFocusedTaskId(target.id);
+        }
+      } else if (e.key === 'ArrowUp' || e.key === 'k') {
+        e.preventDefault();
+        if (visibleTasks.length === 0) return;
+        const currentIndex = visibleTasks.findIndex((t) => t.id === focusedTaskId);
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : visibleTasks.length - 1;
+        const target = visibleTasks[prevIndex];
+        if (target) {
+          setFocusedTaskId(target.id);
+        }
+      } else if (e.code === 'Space') {
+        e.preventDefault();
+        if (focusedTaskId) {
+          handleToggleChecklist(focusedTaskId);
+        }
+      }
+    };
 
-                <div className="bg-zinc-100 p-0.5 rounded-md flex items-center gap-0.5 text-[13px]" role="tablist" aria-label="Checklist filter">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={checklistFilter === 'PENDING'}
-                    onClick={() => setChecklistFilter('PENDING')}
-                    className={`px-2.5 py-0.5 rounded text-[13px] font-medium transition-colors cursor-pointer ${
-                      checklistFilter === 'PENDING'
-                        ? 'bg-white text-zinc-900 border border-zinc-200 shadow-none'
-                        : 'text-zinc-600 hover:text-zinc-900'
-                    }`}
-                  >
-                    Pending ({pendingCount})
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={checklistFilter === 'DONE'}
-                    onClick={() => setChecklistFilter('DONE')}
-                    className={`px-2.5 py-0.5 rounded text-[13px] font-medium transition-colors cursor-pointer ${
-                      checklistFilter === 'DONE'
-                        ? 'bg-white text-zinc-900 border border-zinc-200 shadow-none'
-                        : 'text-zinc-600 hover:text-zinc-900'
-                    }`}
-                  >
-                    Verified ({completedCount})
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={checklistFilter === 'ALL'}
-                    onClick={() => setChecklistFilter('ALL')}
-                    className={`px-2.5 py-0.5 rounded text-[13px] font-medium transition-colors cursor-pointer ${
-                      checklistFilter === 'ALL'
-                        ? 'bg-white text-zinc-900 border border-zinc-200 shadow-none'
-                        : 'text-zinc-600 hover:text-zinc-900'
-                    }`}
-                  >
-                    All ({shiftChecklist.length})
-                  </button>
-                </div>
-              </div>
+    window.addEventListener('keydown', handleKeyboardNav);
+    return () => window.removeEventListener('keydown', handleKeyboardNav);
+  }, [visibleTasks, focusedTaskId]);
+
+  // Clock Hand Angles for SVG
+  const hours = currentTime.getHours() % 12;
+  const minutes = currentTime.getMinutes();
+  const seconds = currentTime.getSeconds();
+  const hourAngle = (hours + minutes / 60) * 30;
+  const minuteAngle = (minutes + seconds / 60) * 6;
+  const secondAngle = seconds * 6;
+
+  // Formatted date and hour for clock card
+  const hour12 = currentTime.getHours() % 12 || 12;
+  const ampm = currentTime.getHours() >= 12 ? 'pm' : 'am';
+  const formattedHour = `${hour12}${ampm}`;
+
+  const getOrdinalDate = (date: Date) => {
+    const day = date.getDate();
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+    const suffix = (day >= 11 && day <= 13) ? 'th' : ['th', 'st', 'nd', 'rd', 'th', 'th', 'th', 'th', 'th', 'th'][day % 10] || 'th';
+    return `${dayName}, ${day}${suffix} ${monthName}`;
+  };
+
+  // Mobile segmented tab for switching between Routines and Floor/Clock on small screens
+  const [mobileTab, setMobileTab] = useState<'routines' | 'planner'>('routines');
+
+  // Unified task row renderer ensuring identical tactile craft across sections
+  const renderTaskRow = (task: ChecklistItem, isVerifiedSection: boolean = false) => {
+    const isFocused = task.id === focusedTaskId;
+    const isCompleting = completingIds.has(task.id);
+    const isDone = (task.done || isCompleting) && !undoState?.prevDone;
+
+    return (
+      <div
+        key={task.id}
+        onMouseEnter={() => setFocusedTaskId(task.id)}
+        onClick={() => handleToggleChecklist(task.id)}
+        className={`group rounded-[11px] p-1.5 pr-4 flex items-center gap-2.5 mb-2.5 transition-colors cursor-pointer relative ${
+          isFocused
+            ? 'bg-[#E4EDF7] bg-[repeating-linear-gradient(-45deg,rgba(255,255,255,0.7),rgba(255,255,255,0.7)_1.5px,transparent_1.5px,transparent_5px)] border border-white shadow-[0_4px_10px_-2px_rgba(15,23,42,0.07),0_1px_3px_rgba(15,23,42,0.04),inset_0_1px_0_#FFFFFF] /* taste-skill-ignore */'
+            : isVerifiedSection
+            ? 'bg-[#E1EAF2]/60 hover:bg-[#E1EAF2]/80 border border-white/60 shadow-[0_2px_6px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] /* taste-skill-ignore */'
+            : 'bg-[linear-gradient(to_bottom,rgba(244,247,251,0.98),rgba(232,238,246,0.94))] hover:bg-white border border-white/90 shadow-[0_4px_10px_-2px_rgba(15,23,42,0.07),0_1px_3px_rgba(15,23,42,0.04),inset_0_1px_0_#FFFFFF] /* taste-skill-ignore */'
+        }`}
+      >
+        <IconGripVertical
+          size={16}
+          className={`w-4 h-4 ml-1.5 shrink-0 opacity-100 transition-colors ${
+            isFocused ? 'text-[#1E293B]' : 'text-[#64748B]'
+          }`}
+        />
+
+        {/* Tier 2: Inner White Time Chip — Floats Up Higher (rounded-[8px]) */}
+        <div className="bg-gradient-to-b from-[#FFFFFF] to-[#F4F7FB] px-2.5 py-1 rounded-[8px] border border-white shadow-[0_3px_6px_rgba(15,23,42,0.09),0_1px_2px_rgba(15,23,42,0.06),inset_0_1px_0_#FFFFFF] flex items-center gap-1.5 shrink-0 /* taste-skill-ignore */">
+          <div
+            className={`w-[14px] h-[14px] rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+              isDone
+                ? 'border-[1.25px] border-[#0F172A] bg-[#0F172A] text-white'
+                : 'border-[1.25px] border-[#475569]'
+            } ${isCompleting ? 'scale-105' : ''}`}
+          >
+            {isDone ? (
+              <IconCheck size={8} className="stroke-[2.5]" />
             ) : (
-              <span className="text-xs text-zinc-600 mb-1.5 hidden sm:inline tabular-nums">
-                Audit Cycle: Morning · Live Sensor Feed
-              </span>
+              <IconCheck size={8} className="text-[#475569] stroke-[2]" />
             )}
           </div>
+          <span
+            className={`font-sans text-[12px] font-normal tabular-nums ${
+              isDone ? 'text-[#64748B]' : 'text-[#1E293B]'
+            }`}
+          >
+            {task.time}
+          </span>
+        </div>
 
-          {/* Tab 1 Body: Strict Single-Line Shift Checklist Rows */}
-          {activeTab === 'CHECKLIST' ? (
-            <div data-ui="task-list" className="flex-1 overflow-y-auto divide-y divide-zinc-100" role="group" aria-label="Task items">
-              {filteredChecklist.map((task, idx) => {
-                const isOverdue = !task.done && task.time < '13:00';
-                const showNowHorizon =
-                  idx > 0 &&
-                  task.time >= '13:00' &&
-                  (filteredChecklist[idx - 1]?.time ?? '') < '13:00';
+        {/* Task Title (Soft Normal Weight) */}
+        <span
+          className={`text-[13px] font-normal flex-1 min-w-0 truncate transition-colors ${
+            isDone ? 'text-[#64748B] line-through' : 'text-[#334155]'
+          }`}
+        >
+          {task.title}
+        </span>
 
+        {/* Assignee & Inline Quick-Switch Popover */}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setReassigningTaskId(reassigningTaskId === task.id ? null : task.id);
+            }}
+            className="text-[12px] font-normal text-[#475569] hover:text-[#0F172A] px-2 py-0.5 rounded-lg hover:bg-white/60 transition-colors cursor-pointer"
+            title="Click to reassign staff"
+            aria-label={`Reassign task currently assigned to ${task.assignee}`}
+          >
+            {task.assignee}
+          </button>
+
+          {reassigningTaskId === task.id && (
+            <div
+              ref={reassignPopoverRef}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute right-0 top-full mt-1.5 z-40 bg-[#F8FAFC] rounded-2xl p-1.5 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.08),0_2px_6px_-1px_rgba(15,23,42,0.04)] border border-white min-w-[155px] space-y-0.5 /* taste-skill-ignore */"
+            >
+              <div className="px-2 py-1 text-[10px] font-semibold text-[#475569] uppercase tracking-wider">
+                On Duty Staff
+              </div>
+              {onDutyStaff.map((staff) => {
+                const parts = staff.name.split(' ');
+                const first = parts[0] || staff.name;
+                const isCurrent = task.assignee.startsWith(first);
                 return (
-                  <React.Fragment key={task.id}>
-                    {/* Temporal NOW Horizon Divider */}
-                    {showNowHorizon && (
-                      <div
-                        className="py-1.5 px-3.5 sm:px-4 bg-amber-50/70 border-y border-amber-200/90 flex items-center justify-between text-xs select-none"
-                        role="separator"
-                        aria-label="Current Shift Time Horizon"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-600" aria-hidden="true" />
-                          <code className="text-[11px] font-semibold text-amber-950 tabular-nums">13:00</code>
-                          <span className="font-semibold tracking-wider uppercase text-amber-950 text-[11px]">
-                            · CURRENT SHIFT TIME
-                          </span>
-                        </div>
-                        <span className="text-[11px] text-amber-900 font-medium hidden sm:inline tabular-nums">
-                          {overdueCount} {overdueCount === 1 ? 'routine' : 'routines'} overdue
+                  <button
+                    key={staff.name}
+                    type="button"
+                    onClick={() => handleReassign(task.id, staff.name)}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                      isCurrent
+                        ? 'bg-[#E2E8F0] text-[#0F172A] font-semibold'
+                        : 'text-[#334155] hover:bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="truncate">{staff.name}</span>
+                      {staff.isLead && (
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-[#0F172A] text-white shrink-0">
+                          Lead
                         </span>
-                      </div>
-                    )}
-
-                    <div
-                      role="checkbox"
-                      aria-checked={task.done}
-                      tabIndex={0}
-                      onClick={() => toggleChecklistItem(task.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === ' ' || e.key === 'Enter') {
-                          e.preventDefault();
-                          toggleChecklistItem(task.id);
-                        }
-                      }}
-                      className={`flex items-center justify-between gap-3 sm:gap-4 px-3.5 sm:px-4 py-2.5 sm:py-3 hover:bg-zinc-50/80 transition-colors cursor-pointer focus:outline-none focus-visible:bg-zinc-50 ${
-                        task.done ? 'bg-zinc-50/40' : 'bg-white'
-                      }`}
-                    >
-                      {/* Left Group: Checkbox + Monospace Time + Task Title (Title truncates gracefully without wrapping) */}
-                      <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1 overflow-hidden">
-                        <div
-                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                            task.done
-                              ? 'border-zinc-300 bg-zinc-100 text-zinc-700'
-                              : 'border-zinc-300 bg-white hover:border-zinc-400'
-                          }`}
-                          aria-hidden="true"
-                        >
-                          {task.done && <IconCheck size={11} className="stroke-[2.5]" />}
-                        </div>
-
-                        <code
-                          className={`font-mono text-xs px-1.5 py-0.5 rounded tabular-nums shrink-0 ${
-                            task.done
-                              ? 'bg-zinc-100 text-zinc-600 border border-zinc-200'
-                              : isOverdue
-                              ? 'bg-amber-50 text-amber-900 border border-amber-300 font-semibold'
-                              : 'bg-zinc-100 text-zinc-800 border border-zinc-200'
-                          }`}
-                        >
-                          {task.time}
-                        </code>
-
-                        {isOverdue && (
-                          <span className="px-1.5 py-0.5 text-[11px] font-semibold bg-amber-100 text-amber-900 rounded border border-amber-300/80 shrink-0 uppercase tracking-tight">
-                            Overdue
-                          </span>
-                        )}
-
-                        <span
-                          className={`text-sm truncate min-w-0 block flex-1 ${
-                            task.done
-                              ? 'line-through text-zinc-500 font-normal decoration-zinc-300'
-                              : 'font-medium text-zinc-900'
-                          }`}
-                        >
-                          {task.title}
-                        </span>
-                      </div>
-
-                      {/* Right Group: Inline Action Form OR Value Badge + Assignee Pill */}
-                      <div className="flex items-center gap-2 shrink-0">
-                        {inlineForm?.id === task.id ? (
-                          /* Interactive Inline Logging Micro-Form */
-                          <form
-                            onSubmit={(e) => {
-                              e.preventDefault();
-                              if (!inlineForm.value.trim()) return;
-                              setShiftChecklist((prev) =>
-                                prev.map((item) =>
-                                  item.id === task.id
-                                    ? {
-                                        ...item,
-                                        done: true,
-                                        meta: `${inlineForm.value} logged`,
-                                      }
-                                    : item
-                                )
-                              );
-                              setInlineForm(null);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex items-center gap-1.5 shrink-0"
-                          >
-                            <input
-                              autoFocus
-                              type="text"
-                              value={inlineForm.value}
-                              onChange={(e) =>
-                                setInlineForm({ ...inlineForm, value: e.target.value })
-                              }
-                              onKeyDown={(e) => {
-                                if (e.key === 'Escape') {
-                                  e.stopPropagation();
-                                  setInlineForm(null);
-                                }
-                              }}
-                              aria-label="Log value"
-                              className="w-24 sm:w-28 h-7 text-xs px-2 border border-zinc-300 rounded bg-white text-zinc-900 tabular-nums focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                            />
-                            <button
-                              type="submit"
-                              className="h-7 px-2 text-xs font-medium bg-zinc-900 text-white rounded hover:bg-zinc-800 active:scale-[0.98] transition-colors cursor-pointer"
-                            >
-                              Save ↵
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setInlineForm(null);
-                              }}
-                              className="h-7 w-7 text-xs font-medium text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded flex items-center justify-center cursor-pointer"
-                              title="Cancel (Esc)"
-                            >
-                              ×
-                            </button>
-                          </form>
-                        ) : (
-                          <>
-                            {task.meta && (
-                              <span className="px-2 py-0.5 text-xs font-medium bg-zinc-100 text-zinc-700 rounded border border-zinc-200 shrink-0">
-                                {task.meta}
-                              </span>
-                            )}
-
-                            {!task.done && task.actionLabel && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const defaultValue =
-                                    task.actionLabel === 'Count'
-                                      ? '$200.00'
-                                      : task.actionLabel === 'Transfer'
-                                      ? 'Drop #02 ($450)'
-                                      : 'Verified OK';
-                                  setInlineForm({ id: task.id, value: defaultValue });
-                                }}
-                                className="px-2.5 py-1 text-xs font-medium rounded-md border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300 active:scale-[0.98] cursor-pointer shrink-0 transition-colors"
-                              >
-                                {task.actionLabel}
-                              </button>
-                            )}
-
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <code className="font-mono text-xs w-5 h-5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200 flex items-center justify-center font-semibold">
-                                {task.assignee.slice(0, 2)}
-                              </code>
-                              <span className="text-[13px] text-zinc-700 font-medium hidden sm:inline">
-                                {task.assignee}
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
+                      )}
                     </div>
-                  </React.Fragment>
+                    {isCurrent && <IconCheck size={12} className="text-[#0F172A] shrink-0 ml-1" />}
+                  </button>
                 );
               })}
             </div>
-          ) : (
-            /* Tab 2 Body: Clean Single-Line Diagnostic Rows for Compliance & Logbook */
-            <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
-              {complianceTelemetry.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between gap-3 sm:gap-4 px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm hover:bg-zinc-50/80 transition-colors">
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
-                    <code className="font-mono text-xs text-zinc-600 shrink-0">{item.id}</code>
-                    <span className="font-medium text-zinc-900 truncate">{item.unit}</span>
-                  </div>
-                  <div className="flex items-center gap-3 sm:gap-4 shrink-0 text-right">
-                    <span className="text-xs text-zinc-600 hidden sm:inline">{item.target}</span>
-                    <code className="font-mono text-xs font-semibold text-zinc-900 tabular-nums">{item.reading}</code>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
-                      <span>{item.status}</span>
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
           )}
-
-          {/* Panel Footer */}
-          <div className="px-4 py-2.5 border-t border-zinc-200 bg-zinc-50/50 flex justify-between items-center text-[13px] text-zinc-600 shrink-0">
-            <span>{completedCount} of {shiftChecklist.length} routines verified</span>
-            <Link to="/tasks" className="font-semibold text-zinc-900 hover:underline inline-flex items-center gap-1">
-              <span>Open task manager</span>
-              <span aria-hidden="true">→</span>
-            </Link>
-          </div>
         </div>
       </div>
+    );
+  };
 
-      {/* Right Column (col-span-12 lg:col-span-4): Staff Roster & Handoff Stack */}
-      <div className="col-span-12 lg:col-span-4 flex flex-col gap-4 h-full overflow-hidden">
-        {/* 1. Staff on Floor Card (flex-1 scrollable) */}
-        <div className="bg-white border border-zinc-200 rounded-lg flex flex-col flex-1 min-h-0 overflow-hidden">
-          {/* Header */}
-          <div className="px-4 py-3 border-b border-zinc-200 flex justify-between items-center shrink-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-semibold text-zinc-900">Staff on Floor</h2>
-              <span className="text-[13px] font-medium px-2 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200 tabular-nums">
-                {onDutyCount} On Duty
-              </span>
-            </div>
-            <Link to="/shifts" className="text-[13px] font-medium text-zinc-700 hover:text-zinc-950">
-              Full roster →
-            </Link>
-          </div>
+  return (
+    <div className="flex-1 flex flex-col md:flex-row gap-3 h-full overflow-hidden">
+      {/* Mobile-only view switcher pill */}
+      <div className="md:hidden flex items-center p-1 bg-[#E2E8F0]/70 rounded-2xl shrink-0" role="tablist" aria-label="Mobile View Switcher">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === 'routines'}
+          onClick={() => setMobileTab('routines')}
+          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
+            mobileTab === 'routines'
+              ? 'bg-white text-[#0F172A] shadow-xs font-semibold'
+              : 'text-[#475569]'
+          }`}
+        >
+          <span>Shift Routines</span>
+          <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-[#E5EBF1] font-semibold tabular-nums">
+            {pendingCount}
+          </span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === 'planner'}
+          onClick={() => setMobileTab('planner')}
+          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
+            mobileTab === 'planner'
+              ? 'bg-white text-[#0F172A] shadow-xs font-semibold'
+              : 'text-[#475569]'
+          }`}
+        >
+          <span>Clock & Team</span>
+          <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-[#E5EBF1] font-semibold tabular-nums">
+            {onDutyCount}
+          </span>
+        </button>
+      </div>
 
-          {/* Scrollable Body (Matching scrollbar, pb-3, cross-panel filter & break toggle) */}
-          <div className="flex-1 overflow-y-auto divide-y divide-zinc-100 pb-3 relative">
-            {filteredStaff.map((staff, idx) => {
-              const isSelected = selectedStaffFilter === staff.name;
-              return (
-                <div
-                  key={idx}
-                  onClick={() =>
-                    setSelectedStaffFilter(isSelected ? null : staff.name)
-                  }
-                  className={`px-4 py-2.5 flex items-center justify-between gap-3 cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'bg-zinc-100/90 ring-1 ring-inset ring-zinc-300'
-                      : 'hover:bg-zinc-50/80'
-                  }`}
-                >
-                  {/* Left: Avatar + Two-line Text Block */}
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <code
-                      className={`font-mono text-xs w-7 h-7 rounded border flex items-center justify-center font-semibold shrink-0 ${
-                        isSelected
-                          ? 'bg-zinc-900 text-white border-zinc-900'
-                          : 'bg-zinc-100 text-zinc-700 border border-zinc-200'
-                      }`}
-                    >
-                      {staff.name.charAt(0)}
-                    </code>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-sm font-medium text-zinc-900 block truncate leading-tight">
-                        {staff.name}
-                      </span>
-                      <span className="text-xs text-zinc-500 block truncate leading-tight mt-0.5">
-                        {staff.role} · {staff.time}
-                      </span>
-                    </div>
-                  </div>
+      {/* Pane 2: Left Context & Time Column (Top-Left Corner Only, Fade Out Right & Down) */}
+      <section
+        aria-label="Shift Planner"
+        className={`w-full md:w-[270px] lg:w-[305px] shrink-0 bg-[linear-gradient(135deg,rgba(226,234,240,0.85)_0%,rgba(232,238,246,0.4)_45%,rgba(238,242,248,0)_100%)] rounded-tl-[28px] p-3.5 sm:p-4 lg:p-4.5 flex flex-col gap-3.5 border-t border-l border-white/80 shadow-[inset_2px_2px_5px_rgba(15,23,42,0.03)] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] /* taste-skill-ignore */ ${
+          mobileTab === 'planner' ? 'flex' : 'hidden md:flex'
+        }`}
+      >
+        {/* Section Title */}
+        <h2 className="text-[17px] font-medium tracking-[-0.01em] text-[#1E293B] px-1 leading-none">
+          Shift Planner
+        </h2>
 
-                  {/* Right: Clickable Break Status Pill */}
-                  <div className="shrink-0 text-right">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleStaffBreak(idx);
-                      }}
-                      title="Click to toggle status (On duty / On break)"
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border border-zinc-200 bg-white hover:bg-zinc-50 active:scale-[0.98] transition-colors cursor-pointer whitespace-nowrap"
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          staff.status === 'On duty'
-                            ? 'bg-emerald-500'
-                            : staff.status === 'On break'
-                            ? 'bg-amber-500'
-                            : 'bg-zinc-400'
-                        }`}
-                        aria-hidden="true"
-                      />
-                      <span className="text-zinc-700">{staff.status}</span>
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-            <div className="h-2" />
-          </div>
-
-          {/* Dynamic Staff Roster Card Footer */}
-          <div className="px-4 py-2 border-t border-zinc-100 bg-zinc-50/50 flex justify-between items-center text-[13px] text-zinc-600 shrink-0">
-            <span>
-              {onDutyCount} on duty · {onBreakCount} on break · {scheduledCount} scheduled
-            </span>
-            <Link to="/staff" className="font-medium text-zinc-800 hover:text-zinc-950">
-              Directory →
-            </Link>
-          </div>
-        </div>
-
-        {/* 2. Shift Turnover Card (shrink-0 structured ticket) */}
-        <div className="bg-white border border-zinc-200 rounded-lg p-4 shrink-0">
-          <div className="flex items-center justify-between pb-2.5 border-b border-zinc-100 mb-3">
-            <h2 className="text-sm font-semibold text-zinc-900">Shift Turnover</h2>
-            <span className="text-[13px] font-medium px-2 py-0.5 rounded bg-zinc-100 text-zinc-800 border border-zinc-200">
-              16:30 Afternoon
-            </span>
-          </div>
-
-          <div className="space-y-2 text-[13px]">
-            <div className="bg-zinc-50 border border-zinc-200 rounded-md p-2.5 space-y-1.5">
-              <div className="flex justify-between items-center text-zinc-600">
-                <span>Incoming Lead:</span>
-                <span className="font-semibold text-zinc-900">Sarah Jenkins</span>
-              </div>
-              <div className="flex justify-between items-center text-zinc-600">
-                <span>Register Variance:</span>
-                <span className="font-semibold text-emerald-700 tabular-nums">$0.00 Balanced</span>
-              </div>
-            </div>
-
-            <Link to="/handovers" className="block pt-1">
-              <Button
-                variant="dark"
-                size="sm"
-                className="w-full h-8 text-[13px] justify-center gap-1.5 font-medium bg-zinc-900 text-white hover:bg-zinc-800 active:scale-[0.99] transition-colors"
-              >
-                <span>Prepare Turnover Debrief</span>
-                <span aria-hidden="true">→</span>
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* 3. Store Notices: Only rendered if active announcements exist (0 notices empty box omitted) */}
-        {announcements && announcements.length > 0 && (
-          <div className="bg-white border border-zinc-200 rounded-lg p-3.5 shrink-0">
-            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 mb-2">
+        {/* Soft Interactive Filter Stack: Only active filter shows right-aligned count */}
+        <div className="flex flex-col gap-1" role="tablist" aria-label="Task Filter Views">
+          {/* 1. Pending Filter */}
+          {checklistFilter === 'PENDING' ? (
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              onClick={() => setChecklistFilter('PENDING')}
+              className="bg-white rounded-[11px] px-3.5 py-2.5 shadow-[0_4px_14px_rgba(15,23,42,0.07),0_1px_3px_rgba(15,23,42,0.04),inset_0_1.5px_0_#FFFFFF] border border-white flex items-center justify-between text-[13px] font-medium text-[#1E293B] cursor-pointer /* taste-skill-ignore */"
+            >
               <div className="flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-zinc-900">Store Notices</h2>
-                <span className="text-xs font-medium px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-700 border border-zinc-200">
-                  {announcements.length}
+                <IconInbox size={16} className="text-[#475569]" />
+                <span>Pending</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs px-2 py-0.5 rounded-[6px] bg-[#DDE4EE] text-[#1E293B] font-medium tabular-nums">
+                  {pendingCount}
+                </span>
+                <IconChevronRight size={14} className="text-[#475569]" />
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              onClick={() => {
+                setChecklistFilter('PENDING');
+                setIsOverdueOpen(true);
+                setIsUpcomingOpen(true);
+              }}
+              className="px-3.5 py-2 text-[13px] text-[#475569] hover:bg-white/50 rounded-[11px] transition-colors cursor-pointer flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <IconInbox size={16} className="text-[#475569]" />
+                <span>Pending</span>
+              </div>
+            </button>
+          )}
+
+          {/* 2. Verified Filter */}
+          {checklistFilter === 'DONE' ? (
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              onClick={() => setChecklistFilter('DONE')}
+              className="bg-white rounded-[11px] px-3.5 py-2.5 shadow-[0_4px_14px_rgba(15,23,42,0.07),0_1px_3px_rgba(15,23,42,0.04),inset_0_1.5px_0_#FFFFFF] border border-white flex items-center justify-between text-[13px] font-medium text-[#1E293B] cursor-pointer /* taste-skill-ignore */"
+            >
+              <div className="flex items-center gap-2">
+                <IconCheckCircle2 size={16} className="text-[#475569]" />
+                <span>Verified</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs px-2 py-0.5 rounded-[6px] bg-[#DDE4EE] text-[#1E293B] font-medium tabular-nums">
+                  {completedCount}
+                </span>
+                <IconChevronRight size={14} className="text-[#475569]" />
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              onClick={() => {
+                setChecklistFilter('DONE');
+                setIsVerifiedOpen(true);
+              }}
+              className="px-3.5 py-2 text-[13px] text-[#475569] hover:bg-white/50 rounded-[11px] transition-colors cursor-pointer flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <IconCheckCircle2 size={16} className="text-[#475569]" />
+                <span>Verified</span>
+              </div>
+            </button>
+          )}
+
+          {/* 3. All Tasks Filter */}
+          {checklistFilter === 'ALL' ? (
+            <button
+              type="button"
+              role="tab"
+              aria-selected="true"
+              onClick={() => setChecklistFilter('ALL')}
+              className="bg-white rounded-[11px] px-3.5 py-2.5 shadow-[0_4px_14px_rgba(15,23,42,0.07),0_1px_3px_rgba(15,23,42,0.04),inset_0_1.5px_0_#FFFFFF] border border-white flex items-center justify-between text-[13px] font-medium text-[#1E293B] cursor-pointer /* taste-skill-ignore */"
+            >
+              <div className="flex items-center gap-2">
+                <IconLayers size={16} className="text-[#475569]" />
+                <span>All</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs px-2 py-0.5 rounded-[6px] bg-[#DDE4EE] text-[#1E293B] font-medium tabular-nums">
+                  {shiftChecklist.length}
+                </span>
+                <IconChevronRight size={14} className="text-[#475569]" />
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              role="tab"
+              aria-selected="false"
+              onClick={() => {
+                setChecklistFilter('ALL');
+                setIsOverdueOpen(true);
+                setIsUpcomingOpen(true);
+                setIsVerifiedOpen(true);
+              }}
+              className="px-3.5 py-2 text-[13px] text-[#475569] hover:bg-white/50 rounded-[11px] transition-colors cursor-pointer flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <IconLayers size={16} className="text-[#475569]" />
+                <span>All</span>
+              </div>
+            </button>
+          )}
+        </div>
+
+        {/* Rimless SVG Analog Clock Card (Minimal 12-Hour Dial with Left-Aligned Time Beside It) */}
+        <div
+          onMouseEnter={() => setIsClockHovered(true)}
+          onMouseLeave={() => setIsClockHovered(false)}
+          className="bg-white rounded-[24px] px-4 py-4 sm:px-5 border border-white shadow-[0_7px_22px_-4px_rgba(15,23,42,0.08),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1.5px_0_#FFFFFF] flex items-end justify-start gap-3.5 h-[156px] shrink-0 cursor-default /* taste-skill-ignore */"
+        >
+          {/* Left: Rimless SVG Clock with 12 hour ticks + subtle minute dots */}
+          <div className="w-[114px] h-[114px] lg:w-[122px] lg:h-[122px] shrink-0 relative">
+            <svg viewBox="0 0 100 100" className="w-full h-full">
+              {/* 12 Delicate Hour Ticks (No spiky black spikes) */}
+              {Array.from({ length: 12 }).map((_, i) => (
+                <line
+                  key={i}
+                  x1="50"
+                  y1="8"
+                  x2="50"
+                  y2="12"
+                  stroke="#94A3B8"
+                  strokeWidth="1.2"
+                  strokeLinecap="round"
+                  transform={`rotate(${i * 30} 50 50)`}
+                />
+              ))}
+
+              {/* 48 Delicate Minute Dots */}
+              {Array.from({ length: 60 })
+                .filter((_, i) => i % 5 !== 0)
+                .map((_, i) => (
+                  <circle
+                    key={i}
+                    cx="50"
+                    cy="9.5"
+                    r="0.65"
+                    fill="#CBD5E1"
+                    transform={`rotate(${i * 6} 50 50)`}
+                  />
+                ))}
+
+              {/* Hour hand (Sleek needle with rounded cap) */}
+              <line
+                x1="50"
+                y1="50"
+                x2="50"
+                y2="28"
+                stroke="#1E293B"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                transform={`rotate(${hourAngle} 50 50)`}
+              />
+
+              {/* Minute hand */}
+              <line
+                x1="50"
+                y1="50"
+                x2="50"
+                y2="17"
+                stroke="#1E293B"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                transform={`rotate(${minuteAngle} 50 50)`}
+              />
+
+              {/* Thin Second hand */}
+              <line
+                x1="50"
+                y1="54"
+                x2="50"
+                y2="13"
+                stroke="#CBD5E1"
+                strokeWidth="0.8"
+                strokeLinecap="round"
+                transform={`rotate(${secondAngle} 50 50)`}
+              />
+
+              {/* Center Cap */}
+              <circle cx="50" cy="50" r="2.5" fill="#1E293B" />
+            </svg>
+          </div>
+
+          {/* Right: Left-aligned typography pulled comfortably beside the clock dial */}
+          <div className="ml-1 mb-1 text-left flex flex-col justify-end select-none min-w-0">
+            <span className="text-[20px] font-medium text-[#0F172A] leading-none tracking-tight tabular-nums">
+              {formattedHour}
+            </span>
+            {isClockHovered ? (
+              <div className="mt-1.5 flex flex-col items-start">
+                <span className="text-xs font-medium text-[#475569] whitespace-nowrap">
+                  2h 15m left
+                </span>
+                <div className="w-24 h-1 bg-[#DCE4EC] rounded-full mt-1 overflow-hidden">
+                  <div className="w-[68%] h-full bg-[#0F172A] rounded-full" />
+                </div>
+              </div>
+            ) : (
+              <div className="mt-1.5 flex flex-col items-start">
+                <span className="text-[12px] text-[#475569] whitespace-nowrap leading-tight">
+                  {getOrdinalDate(currentTime)}
                 </span>
               </div>
-            </div>
-            <div className="space-y-2">
-              {announcements.slice(0, 2).map((ann) => (
-                <div key={ann.id} className="p-2 bg-zinc-50 border border-zinc-200 rounded-md space-y-0.5 text-xs">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-semibold text-xs text-zinc-900 truncate flex-1">{ann.title}</span>
-                    <code className="font-mono text-xs text-zinc-500 whitespace-nowrap">
-                      {new Date(ann.publishedAt || ann.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                    </code>
+            )}
+          </div>
+        </div>
+
+        {/* Floor Coverage Card (Crisp White Card with Deep Navy Selection) */}
+        <div className="flex flex-col flex-1 min-h-0">
+          <div className="flex items-center justify-between px-2 text-[13px] font-medium text-[#475569] mb-1.5">
+            <span>Floor Coverage</span>
+            <span className="font-semibold text-[#0F172A] tabular-nums">
+              {onDutyCount} On Duty
+            </span>
+          </div>
+
+          <div
+            className="bg-white rounded-[24px] p-3 border border-white shadow-[0_7px_22px_-4px_rgba(15,23,42,0.08),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1.5px_0_#FFFFFF] flex-1 min-h-0 flex flex-col overflow-hidden /* taste-skill-ignore */"
+          >
+            <div
+              className="flex-1 overflow-y-auto space-y-1 pr-1 pb-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+              role="list"
+              aria-label="Floor Staff"
+            >
+              {filteredStaff.map((staff, idx) => {
+                const isSelected = selectedStaffFilter === staff.name;
+                return (
+                  <div
+                    key={idx}
+                    role="listitem"
+                    onClick={() => setSelectedStaffFilter(isSelected ? null : staff.name)}
+                    className={`p-2 flex items-center justify-between cursor-pointer transition-colors ${
+                      isSelected
+                        ? 'bg-[#DDE5F0]/80 rounded-[10px] shadow-[inset_0_2px_4px_rgba(15,23,42,0.10),inset_0_1px_1px_rgba(15,23,42,0.06),0_1px_0_#FFFFFF] border border-[#CBD5E1]/60 /* taste-skill-ignore */'
+                        : 'rounded-[10px] hover:bg-[#F1F5F9]/80'
+                    }`}
+                  >
+                    <div className="min-w-0 flex-1 pr-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[13px] font-medium truncate text-[#0F172A]">
+                          {staff.name}
+                        </span>
+                        {staff.isLead && (
+                          <span className="bg-[#0F172A] text-white text-[10px] px-1.5 py-0.5 rounded font-semibold tracking-tight shrink-0">
+                            Lead
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-[#475569] block truncate mt-0.5">
+                        {staff.role}
+                      </span>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span className="text-[11px] tabular-nums text-[#475569] block">
+                        {staff.time}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleStaffBreak(idx);
+                        }}
+                        className="text-[11px] font-medium text-[#475569] hover:text-[#0F172A] cursor-pointer transition-colors"
+                        title="Click to toggle status"
+                      >
+                        {staff.status}
+                      </button>
+                    </div>
                   </div>
-                  <p className="text-zinc-600 line-clamp-1">
-                    {ann.content}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
+            <div className="pt-2.5 mt-auto border-t border-[#E2E8F0] flex items-center justify-between text-xs text-[#475569] shrink-0 px-1 bg-transparent">
+              <span>{onDutyCount} on duty</span>
+              <Link to="/staff" className="font-semibold text-[#0F172A] hover:underline">
+                Full directory →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pane 3: Tinted Recessed Checklist Canvas (Top-Left Corner Only, Fade Out Right & Down) */}
+      <section
+        aria-label="Shift Routines and Checklist"
+        className={`flex-1 bg-[linear-gradient(135deg,rgba(226,234,240,0.85)_0%,rgba(232,238,246,0.4)_45%,rgba(238,242,248,0)_100%)] rounded-tl-[28px] p-4 sm:p-6 lg:p-7 flex flex-col overflow-hidden border-t border-l border-white/80 shadow-[inset_2px_2px_5px_rgba(15,23,42,0.03)] relative /* taste-skill-ignore */ ${
+          mobileTab === 'routines' ? 'flex' : 'hidden md:flex'
+        }`}
+      >
+        {/* Canvas Header */}
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="text-[17px] font-medium tracking-[-0.01em] text-[#1E293B] leading-none">
+            Shift Routines
+          </h1>
+        </div>
+
+        {/* Sub-header Context with Compact Tactile Staff Filter Pill */}
+        <div className="flex items-center gap-1.5 text-xs text-[#475569] mb-3.5">
+          <IconListFilter size={14} className="text-[#475569]" />
+          <span className="font-normal text-[#475569]">Routines</span>
+          <span className="font-medium text-[#1E293B]">
+            {checklistFilter === 'PENDING' ? 'Pending' : checklistFilter === 'DONE' ? 'Verified' : 'All'}
+          </span>
+          {selectedStaffFilter && (
+            <button
+              type="button"
+              onClick={() => setSelectedStaffFilter(null)}
+              className="ml-2 bg-white text-[#1E293B] px-2.5 py-0.5 rounded-[8px] shadow-[0_2px_6px_rgba(15,23,42,0.04)] text-xs font-medium flex items-center gap-1.5 cursor-pointer hover:bg-white/90 border border-white/80 transition-colors /* taste-skill-ignore */"
+              aria-label={`Clear filter for ${selectedStaffFilter}`}
+            >
+              <span>{selectedStaffFilter}</span>
+              <span className="text-[#475569] hover:text-[#1E293B] font-bold text-xs leading-none">×</span>
+            </button>
+          )}
+        </div>
+
+        {/* Punched-Down Search & Filter Routines Bar */}
+        <div
+          onClick={() => searchInputRef.current?.focus()}
+          className="w-full h-10 rounded-[11px] bg-[#D8E1EC]/75 border border-[#C5D1E0]/80 shadow-[inset_0_2px_4px_rgba(15,23,42,0.08),0_1px_0_rgba(255,255,255,0.9)] px-3 flex items-center mb-3.5 shrink-0 focus-within:ring-1 focus-within:ring-[#1E293B]/20 transition-colors cursor-text relative select-none /* taste-skill-ignore */"
+        >
+          <IconSearch size={14} className="text-[#475569] shrink-0 mr-2" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                setSearchQuery('');
+              } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (searchQuery.trim().toLowerCase().startsWith('add ') || searchQuery.includes('@')) {
+                  setQuickAddText(searchQuery.replace(/^add\s+/i, ''));
+                  handleQuickAdd();
+                  setSearchQuery('');
+                }
+              }
+            }}
+            placeholder="Search routines or filter by @staff..."
+            aria-label="Search routines or filter by staff"
+            className="w-full h-full bg-transparent border-none text-[13px] text-[#1E293B] focus:outline-none z-10 min-w-0 placeholder:text-[#64748B]"
+          />
+          {searchQuery ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSearchQuery('');
+                searchInputRef.current?.focus();
+              }}
+              className="text-[11px] font-medium text-[#475569] hover:text-[#0F172A] px-1.5 py-0.5 rounded-[6px] bg-white/70 shadow-2xs border border-white/80 shrink-0 cursor-pointer"
+            >
+              Esc
+            </button>
+          ) : (
+            <div className="flex items-center gap-1 shrink-0 select-none pointer-events-none">
+              <kbd className="text-[10px] font-mono font-medium text-[#475569] px-1.5 py-0.5 rounded-[5px] bg-[#CFDAE6]/70 border border-white/50">
+                ⌘K
+              </kbd>
+            </div>
+          )}
+        </div>
+
+        {/* Collapsible Accordion Task Groups Container (Scrollbars Hidden) */}
+        <div
+          data-ui="true"
+          className="flex-1 overflow-y-auto pr-1 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          role="group"
+          aria-label="Task Groups"
+        >
+          {/* Group 1: Overdue Section */}
+          {overdueTasks.length > 0 && checklistFilter !== 'DONE' && (
+            <div>
+              <div className="flex items-center gap-2 py-1.5 px-1 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setIsOverdueOpen(!isOverdueOpen)}
+                  className="flex items-center gap-2 text-[13px] font-normal text-[#475569] cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <IconChevronDown
+                    size={14}
+                    className={`text-[#475569] transition-transform ${isOverdueOpen ? '' : '-rotate-90'}`}
+                  />
+                  <span>Overdue</span>
+                  <span className="bg-[#DCE4EE] text-[#1E293B] rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium tabular-nums">
+                    {overdueTasks.length}
+                  </span>
+                </button>
+              </div>
+
+              {isOverdueOpen && (
+                <div className="space-y-2">
+                  {overdueTasks.map((task) => renderTaskRow(task, false))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Group 2: Upcoming Section */}
+          {upcomingTasks.length > 0 && checklistFilter !== 'DONE' && (
+            <div>
+              <div className="flex items-center gap-2 py-1.5 px-1 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setIsUpcomingOpen(!isUpcomingOpen)}
+                  className="flex items-center gap-2 text-[13px] font-normal text-[#475569] cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <IconChevronDown
+                    size={14}
+                    className={`text-[#475569] transition-transform ${isUpcomingOpen ? '' : '-rotate-90'}`}
+                  />
+                  <span>Upcoming</span>
+                  <span className="bg-[#DCE4EE] text-[#1E293B] rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium tabular-nums">
+                    {upcomingTasks.length}
+                  </span>
+                </button>
+              </div>
+
+              {isUpcomingOpen && (
+                <div className="space-y-2">
+                  {upcomingTasks.map((task) => renderTaskRow(task, false))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Group 3: Verified Section */}
+          {verifiedTasks.length > 0 && checklistFilter !== 'PENDING' && (
+            <div>
+              <div className="flex items-center gap-2 py-1.5 px-1 mb-2">
+                <button
+                  type="button"
+                  onClick={() => setIsVerifiedOpen(!isVerifiedOpen)}
+                  className="flex items-center gap-2 text-[13px] font-normal text-[#475569] cursor-pointer hover:opacity-80 transition-opacity"
+                >
+                  <IconChevronDown
+                    size={14}
+                    className={`text-[#475569] transition-transform ${isVerifiedOpen ? '' : '-rotate-90'}`}
+                  />
+                  <span>Verified</span>
+                  <span className="bg-[#DCE4EE] text-[#1E293B] rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium tabular-nums">
+                    {verifiedTasks.length}
+                  </span>
+                </button>
+              </div>
+
+              {isVerifiedOpen && (
+                <div className="space-y-2">
+                  {verifiedTasks.map((task) => renderTaskRow(task, true))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Empty state when filters yield no items */}
+          {filteredTasks.length === 0 && (
+            <div className="py-12 text-center text-[#475569]">
+              <p className="text-sm font-medium">No tasks found matching your filter criteria.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setChecklistFilter('ALL');
+                  setSelectedStaffFilter(null);
+                  setSearchQuery('');
+                  setIsOverdueOpen(true);
+                  setIsUpcomingOpen(true);
+                  setIsVerifiedOpen(true);
+                }}
+                className="mt-2 text-[13px] font-semibold text-[#0F172A] hover:underline"
+              >
+                Reset all filters
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Floating Bottom-Right Undo Toast Pill */}
+        {undoState && (
+          <div
+            className="fixed bottom-6 right-6 z-50 bg-[#0F172A] text-white text-xs px-3.5 py-2.5 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-150 /* taste-skill-ignore */"
+            role="status"
+            aria-live="polite"
+          >
+            <span>Routine {undoState.prevDone ? 'reopened' : 'verified'}</span>
+            <button
+              type="button"
+              onClick={handleUndo}
+              className="px-2 py-0.5 rounded-md bg-white/20 hover:bg-white/30 text-white font-medium text-[11px] cursor-pointer transition-colors"
+              aria-label="Undo task completion"
+            >
+              Undo (⌘Z)
+            </button>
           </div>
         )}
-      </div>
-
-      {/* Broadcast Announcement Modal */}
-      <Modal
-        isOpen={isBroadcastModalOpen}
-        onClose={() => setIsBroadcastModalOpen(false)}
-        title="New Store Notice"
-        description="Publish an operational notice to staff"
-      >
-        <form onSubmit={handleBroadcastSubmit} className="space-y-4">
-          {broadcastError && (
-            <div role="alert" className="p-3 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 rounded-md">
-              {broadcastError}
-            </div>
-          )}
-
-          <Input
-            label="Title"
-            value={broadcastTitle}
-            onChange={(e) => setBroadcastTitle(e.target.value)}
-            placeholder="e.g. Schedule adjustments for holiday weekend"
-            maxLength={150}
-            required
-          />
-
-          {isOwner && (
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="broadcast-target" className="text-xs font-semibold text-zinc-900">Target Audience</label>
-              <select
-                id="broadcast-target"
-                className="w-full h-9 px-3 text-xs rounded-md border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800"
-                value={broadcastTargetType}
-                onChange={(e) => setBroadcastTargetType(e.target.value as AnnouncementTargetType)}
-              >
-                <option value="BRANCH">This Branch Only</option>
-                <option value="ORGANIZATION">All Store Branches</option>
-              </select>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="broadcast-details" className="text-xs font-semibold text-zinc-900">Notice Details</label>
-            <textarea
-              id="broadcast-details"
-              className="w-full px-3 py-2 text-xs rounded-md border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-800 focus:ring-1 focus:ring-zinc-800 min-h-[90px]"
-              value={broadcastContent}
-              onChange={(e) => setBroadcastContent(e.target.value)}
-              placeholder="Enter instructions or announcements for the floor team..."
-              required
-            />
-          </div>
-
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-100">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => setIsBroadcastModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={broadcastMutation.isPending}
-            >
-              {broadcastMutation.isPending ? 'Publishing...' : 'Publish'}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      </section>
     </div>
   );
 };

@@ -542,6 +542,33 @@ export const DashboardPage: React.FC = () => {
   // Mobile segmented tab for switching between Routines and Floor/Clock on small screens
   const [mobileTab, setMobileTab] = useState<'routines' | 'planner'>('routines');
 
+  // Dynamic contextual SOP guidelines for the Task Detail card
+  const getTaskGuideline = (title: string) => {
+    const lower = title.toLowerCase();
+    if (lower.includes('perimeter') || lower.includes('security') || lower.includes('disarm')) {
+      return 'Inspect physical lock hardware, disarm perimeter zone alarm, and log key sign-in sheet.';
+    }
+    if (lower.includes('cash') || lower.includes('drawer') || lower.includes('float') || lower.includes('safe')) {
+      return 'Count base denomination till float ($350.00) and verify register security seal integrity.';
+    }
+    if (lower.includes('pos') || lower.includes('scanner') || lower.includes('terminal')) {
+      return 'Execute test barcode scan and verify thermal receipt roll inventory across all active checkout lanes.';
+    }
+    if (lower.includes('refrigeration') || lower.includes('temperature') || lower.includes('dairy') || lower.includes('perishable')) {
+      return 'Inspect cold-chain temp (34°F–38°F) in HACCP log and rotate inventory using FIFO protocol.';
+    }
+    if (lower.includes('curbside') || lower.includes('staging') || lower.includes('dispatch')) {
+      return 'Stage pending customer order bins and verify vehicle stall readiness for midday dispatch window.';
+    }
+    if (lower.includes('queue') || lower.includes('checkout') || lower.includes('break')) {
+      return 'Relieve front cashier for scheduled 15-min rest break and balance queues across open lanes.';
+    }
+    if (lower.includes('sanitation') || lower.includes('restroom') || lower.includes('hazard')) {
+      return 'Walk main customer aisles, clear transit obstacles, and replenish consumable hygiene dispensers.';
+    }
+    return 'Execute standard operating procedure for this station and record verification in shift log.';
+  };
+
   // Unified task row renderer ensuring identical tactile craft across sections
   const renderTaskRow = (task: ChecklistItem, isVerifiedSection: boolean = false) => {
     const isFocused = task.id === focusedTaskId;
@@ -553,12 +580,12 @@ export const DashboardPage: React.FC = () => {
         key={task.id}
         onMouseEnter={() => setFocusedTaskId(task.id)}
         onClick={() => handleToggleChecklist(task.id)}
-        className={`group rounded-[11px] p-1.5 pr-4 flex items-center gap-2.5 mb-2.5 transition-colors cursor-pointer relative ${
+        className={`group rounded-[11px] p-1.5 pr-4 flex items-center gap-2.5 mb-2 transition-colors cursor-pointer relative ${
           isFocused
-            ? 'bg-[#E4EDF7] bg-[repeating-linear-gradient(-45deg,rgba(255,255,255,0.7),rgba(255,255,255,0.7)_1.5px,transparent_1.5px,transparent_5px)] border border-white shadow-[0_4px_10px_-2px_rgba(15,23,42,0.07),0_1px_3px_rgba(15,23,42,0.04),inset_0_1px_0_#FFFFFF] /* taste-skill-ignore */'
+            ? 'bg-[#DFE7F0] bg-[repeating-linear-gradient(-45deg,rgba(255,255,255,0.4)_0px,rgba(255,255,255,0.4)_1.5px,transparent_1.5px,transparent_5px)] shadow-[inset_1.5px_1.5px_1px_rgba(255,255,255,0.9),0_3px_6px_-1px_rgba(15,23,42,0.06)] /* taste-skill-ignore */'
             : isVerifiedSection
-            ? 'bg-[#E1EAF2]/60 hover:bg-[#E1EAF2]/80 border border-white/60 shadow-[0_2px_6px_rgba(15,23,42,0.04),inset_0_1px_0_rgba(255,255,255,0.6)] /* taste-skill-ignore */'
-            : 'bg-[linear-gradient(to_bottom,rgba(244,247,251,0.98),rgba(232,238,246,0.94))] hover:bg-white border border-white/90 shadow-[0_4px_10px_-2px_rgba(15,23,42,0.07),0_1px_3px_rgba(15,23,42,0.04),inset_0_1px_0_#FFFFFF] /* taste-skill-ignore */'
+            ? 'bg-[#E3EAF2]/60 hover:bg-[#E3EAF2]/80 shadow-[inset_1.5px_1.5px_1px_rgba(255,255,255,0.6),0_2px_4px_-1px_rgba(15,23,42,0.04)] /* taste-skill-ignore */'
+            : 'bg-[#E3EAF2]/90 hover:bg-[#DCE4EE] shadow-[inset_1.5px_1.5px_1px_rgba(255,255,255,0.85),0_3px_6px_-1px_rgba(15,23,42,0.06),0_1px_2px_rgba(15,23,42,0.04)] /* taste-skill-ignore */'
         }`}
       >
         <IconGripVertical
@@ -568,8 +595,8 @@ export const DashboardPage: React.FC = () => {
           }`}
         />
 
-        {/* Tier 2: Inner White Time Chip — Floats Up Higher (rounded-[8px]) */}
-        <div className="bg-gradient-to-b from-[#FFFFFF] to-[#F4F7FB] px-2.5 py-1 rounded-[8px] border border-white shadow-[0_3px_6px_rgba(15,23,42,0.09),0_1px_2px_rgba(15,23,42,0.06),inset_0_1px_0_#FFFFFF] flex items-center gap-1.5 shrink-0 /* taste-skill-ignore */">
+        {/* Tier 2: Inner Matte Keycap — Directional Top-Left Highlight & Soft Bottom Shadow (rounded-[8px]) */}
+        <div className="bg-[#F8FAFC] px-2.5 py-1 rounded-[8px] shadow-[inset_1.5px_1.5px_0.5px_#FFFFFF,0_2px_5px_rgba(15,23,42,0.08),0_1px_2px_rgba(15,23,42,0.04)] flex items-center gap-1.5 shrink-0 select-none /* taste-skill-ignore */">
           <div
             className={`w-[14px] h-[14px] rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
               isDone
@@ -584,7 +611,7 @@ export const DashboardPage: React.FC = () => {
             )}
           </div>
           <span
-            className={`font-sans text-[12px] font-normal tabular-nums ${
+            className={`font-sans text-[13px] font-normal tabular-nums ${
               isDone ? 'text-[#64748B]' : 'text-[#1E293B]'
             }`}
           >
@@ -594,7 +621,7 @@ export const DashboardPage: React.FC = () => {
 
         {/* Task Title (Soft Normal Weight) */}
         <span
-          className={`text-[13px] font-normal flex-1 min-w-0 truncate transition-colors ${
+          className={`text-sm font-normal flex-1 min-w-0 truncate transition-colors ${
             isDone ? 'text-[#64748B] line-through' : 'text-[#334155]'
           }`}
         >
@@ -609,7 +636,7 @@ export const DashboardPage: React.FC = () => {
               e.stopPropagation();
               setReassigningTaskId(reassigningTaskId === task.id ? null : task.id);
             }}
-            className="text-[12px] font-normal text-[#475569] hover:text-[#0F172A] px-2 py-0.5 rounded-lg hover:bg-white/60 transition-colors cursor-pointer"
+            className="text-[13px] font-normal text-[#475569] hover:text-[#0F172A] px-2 py-0.5 rounded-lg hover:bg-white/60 transition-colors cursor-pointer"
             title="Click to reassign staff"
             aria-label={`Reassign task currently assigned to ${task.assignee}`}
           >
@@ -622,8 +649,8 @@ export const DashboardPage: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
               className="absolute right-0 top-full mt-1.5 z-40 bg-[#F8FAFC] rounded-2xl p-1.5 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.08),0_2px_6px_-1px_rgba(15,23,42,0.04)] border border-white min-w-[155px] space-y-0.5 /* taste-skill-ignore */"
             >
-              <div className="px-2 py-1 text-[10px] font-semibold text-[#475569] uppercase tracking-wider">
-                On Duty Staff
+              <div className="px-2 py-1 text-[11px] font-medium text-[#475569]">
+                On duty staff
               </div>
               {onDutyStaff.map((staff) => {
                 const parts = staff.name.split(' ');
@@ -643,7 +670,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex items-center gap-1.5 truncate">
                       <span className="truncate">{staff.name}</span>
                       {staff.isLead && (
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-[#0F172A] text-white shrink-0">
+                        <span className="text-[11px] px-1 py-0.2 rounded bg-[#0F172A] text-white shrink-0">
                           Lead
                         </span>
                       )}
@@ -658,6 +685,12 @@ export const DashboardPage: React.FC = () => {
       </div>
     );
   };
+
+  // Dynamic focused task binding for the floating 3D Task Detail card
+  const focusedTask = shiftChecklist.find((t) => t.id === focusedTaskId) || shiftChecklist[0];
+  const focusedAssigneeStaff = floorStaff.find(
+    (s) => focusedTask && s.name.startsWith(focusedTask.assignee.split(' ')[0] || '')
+  );
 
   return (
     <div className="flex-1 flex flex-col md:flex-row gap-3 h-full overflow-hidden">
@@ -1043,9 +1076,12 @@ export const DashboardPage: React.FC = () => {
           )}
         </div>
 
-        {/* Punched-Down Search & Filter Routines Bar */}
-        <div
-          onClick={() => searchInputRef.current?.focus()}
+        {/* Task List Column (Elongated to max-w-[620px]) & Floating 3D Task Detail Card */}
+        <div className="flex-1 flex gap-6 overflow-hidden min-h-0 relative z-10">
+          <div className="w-full max-w-[620px] flex flex-col min-h-0 shrink-0">
+            {/* Punched-Down Search & Filter Routines Bar */}
+            <div
+              onClick={() => searchInputRef.current?.focus()}
           className="w-full h-10 rounded-[11px] bg-[#D8E1EC]/75 border border-[#C5D1E0]/80 shadow-[inset_0_2px_4px_rgba(15,23,42,0.08),0_1px_0_rgba(255,255,255,0.9)] px-3 flex items-center mb-3.5 shrink-0 focus-within:ring-1 focus-within:ring-[#1E293B]/20 transition-colors cursor-text relative select-none /* taste-skill-ignore */"
         >
           <IconSearch size={14} className="text-[#475569] shrink-0 mr-2" />
@@ -1204,6 +1240,138 @@ export const DashboardPage: React.FC = () => {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Floating White 3D Task Detail Card */}
+      {focusedTask && (
+        <aside
+          aria-label="Task Detail"
+          className="hidden xl:flex flex-col w-[270px] xl:w-[290px] shrink-0 mt-11 self-start bg-white rounded-[24px] p-5 border border-white shadow-[0_7px_22px_-4px_rgba(15,23,42,0.08),0_2px_6px_-1px_rgba(15,23,42,0.04),inset_0_1.5px_0_#FFFFFF] relative /* taste-skill-ignore */"
+        >
+          {/* Header: Squircle Time Chip & Status Badge */}
+          <div className="flex items-center justify-between">
+            <span className="bg-[#EEF2F6] rounded-[8px] px-2.5 py-1 text-xs font-medium text-[#0F172A] shadow-xs select-none">
+              [ {focusedTask.time} ]
+            </span>
+            {focusedTask.done ? (
+              <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#E2E8F0] text-[#0F172A]">
+                Verified
+              </span>
+            ) : focusedTask.time < '13:00' ? (
+              <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#0F172A] text-white">
+                Overdue
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#EEF2F6] text-[#475569]">
+                Upcoming
+              </span>
+            )}
+          </div>
+
+          {/* Title & Context */}
+          <h2 className="text-[15px] font-medium text-[#0F172A] leading-snug mt-3 select-text">
+            {focusedTask.title}
+          </h2>
+          <p className="text-[12px] text-[#64748B] mt-1.5 leading-relaxed">
+            {getTaskGuideline(focusedTask.title)}
+          </p>
+
+          {/* Assignee Well: Punched-Down Recessed Well */}
+          <div className="relative mt-4">
+            <div className="bg-[#E3EAF2]/70 rounded-[12px] p-2.5 shadow-[inset_0_1px_2px_rgba(15,23,42,0.06),0_1px_0_#FFF] flex items-center justify-between /* taste-skill-ignore */">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-7 h-7 rounded-[9px] bg-white text-[#0F172A] font-semibold text-xs flex items-center justify-center shrink-0 shadow-2xs border border-white/80">
+                  {focusedAssigneeStaff ? focusedAssigneeStaff.name.charAt(0) : focusedTask.assignee.charAt(0)}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[12px] font-medium text-[#0F172A] truncate">
+                    {focusedAssigneeStaff ? focusedAssigneeStaff.name : focusedTask.assignee}
+                  </div>
+                  <div className="text-[11px] text-[#64748B] truncate">
+                    {focusedAssigneeStaff ? focusedAssigneeStaff.role : 'Station Duty'}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setReassigningTaskId(
+                    reassigningTaskId === `detail-${focusedTask.id}` ? null : `detail-${focusedTask.id}`
+                  );
+                }}
+                className="text-[11px] font-medium text-[#0F172A] hover:bg-white/80 px-2 py-1 rounded-[7px] bg-white/60 shadow-2xs border border-white/80 transition-colors shrink-0 cursor-pointer"
+                aria-label={`Reassign ${focusedTask.title}`}
+              >
+                Reassign
+              </button>
+            </div>
+
+            {/* Inline Reassignment Popover */}
+            {reassigningTaskId === `detail-${focusedTask.id}` && (
+              <div
+                ref={reassignPopoverRef}
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-0 top-full mt-1.5 z-40 bg-[#F8FAFC] rounded-2xl p-1.5 shadow-[0_10px_25px_-5px_rgba(15,23,42,0.08),0_2px_6px_-1px_rgba(15,23,42,0.04)] border border-white min-w-[170px] space-y-0.5 /* taste-skill-ignore */"
+              >
+                <div className="px-2 py-1 text-[11px] font-medium text-[#475569]">
+                  On duty staff
+                </div>
+                {onDutyStaff.map((staff) => {
+                  const parts = staff.name.split(' ');
+                  const first = parts[0] || staff.name;
+                  const isCurrent = focusedTask.assignee.startsWith(first);
+                  return (
+                    <button
+                      key={staff.name}
+                      type="button"
+                      onClick={() => handleReassign(focusedTask.id, staff.name)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
+                        isCurrent
+                          ? 'bg-[#E2E8F0] text-[#0F172A] font-semibold'
+                          : 'text-[#334155] hover:bg-white'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className="truncate">{staff.name}</span>
+                        {staff.isLead && (
+                          <span className="text-[11px] px-1 py-0.2 rounded bg-[#0F172A] text-white shrink-0">
+                            Lead
+                          </span>
+                        )}
+                      </div>
+                      {isCurrent && <IconCheck size={12} className="text-[#0F172A] shrink-0 ml-1" />}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Action / Shortcut Footer */}
+          <div className="border-t border-[#F1F5F9] pt-3 mt-4 flex items-center justify-between text-xs text-[#64748B]">
+            <div className="flex items-center gap-1.5">
+              <kbd className="text-[11px] font-mono font-medium text-[#475569] px-1.5 py-0.5 rounded-[5px] bg-[#EEF2F6] border border-white/60">
+                Space
+              </kbd>
+              <span className="text-[11px] text-[#64748B]">to verify</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleToggleChecklist(focusedTask.id)}
+              className={`px-3 py-1 rounded-[8px] text-[12px] font-medium transition-colors cursor-pointer shadow-xs border border-white/80 ${
+                focusedTask.done
+                  ? 'bg-[#EEF2F6] text-[#475569] hover:bg-[#E2E8F0] hover:text-[#0F172A]'
+                  : 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
+              }`}
+              aria-label={`${focusedTask.done ? 'Reopen' : 'Verify'} routine ${focusedTask.title}`}
+            >
+              {focusedTask.done ? 'Reopen' : 'Verify'}
+            </button>
+          </div>
+        </aside>
+      )}
+    </div>
 
         {/* Floating Bottom-Right Undo Toast Pill */}
         {undoState && (

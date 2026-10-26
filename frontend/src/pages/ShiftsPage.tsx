@@ -151,14 +151,14 @@ export const ShiftsPage: React.FC = () => {
   // Delete Shift Mutation
   const deleteShiftMutation = useMutation({
     mutationFn: async (shiftId: string) => {
-      await api.delete(`/shifts/${shiftId}`);
+      await api.patch<ApiResponse<Shift>>(`/shifts/${shiftId}/status`, { status: 'CANCELLED' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['branch-shifts'] });
     },
     onError: (err: unknown) => {
       const axiosErr = err as AxiosError<{ message?: string }>;
-      alert(axiosErr.response?.data?.message || 'Failed to delete shift');
+      alert(axiosErr.response?.data?.message || 'Failed to cancel shift');
     },
   });
 

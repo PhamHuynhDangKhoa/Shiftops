@@ -141,7 +141,7 @@ export const StaffPage: React.FC = () => {
   // Transfer Branch Mutation
   const transferMutation = useMutation({
     mutationFn: async ({ id, targetBranchId }: { id: string; targetBranchId: string }) => {
-      const res = await api.post<ApiResponse<User>>(`/users/${id}/transfer`, {
+      const res = await api.post<ApiResponse<User>>(`/users/${id}/transfer-branch`, {
         targetBranchId,
       });
       return res.data.data;

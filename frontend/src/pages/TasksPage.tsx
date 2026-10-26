@@ -193,7 +193,7 @@ export const TasksPage: React.FC = () => {
   // Generate Tasks from Template Mutation
   const generateTasksMutation = useMutation({
     mutationFn: async ({ shiftId, templateId }: { shiftId: string; templateId: string }) => {
-      const res = await api.post<ApiResponse<Task[]>>(`/shifts/${shiftId}/generate-tasks`, {
+      const res = await api.post<ApiResponse<Task[]>>(`/shifts/${shiftId}/tasks/generate`, {
         templateId,
       });
       return res.data;

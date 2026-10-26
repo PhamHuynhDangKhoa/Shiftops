@@ -162,13 +162,13 @@ export const ShiftCard: React.FC<ShiftCardProps> = ({
           {shift.status === 'DRAFT' && (
             <button
               onClick={() => {
-                if (window.confirm('Are you sure you want to delete this shift?')) {
+                if (window.confirm('Are you sure you want to cancel this shift?')) {
                   onDeleteShift(shift.id);
                 }
               }}
               className="text-xs text-rose-600 hover:text-rose-800 font-medium cursor-pointer"
             >
-              Delete
+              Cancel Shift
             </button>
           )}
         </div>

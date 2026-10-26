@@ -106,6 +106,9 @@ export const NotificationBell: React.FC = () => {
 
   const renderNotificationIcon = (type: string) => {
     switch (type) {
+      case 'SHIFT_PUBLISHED':
+      case 'SHIFT_CHANGED':
+      case 'SHIFT_REMINDER':
       case 'SHIFT_ASSIGNED':
       case 'SHIFT_CANCELLED':
         return <IconCalendar size={16} className="text-[#1b6c80] flex-shrink-0 mt-0.5" />;
@@ -118,6 +121,7 @@ export const NotificationBell: React.FC = () => {
       case 'HANDOVER_SUBMITTED':
       case 'HANDOVER_ACKNOWLEDGED':
         return <IconHandshake size={16} className="text-[#92400e] flex-shrink-0 mt-0.5" />;
+      case 'ANNOUNCEMENT_PUBLISHED':
       case 'ANNOUNCEMENT':
         return <IconMegaphone size={16} className="text-[#1b6c80] flex-shrink-0 mt-0.5" />;
       case 'ATTENDANCE_LATE':

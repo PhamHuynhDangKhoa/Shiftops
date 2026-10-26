@@ -142,7 +142,7 @@ export const HandoversPage: React.FC = () => {
   const handleOpenDebrief = async (shiftId: string) => {
     try {
       setErrorMessage(null);
-      const res = await api.get<ApiResponse<ShiftHandover>>(`/shifts/${shiftId}/handover`);
+      const res = await api.post<ApiResponse<ShiftHandover>>(`/shifts/${shiftId}/handover`, {});
       setActiveHandover(res.data.data);
       setIsDebriefModalOpen(true);
     } catch {
@@ -210,7 +210,7 @@ export const HandoversPage: React.FC = () => {
   const acknowledgeMutation = useMutation({
     mutationFn: async ({ handoverId, notes }: { handoverId: string; notes: string }) => {
       const res = await api.patch<ApiResponse<ShiftHandover>>(`/handovers/${handoverId}/acknowledge`, {
-        acknowledgementNotes: notes,
+        notes,
       });
       return res.data.data;
     },

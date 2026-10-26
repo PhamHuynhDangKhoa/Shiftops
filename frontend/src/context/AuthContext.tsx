@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { AxiosError } from 'axios';
 import api, { isValidCompactJwt, isDemoToken } from '../lib/api';
-import { User, AuthResponse, ApiResponse } from '../lib/types';
+import { User, AuthResponse, ApiResponse, Role } from '../lib/types';
 
 interface AuthContextType {
   user: User | null;
@@ -16,13 +17,21 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const createFallbackUser = (emailHint?: string, roleHint?: string): User => {
   const e = emailHint || 'manager@shiftops.com';
-  const role = (roleHint as any) || (e.includes('owner') ? 'OWNER' : e.includes('staff') ? 'STAFF' : 'MANAGER');
+  let role: Role = 'MANAGER';
+  if (roleHint === 'OWNER' || roleHint === 'STAFF' || roleHint === 'MANAGER') {
+    role = roleHint;
+  } else if (e.includes('owner')) {
+    role = 'OWNER';
+  } else if (e.includes('staff')) {
+    role = 'STAFF';
+  }
+
   return {
-    id: 'demo-operator-1',
+    id: role === 'OWNER' ? 'u-owner-1' : role === 'STAFF' ? 'u-staff-1' : 'u-manager-1',
     email: e,
     fullName: role === 'OWNER' ? 'Elena Rostova' : role === 'STAFF' ? 'Jordan Kim' : 'Marcus Tanaka',
     role,
-    primaryBranchId: 'b1',
+    primaryBranchId: role === 'OWNER' ? 'b1' : 'b1',
     primaryBranchName: 'Shibuya Flagship',
     active: true,
     mustChangePassword: false,
@@ -35,15 +44,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const isDemoMode = (() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      return params.get('demo') === 'true' || params.get('demo') === 'manager';
+      const demoVal = params.get('demo');
+      return demoVal === 'true' || demoVal === 'manager' || demoVal === 'staff' || demoVal === 'owner';
     } catch {
       return false;
     }
   })();
 
+  const demoRoleHint = (() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const demoVal = params.get('demo');
+      if (demoVal === 'staff') return 'STAFF';
+      if (demoVal === 'owner') return 'OWNER';
+      return 'MANAGER';
+    } catch {
+      return 'MANAGER';
+    }
+  })();
+
   const [user, setUser] = useState<User | null>(() => {
     if (isDemoMode) {
-      return createFallbackUser('manager@shiftops.com', 'MANAGER');
+      return createFallbackUser(demoRoleHint === 'STAFF' ? 'staff@shiftops.com' : demoRoleHint === 'OWNER' ? 'owner@shiftops.com' : 'manager@shiftops.com', demoRoleHint);
     }
     return null;
   });
@@ -62,7 +84,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const [isLoading, setIsLoading] = useState<boolean>(() => !isDemoMode);
 
-  const fetchCurrentUser = async () => {
+  const logout = useCallback(() => {
+    localStorage.removeItem('accessToken');
+    setToken(null);
+    setUser(null);
+  }, []);
+
+  const fetchCurrentUser = useCallback(async () => {
     if (isDemoMode) {
       setIsLoading(false);
       return;
@@ -100,7 +128,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isDemoMode, logout]);
 
   useEffect(() => {
     const handleUnauthorized = () => {
@@ -112,7 +140,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
     };
-  }, [isDemoMode]);
+  }, [isDemoMode, logout]);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -125,7 +153,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } else {
       setIsLoading(false);
     }
-  }, [token, isDemoMode]);
+  }, [token, isDemoMode, fetchCurrentUser]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -145,20 +173,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       } else {
         throw new Error(res.data.error?.message || 'Login failed');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ message?: string; error?: { message?: string } }>;
       const serverMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error?.message ||
-        err.message ||
-        'Authentication failed. Please verify credentials.';
+        axiosErr.response?.data?.message ||
+        axiosErr.response?.data?.error?.message ||
+        (err instanceof Error ? err.message : 'Authentication failed. Please verify credentials.');
       throw new Error(serverMessage);
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    setToken(null);
-    setUser(null);
   };
 
   const refreshUser = async () => {

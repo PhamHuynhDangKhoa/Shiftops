@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useWebSocket } from '../context/WebSocketContext';
+import { NotificationBell } from './NotificationBell';
 import {
   IconLogOut,
   IconMenu,
@@ -17,6 +19,7 @@ import {
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, logout } = useAuth();
+  const { status: wsStatus } = useWebSocket();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -199,9 +202,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               {isMobileMenuOpen ? <IconClose size={15} /> : <IconMenu size={15} />}
             </button>
 
-            <div className="flex items-center gap-1">
-              <span className="text-[#475569] font-normal">Branch</span>
-              <span className="font-medium text-[#1E293B]">Main</span>
+            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs">
+              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Branch</span>
+              <span className="text-sm font-semibold text-slate-800">{user?.primaryBranchName || 'Branch Operations'}</span>
             </div>
 
             {/* Clean borderless clock icon right next to Branch Main */}
@@ -217,8 +220,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             </div>
           </div>
 
-          {/* Right: Pure, uninterrupted #EEF2F6 sky */}
-          <div className="shrink-0" />
+          {/* Right: Operations status & Notification bell */}
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border border-[#CBD5E1]/70 text-[11px] font-medium text-[#475569] shadow-[inset_0_1px_0_#FFFFFF,0_1px_2px_rgba(15,23,42,0.04)]">
+              <span className={`w-1.5 h-1.5 rounded-full ${wsStatus === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_6px_#10B981]' : wsStatus === 'RECONNECTING' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-400'}`} />
+              <span className="tabular-nums">{wsStatus === 'CONNECTED' ? 'Live' : wsStatus === 'RECONNECTING' ? 'Syncing' : 'Offline'}</span>
+            </div>
+            <NotificationBell />
+          </div>
         </header>
 
         {/* Mobile Navigation Drawer */}
@@ -261,7 +270,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         )}
 
         {/* Page Content Viewport */}
-        <main className="flex-1 min-h-0 flex overflow-hidden">
+        <main className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1">
           {children}
         </main>
       </div>

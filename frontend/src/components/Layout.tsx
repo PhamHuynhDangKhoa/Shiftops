@@ -90,7 +90,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <Link
             to="/"
             title="ShiftOps Planner"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-[14px] bg-[#0F172A] text-white flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition-transform /* taste-skill-ignore */"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-[14px] bg-[#18181B] text-white flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition-transform"
           >
             <IconCalendar size={18} />
           </Link>
@@ -109,8 +109,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     className={({ isActive }) =>
                       `w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-[#E2E8F0]/80 text-[#0F172A] font-semibold'
-                          : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#E2E8F0]/40'
+                          ? 'bg-zinc-200 text-[#0F172A] font-semibold'
+                          : 'text-[#475569] hover:text-[#0F172A] hover:bg-zinc-200/50'
                       }`
                     }
                   >
@@ -137,8 +137,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     className={({ isActive }) =>
                       `w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-[#E2E8F0]/80 text-[#0F172A] font-semibold'
-                          : 'text-[#475569] hover:text-[#0F172A] hover:bg-[#E2E8F0]/40'
+                          ? 'bg-zinc-200 text-[#0F172A] font-semibold'
+                          : 'text-[#475569] hover:text-[#0F172A] hover:bg-zinc-200/50'
                       }`
                     }
                   >
@@ -202,9 +202,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               {isMobileMenuOpen ? <IconClose size={15} /> : <IconMenu size={15} />}
             </button>
 
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs">
-              <span className="text-xs font-medium uppercase tracking-wider text-slate-400">Branch</span>
-              <span className="text-sm font-semibold text-slate-800">{user?.primaryBranchName || 'Branch Operations'}</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs max-w-[200px] sm:max-w-none truncate">
+              <span className="text-xs font-medium text-slate-600 shrink-0">Branch</span>
+              <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">{user?.primaryBranchName || 'Branch Operations'}</span>
             </div>
 
             {/* Clean borderless clock icon right next to Branch Main */}

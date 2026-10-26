@@ -383,7 +383,7 @@ export const DashboardPage: React.FC = () => {
   // Punch readiness check
   const punchState = useMemo(() => {
     if (!currentStaffShift || !currentAssignment) {
-      return { canIn: false, canOut: false, label: 'No Shift Assigned' };
+      return { canIn: false, canOut: false, isCompleted: false, label: 'No Shift Assigned' };
     }
     const now = currentTime.getTime();
     const start = new Date(currentStaffShift.startTime).getTime();
@@ -392,23 +392,23 @@ export const DashboardPage: React.FC = () => {
 
     if (!currentAttendance) {
       if (now < earlyOpen) {
-        return { canIn: false, canOut: false, label: 'Punches open 15m prior' };
+        return { canIn: false, canOut: false, isCompleted: false, label: 'Punches open 15m prior' };
       }
       if (now > end) {
-        return { canIn: false, canOut: false, label: 'Shift window closed' };
+        return { canIn: false, canOut: false, isCompleted: false, label: 'Shift window closed' };
       }
-      return { canIn: true, canOut: false, label: 'Ready to Clock In' };
+      return { canIn: true, canOut: false, isCompleted: false, label: 'Ready to Clock In' };
     }
 
     if ((currentAttendance.status === 'PRESENT' || currentAttendance.status === 'LATE') && !currentAttendance.checkOutAt) {
-      return { canIn: false, canOut: true, label: 'Active on Shift' };
+      return { canIn: false, canOut: true, isCompleted: false, label: 'Active on Shift' };
     }
 
     if (currentAttendance.checkOutAt) {
-      return { canIn: false, canOut: false, label: 'Shift Completed' };
+      return { canIn: false, canOut: false, isCompleted: true, label: 'Shift Completed' };
     }
 
-    return { canIn: false, canOut: false, label: currentAttendance.status };
+    return { canIn: false, canOut: false, isCompleted: false, label: currentAttendance.status };
   }, [currentStaffShift, currentAssignment, currentAttendance, currentTime]);
 
   return (
@@ -416,60 +416,116 @@ export const DashboardPage: React.FC = () => {
       {/* ------------------------------------------------------------- */}
       {/* TOP DECK: Identity & Operations Control Header */}
       {/* ------------------------------------------------------------- */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-[#F8FAFC] border border-[#CBD5E1]/60 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.05),inset_0_1.5px_0_0_#FFFFFF]">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-[#0F172A] text-white flex items-center justify-center font-bold text-base shadow-md shadow-slate-900/10">
-            {isStaff ? 'ST' : isManager ? 'MG' : 'HQ'}
+      {isStaff ? (
+        <div className="p-4 sm:p-5 rounded-2xl bg-[#F8FAFC] border border-[#CBD5E1]/80 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),inset_0_1.5px_0_0_#FFFFFF] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            {/* Physical Access Badge Slotted into Reader Dock */}
+            <div className="relative shrink-0 select-none">
+              <div className="w-13 h-16 sm:w-14 sm:h-17 rounded-xl bg-white border border-slate-300 shadow-[0_3px_8px_rgba(15,23,42,0.08),inset_0_1px_0_#FFFFFF] p-1.5 flex flex-col items-center justify-between">
+                <div className="w-full flex items-center justify-between px-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_#10B981]" />
+                  <span className="text-[11px] font-mono font-bold text-slate-500">RFID</span>
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                  {user?.fullName?.split(' ').map((n) => n[0]).join('').slice(0, 2) || 'ST'}
+                </div>
+                <div className="w-full flex items-center justify-center gap-0.5 px-0.5">
+                  <span className="w-0.5 h-2 bg-slate-800" />
+                  <span className="w-1 h-2 bg-slate-400" />
+                  <span className="w-0.5 h-2 bg-slate-800" />
+                  <span className="w-1.5 h-2 bg-slate-800" />
+                  <span className="w-0.5 h-2 bg-slate-400" />
+                </div>
+              </div>
+            </div>
+
+            {/* Badge Reader Terminal Readout */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#0F172A]">
+                  {user?.fullName || 'Shift Associate'}
+                </h1>
+                <span className="px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-300/80">
+                  ID #{user?.id ? (user.id.includes('-') ? `EMP-${user.id.split('-').pop()}` : user.id.slice(-6)).toUpperCase() : 'EMP-01'}
+                </span>
+                <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {punchState.label}
+                </span>
+              </div>
+              <p className="text-[13px] text-[#475569] flex items-center gap-2 flex-wrap">
+                <span>{user?.primaryBranchName || 'Shibuya Flagship'}</span>
+                <span>·</span>
+                <span>Station Terminal #01</span>
+                <span>·</span>
+                <span className="text-slate-500">RFID Reader Active</span>
+              </p>
+            </div>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#0F172A]">
-                {isStaff ? `Welcome, ${user?.fullName}` : `Operations Command · ${currentBranch?.name || user?.primaryBranchName || 'Fleet'}`}
-              </h1>
-              <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#E2E8F0] text-[#0F172A] border border-[#CBD5E1]/70 shadow-[inset_0_1px_0_#FFFFFF]">
-                {user?.role}
+
+          {/* Quick Schedule Telemetry */}
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
+            <div className="px-3.5 py-2 rounded-xl bg-white/90 border border-slate-200/90 shadow-[inset_0_1px_0_#FFFFFF] text-left">
+              <span className="text-xs font-medium text-slate-500 block">Today&apos;s Assignment</span>
+              <span className="text-sm font-bold text-[#0F172A]">
+                {currentStaffShift ? currentStaffShift.name || 'Assigned Shift' : 'Roster Standby'}
               </span>
             </div>
-            <p className="text-xs text-[#475569] mt-0.5">
-              {isStaff
-                ? 'Your daily shift schedule, routine checklists, and live floor punch records.'
-                : 'Floor attendance tracking, shift routines execution, and incident escalations.'}
-            </p>
           </div>
         </div>
-
-        {/* Manager Branch Selector & Quick Actions */}
-        <div className="flex items-center gap-2.5">
-          {(isOwner || isManager) && branches && branches.length > 1 && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#CBD5E1]/70 text-xs font-medium shadow-xs">
-              <IconBuilding size={14} className="text-[#64748B]" />
-              <select
-                value={selectedBranchId}
-                onChange={(e) => setSelectedBranchId(e.target.value)}
-                className="bg-transparent text-[#0F172A] font-semibold focus:outline-none cursor-pointer"
-              >
-                {branches.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name} {!b.active && '(Inactive)'}
-                  </option>
-                ))}
-              </select>
+      ) : (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-[#F8FAFC] border border-[#CBD5E1]/60 shadow-[0_4px_16px_-2px_rgba(15,23,42,0.05),inset_0_1.5px_0_0_#FFFFFF]">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[#0F172A] text-white flex items-center justify-center font-bold text-base shadow-md shadow-slate-900/10">
+              {isManager ? 'MG' : 'HQ'}
             </div>
-          )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#0F172A]">
+                  Operations Command · {currentBranch?.name || user?.primaryBranchName || 'Fleet'}
+                </h1>
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#E2E8F0] text-[#0F172A] border border-[#CBD5E1]/70 shadow-[inset_0_1px_0_#FFFFFF]">
+                  {user?.role}
+                </span>
+              </div>
+              <p className="text-xs text-[#475569] mt-0.5">
+                Floor attendance tracking, shift routines execution, and incident escalations.
+              </p>
+            </div>
+          </div>
 
-          {(isOwner || isManager) && (
-            <Button
-              variant="dark"
-              size="sm"
-              onClick={() => setIsBroadcastOpen(true)}
-              className="gap-1.5 shadow-[0_2px_6px_rgba(15,23,42,0.15),inset_0_1px_0_rgba(255,255,255,0.15)] rounded-xl"
-            >
-              <IconMegaphone size={14} />
-              <span>Broadcast Notice</span>
-            </Button>
-          )}
+          {/* Manager Branch Selector & Quick Actions */}
+          <div className="flex items-center gap-2.5">
+            {(isOwner || isManager) && branches && branches.length > 1 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#CBD5E1]/70 text-xs font-medium shadow-xs">
+                <IconBuilding size={14} className="text-[#64748B]" />
+                <select
+                  value={selectedBranchId}
+                  onChange={(e) => setSelectedBranchId(e.target.value)}
+                  className="bg-transparent text-[#0F172A] font-semibold focus:outline-none cursor-pointer"
+                >
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name} {!b.active && '(Inactive)'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {(isOwner || isManager) && (
+              <Button
+                variant="dark"
+                size="sm"
+                onClick={() => setIsBroadcastOpen(true)}
+                className="gap-1.5 shadow-[0_2px_6px_rgba(15,23,42,0.15),inset_0_1px_0_rgba(255,255,255,0.15)] rounded-xl"
+              >
+                <IconMegaphone size={14} />
+                <span>Broadcast Notice</span>
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ------------------------------------------------------------- */}
       {/* SECTION: Operational Broadcast Announcements Banner */}
@@ -519,32 +575,35 @@ export const DashboardPage: React.FC = () => {
       {/* VIEW: STAFF DASHBOARD EXPERIENCE                             */}
       {/* ============================================================= */}
       {isStaff && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
           {/* LEFT COLUMN: Hero Punch Clock Terminal (Skeuomorphic Hardware Chronometer) */}
           <div className="lg:col-span-5 flex flex-col">
             <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#CBD5E1]/70 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),inset_0_1.5px_0_0_#FFFFFF] h-full flex flex-col justify-between">
               <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+              <div className="flex items-center justify-between pb-3 border-b border-[#CBD5E1]/70">
                 <div className="flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10B981]" />
-                  <span className="text-xs font-bold tracking-tight text-[#0F172A] uppercase">Time Clock Station</span>
+                  <span className="text-sm font-bold tracking-tight text-[#0F172A]">Time Clock Station</span>
                 </div>
-                <span className="text-[11px] font-medium text-[#475569] tabular-nums">
+                <span className="text-[13px] font-medium text-slate-600 tabular-nums">
                   {currentTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                 </span>
               </div>
 
-              {/* Physical Analog Dial + Digital Readout */}
-              <div className="flex items-center justify-center gap-6 px-6 py-5 bg-white/70 rounded-xl border border-[#E2E8F0] shadow-[inset_0_2px_4px_rgba(15,23,42,0.03)]">
-                <div className="relative w-24 h-24 rounded-full border-2 border-slate-300 bg-white shadow-[inset_0_2px_6px_rgba(15,23,42,0.08),0_2px_4px_rgba(0,0,0,0.04)] shrink-0 select-none">
+              {/* Physical Analog Dial + Industrial Backlit Digital Readout */}
+              <div className="flex items-center justify-center gap-6 px-6 py-5 bg-white/70 rounded-xl border border-[#CBD5E1]/80 shadow-[inset_0_2px_4px_rgba(15,23,42,0.03)]">
+                <div className="relative w-24 h-24 rounded-full border-[3px] border-slate-300 bg-white shadow-[inset_0_3px_8px_rgba(15,23,42,0.1),0_2px_4px_rgba(0,0,0,0.04)] shrink-0 select-none">
                   {/* Subtle Cardinal Ticks */}
-                  <div className="absolute top-1 left-1/2 -translate-x-1/2 w-0.5 h-1.5 bg-slate-300 rounded-full" />
-                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0.5 h-1.5 bg-slate-300 rounded-full" />
-                  <div className="absolute left-1 top-1/2 -translate-y-1/2 h-0.5 w-1.5 bg-slate-300 rounded-full" />
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 h-0.5 w-1.5 bg-slate-300 rounded-full" />
+                  <div className="absolute top-1 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-slate-400 rounded-full" />
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-0.5 h-2 bg-slate-400 rounded-full" />
+                  <div className="absolute left-1 top-1/2 -translate-y-1/2 h-0.5 w-2 bg-slate-400 rounded-full" />
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 h-0.5 w-2 bg-slate-400 rounded-full" />
 
-                  {/* Dial Center Pin */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-slate-900 border border-white shadow-xs z-20" />
+                  {/* Dial Center Pin with Metallic Core */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-slate-800 border-2 border-white shadow-xs z-20 flex items-center justify-center">
+                    <span className="w-1 h-1 rounded-full bg-rose-500" />
+                  </div>
                   {/* Hour Hand */}
                   <div
                     className="absolute bottom-1/2 left-1/2 w-[2.5px] h-7 bg-slate-900 rounded-t-full origin-bottom z-10"
@@ -562,6 +621,7 @@ export const DashboardPage: React.FC = () => {
                   />
                 </div>
 
+                {/* Digital Readout */}
                 <div className="text-left space-y-1.5">
                   <div className="text-2xl sm:text-3xl font-bold font-mono tracking-tight text-slate-900 tabular-nums">
                     {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
@@ -573,41 +633,44 @@ export const DashboardPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Shift Context Card */}
+              {/* Shift Context Card: Stamped Timecard Bay */}
               {isLoadingMyShifts ? (
-                <div className="py-6 text-center text-xs text-[#64748B]">Verifying schedule...</div>
+                <div className="py-6 text-center text-xs text-slate-500">Verifying schedule...</div>
               ) : currentStaffShift ? (
-                <div className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#0F172A]">
-                      {currentStaffShift.name || 'Scheduled Shift'}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <div className="p-4 rounded-xl bg-[#FFFDF7] border border-amber-200/90 space-y-2.5 shadow-[inset_0_1px_0_#FFFFFF,0_2px_6px_rgba(217,119,6,0.06)] relative overflow-hidden">
+                  <div className="flex items-center justify-between pb-2 border-b border-dashed border-amber-200">
+                    <div>
+                      <span className="text-[11px] font-mono font-bold text-amber-800 uppercase tracking-wider block">TIMECARD SLIP</span>
+                      <span className="text-sm font-bold text-slate-900">
+                        {currentStaffShift.name || 'Scheduled Floor Shift'}
+                      </span>
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-100 text-amber-900 border border-amber-300">
                       {punchState.label}
                     </span>
                   </div>
 
-                  <div className="text-xs text-[#475569] flex items-center gap-1.5">
-                    <IconClock size={13} className="text-[#64748B]" />
-                    <span className="tabular-nums font-medium text-[#0F172A]">
+                  <div className="text-[13px] text-slate-700 flex items-center gap-1.5">
+                    <IconClock size={14} className="text-slate-500" />
+                    <span className="tabular-nums font-mono font-medium">
                       {new Date(currentStaffShift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} –{' '}
                       {new Date(currentStaffShift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
                   {currentAttendance && (
-                    <div className="pt-2 border-t border-[#F1F5F9] text-[11px] space-y-1 text-[#64748B]">
+                    <div className="pt-2 border-t border-dashed border-amber-200/80 text-[13px] space-y-1 font-mono text-slate-700">
                       <div className="flex justify-between">
-                        <span>Punched in:</span>
-                        <span className="font-semibold text-[#0F172A] tabular-nums">
+                        <span>PUNCH IN:</span>
+                        <span className="font-semibold text-slate-900 tabular-nums">
                           {currentAttendance.checkInAt ? new Date(currentAttendance.checkInAt).toLocaleTimeString() : '—'}
-                          {currentAttendance.late && <span className="text-amber-600 font-bold ml-1">(Late)</span>}
+                          {currentAttendance.late && <span className="text-amber-700 font-bold ml-1">[LATE]</span>}
                         </span>
                       </div>
                       {currentAttendance.checkOutAt && (
                         <div className="flex justify-between">
-                          <span>Punched out:</span>
-                          <span className="font-semibold text-[#0F172A] tabular-nums">
+                          <span>PUNCH OUT:</span>
+                          <span className="font-semibold text-slate-900 tabular-nums">
                             {new Date(currentAttendance.checkOutAt).toLocaleTimeString()}
                           </span>
                         </div>
@@ -616,10 +679,13 @@ export const DashboardPage: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="p-4 rounded-xl bg-white/60 border border-[#E2E8F0] text-center">
+                <div className="p-4 rounded-xl bg-[#FFFDF7] border border-dashed border-slate-300 text-center space-y-1.5 shadow-[inset_0_1px_3px_rgba(15,23,42,0.02)]">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-100 text-[11px] font-mono font-semibold text-slate-600">
+                    <span>TIMECARD BAY: EMPTY</span>
+                  </div>
                   <p className="text-sm font-semibold text-slate-800">No Shift Scheduled Today</p>
-                  <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                    Check the Shift Roster tab to inspect your upcoming assignments.
+                  <p className="text-[13px] text-slate-600 max-w-xs mx-auto leading-relaxed">
+                    Your attendance card will automatically slot into this bay when a shift is assigned.
                   </p>
                 </div>
               )}
@@ -634,37 +700,51 @@ export const DashboardPage: React.FC = () => {
                 </div>
               )}
 
-              {currentAssignment && (
-                <div className="pt-1">
-                  {punchState.canIn && (
-                    <button
-                      type="button"
-                      disabled={checkInMutation.isPending}
-                      onClick={() => checkInMutation.mutate(currentAssignment.id)}
-                      className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(16,185,129,0.3),inset_0_1.5px_0_rgba(255,255,255,0.3)] cursor-pointer"
-                    >
-                      <IconClock size={16} />
-                      <span>{checkInMutation.isPending ? 'Punching in...' : 'Clock In for Shift'}</span>
-                    </button>
-                  )}
+              {/* Heavy Industrial Mechanical Punch Switch */}
+              <div className="pt-1">
+                {currentAssignment && punchState.canIn && (
+                  <button
+                    type="button"
+                    disabled={checkInMutation.isPending}
+                    onClick={() => checkInMutation.mutate(currentAssignment.id)}
+                    className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm tracking-tight flex items-center justify-center gap-2.5 shadow-[0_5px_0_#047857,0_8px_16px_rgba(4,120,87,0.3),inset_0_1.5px_0_rgba(255,255,255,0.4)] active:translate-y-1 active:shadow-[0_1px_0_#047857] cursor-pointer select-none"
+                  >
+                    <IconClock size={16} />
+                    <span>{checkInMutation.isPending ? 'Stamping Attendance...' : 'Punch In (Start Shift)'}</span>
+                  </button>
+                )}
 
-                  {punchState.canOut && (
-                    <button
-                      type="button"
-                      disabled={checkOutMutation.isPending}
-                      onClick={() => checkOutMutation.mutate(currentAssignment.id)}
-                      className="w-full h-11 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.98] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(217,119,6,0.3),inset_0_1.5px_0_rgba(255,255,255,0.3)] cursor-pointer"
-                    >
-                      <IconClock size={16} />
-                      <span>{checkOutMutation.isPending ? 'Punching out...' : 'Clock Out (End Shift)'}</span>
-                    </button>
-                  )}
-                </div>
-              )}
+                {currentAssignment && punchState.canOut && (
+                  <button
+                    type="button"
+                    disabled={checkOutMutation.isPending}
+                    onClick={() => checkOutMutation.mutate(currentAssignment.id)}
+                    className="w-full h-12 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm tracking-tight flex items-center justify-center gap-2.5 shadow-[0_5px_0_#92400e,0_8px_16px_rgba(180,83,9,0.3),inset_0_1.5px_0_rgba(255,255,255,0.4)] active:translate-y-1 active:shadow-[0_1px_0_#92400e] cursor-pointer select-none"
+                  >
+                    <IconClock size={16} />
+                    <span>{checkOutMutation.isPending ? 'Recording Check-Out...' : 'Punch Out (End Shift)'}</span>
+                  </button>
+                )}
+
+                {(!currentAssignment || (!punchState.canIn && !punchState.canOut)) && (
+                  <div className="p-3 rounded-xl bg-slate-100 border border-slate-200 text-center space-y-0.5">
+                    <span className="text-xs font-mono font-bold text-slate-700 block">
+                      {punchState.isCompleted ? 'Shift Concluded' : 'Punch Switch Standby'}
+                    </span>
+                    <span className="text-[13px] text-slate-600 block leading-relaxed">
+                      {punchState.isCompleted
+                        ? 'Attendance record finalized for today.'
+                        : currentStaffShift
+                        ? 'Clock-in mechanism unlocks 15m before shift start.'
+                        : 'Awaiting shift roster assignment.'}
+                    </span>
+                  </div>
+                )}
+              </div>
 
               </div>
 
-              <div className="flex justify-between items-center text-[11px] text-[#64748B] pt-3 border-t border-[#E2E8F0] mt-4">
+              <div className="flex justify-between items-center text-xs text-[#64748B] pt-3 border-t border-[#E2E8F0] mt-4">
                 <Link to="/attendance" className="hover:text-[#0F172A] font-semibold flex items-center gap-1">
                   <span>View Attendance Ledger</span>
                   <IconArrowUpRight size={11} />
@@ -679,24 +759,29 @@ export const DashboardPage: React.FC = () => {
 
           {/* RIGHT COLUMN: My Shift Assigned Tasks & Routines */}
           <div className="lg:col-span-7 flex flex-col">
-            <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#CBD5E1]/70 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),inset_0_1.5px_0_0_#FFFFFF] h-full flex flex-col justify-between">
+            <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#CBD5E1]/70 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),inset_0_1.5px_0_0_#FFFFFF] h-full flex flex-col justify-between relative">
+              {/* Clipboard Clamp Anchor */}
+              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-20 h-2.5 rounded-b bg-slate-300 border border-slate-400 shadow-xs flex items-center justify-center">
+                <div className="w-8 h-0.5 rounded-full bg-slate-400" />
+              </div>
+
               <div className="flex-1 flex flex-col">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+                <div className="flex items-center justify-between pb-3 border-b border-[#CBD5E1]/70">
                   <div>
                     <h2 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
                       <IconCheckList size={17} className="text-[#0F172A]" />
                       <span>My Assigned Checklist & Tasks</span>
                     </h2>
-                    <p className="text-[11px] text-[#64748B] mt-0.5">
+                    <p className="text-[13px] text-[#64748B] mt-0.5">
                       Operational routines assigned to you for execution today
                     </p>
                   </div>
 
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-700">
+                  <div className="shrink-0 whitespace-nowrap inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-700 border border-slate-200">
                     <span className="tabular-nums">
                       {myTasks ? myTasks.filter((t) => t.status === 'COMPLETED').length : 0} / {myTasks?.length || 0}
                     </span>
-                    <span className="text-slate-500 font-normal">done</span>
+                    <span className="text-slate-600 font-medium">done</span>
                   </div>
                 </div>
 
@@ -705,13 +790,11 @@ export const DashboardPage: React.FC = () => {
                     Loading your shift tasks...
                   </div>
                 ) : !myTasks || myTasks.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 my-4 text-center">
-                    <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center mb-2.5 text-slate-400">
-                      <IconCheckList size={18} />
-                    </div>
-                    <p className="text-sm font-semibold text-slate-800">No Tasks Currently Assigned</p>
-                    <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                      Your manager will generate checklist items when opening the shift floor.
+                  <div className="flex-1 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-[#FFFDF7]/70 p-6 my-4 text-center shadow-[inset_0_1px_3px_rgba(15,23,42,0.02)]">
+                    <IconCheckList size={28} className="text-slate-400 mb-2.5" />
+                    <p className="text-sm font-semibold text-slate-800">No Checklist Assigned</p>
+                    <p className="text-[13px] text-slate-600 mt-1 max-w-xs mx-auto leading-relaxed">
+                      Routine operational checklist items will populate here when the shift floor opens.
                     </p>
                   </div>
                 ) : (
@@ -754,11 +837,11 @@ export const DashboardPage: React.FC = () => {
 
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className={`text-xs font-semibold truncate ${isCompleted ? 'line-through text-[#64748B]' : 'text-[#0F172A]'}`}>
+                              <span className={`text-sm font-semibold truncate ${isCompleted ? 'line-through text-[#64748B]' : 'text-[#0F172A]'}`}>
                                 {task.title}
                               </span>
                               <span
-                                className={`px-1.5 py-0.2 rounded text-[10px] font-semibold uppercase ${
+                                className={`px-1.5 py-0.2 rounded text-xs font-semibold uppercase ${
                                   task.priority === 'HIGH'
                                     ? 'bg-rose-50 text-rose-700 border border-rose-200'
                                     : 'bg-slate-100 text-slate-700'
@@ -768,14 +851,14 @@ export const DashboardPage: React.FC = () => {
                               </span>
                             </div>
                             {task.description && (
-                              <p className="text-[11px] text-[#64748B] mt-0.5 truncate">{task.description}</p>
+                              <p className="text-xs text-[#64748B] mt-0.5 truncate">{task.description}</p>
                             )}
                           </div>
                         </div>
 
                         <div className="shrink-0 text-right">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-tight ${
+                            className={`px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-tight ${
                               isCompleted
                                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                 : isInProgress
@@ -794,16 +877,59 @@ export const DashboardPage: React.FC = () => {
             </div>
 
             <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs mt-4">
-                <span className="text-[#64748B] text-[11px]">Click checkbox to advance: Todo → In Progress → Done</span>
-                <Link to="/tasks" className="text-[#0F172A] font-bold text-xs flex items-center gap-1 hover:underline">
-                  <span>Open Full Task Board</span>
-                  <IconArrowUpRight size={12} />
-                </Link>
-              </div>
+              <span className="text-[#64748B] text-xs">Click checkbox to advance: Todo → In Progress → Done</span>
+              <Link to="/tasks" className="text-[#0F172A] font-semibold text-sm flex items-center gap-1 hover:underline">
+                <span>Open Full Task Board</span>
+                <IconArrowUpRight size={12} />
+              </Link>
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      {/* BOTTOM SECTION: Upcoming Shifts This Week */}
+      <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#CBD5E1]/70 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.06),inset_0_1.5px_0_0_#FFFFFF]">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
+          <div className="flex items-center gap-2">
+            <IconClock size={16} className="text-[#0F172A]" />
+            <h3 className="text-sm font-bold text-[#0F172A]">Upcoming Shifts This Week</h3>
+          </div>
+          <Link to="/shifts" className="text-sm font-semibold text-[#0F172A] hover:underline flex items-center gap-1">
+            <span>View Full Roster</span>
+            <IconArrowUpRight size={11} />
+          </Link>
+        </div>
+
+        <div className="mt-4">
+          {!myShifts || myShifts.length <= 1 ? (
+            <div className="py-5 text-center text-[13px] text-slate-600 leading-relaxed">
+              No other shifts scheduled for this week. Check the roster for upcoming assignments.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {myShifts.slice(1, 4).map((shift) => (
+                <div key={shift.id} className="p-3.5 rounded-xl bg-white border border-[#E2E8F0] space-y-1.5 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-[#0F172A]">{shift.name || 'Shift'}</span>
+                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                      {new Date(shift.startTime).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="text-[13px] text-slate-700 flex items-center gap-1">
+                    <IconClock size={13} className="text-slate-400" />
+                    <span className="tabular-nums">
+                      {new Date(shift.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} –{' '}
+                      {new Date(shift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )}
 
       {/* ============================================================= */}
       {/* VIEW: MANAGER & OWNER DASHBOARD EXPERIENCE                    */}

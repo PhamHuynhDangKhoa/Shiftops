@@ -80,17 +80,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const allNav = [...primaryNav, ...secondaryNav];
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#EDF2F7] p-2.5 sm:p-4 lg:p-3 flex gap-2.5 sm:gap-3 text-[#0F172A] antialiased">
-      {/* Pane 1: Floating Vertical Icon Dock (Leftmost Rail) */}
+    <div className="h-dvh w-screen overflow-hidden bg-[#F1F5F9] p-2.5 sm:p-3 flex gap-2.5 sm:gap-3 text-[#0F172A] antialiased">
+      {/* Pane 1: Vertical Icon Dock (Leftmost Rail) */}
       <aside
-        className="w-12 sm:w-14 h-full bg-[#F8FAFC] rounded-[22px] py-3 flex flex-col items-center justify-between border border-white/90 shadow-[0_6px_20px_-3px_rgba(15,23,42,0.06),0_2px_6px_-1px_rgba(15,23,42,0.03),inset_0_1.5px_0_0_#FFFFFF] shrink-0 z-20 select-none /* taste-skill-ignore */"
+        className="w-12 sm:w-14 h-full bg-white rounded-2xl py-3 flex flex-col items-center justify-between border border-[#E2E8F0] shrink-0 z-20 select-none"
       >
         {/* Top Anchor: Brand Calendar/Planner Squircle */}
         <div className="flex flex-col items-center gap-3 sm:gap-3.5">
           <Link
             to="/"
             title="ShiftOps Planner"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-[14px] bg-[#18181B] text-white flex items-center justify-center shadow-md hover:opacity-90 active:scale-95 transition-transform"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#18181B] text-white flex items-center justify-center hover:bg-zinc-800 transition-colors"
           >
             <IconCalendar size={18} />
           </Link>
@@ -107,17 +107,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     end={item.end}
                     title={item.label}
                     className={({ isActive }) =>
-                      `w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center transition-colors cursor-pointer ${
+                      `w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-zinc-200 text-[#0F172A] font-semibold'
-                          : 'text-[#475569] hover:text-[#0F172A] hover:bg-zinc-200/50'
+                          ? 'bg-[#F1F5F9] text-[#0F172A] font-semibold'
+                          : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]/60'
                       }`
                     }
                   >
                     {({ isActive }) => (
                       <Icon
                         size={16}
-                        className={isActive ? 'text-[#0F172A]' : 'text-[#475569]'}
+                        className={isActive ? 'text-[#0F172A]' : 'text-[#64748B]'}
                       />
                     )}
                   </NavLink>
@@ -135,17 +135,17 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     end={item.end}
                     title={item.label}
                     className={({ isActive }) =>
-                      `w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center transition-colors cursor-pointer ${
+                      `w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
                         isActive
-                          ? 'bg-zinc-200 text-[#0F172A] font-semibold'
-                          : 'text-[#475569] hover:text-[#0F172A] hover:bg-zinc-200/50'
+                          ? 'bg-[#F1F5F9] text-[#0F172A] font-semibold'
+                          : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]/60'
                       }`
                     }
                   >
                     {({ isActive }) => (
                       <Icon
                         size={16}
-                        className={isActive ? 'text-[#0F172A]' : 'text-[#475569]'}
+                        className={isActive ? 'text-[#0F172A]' : 'text-[#64748B]'}
                       />
                     )}
                   </NavLink>
@@ -161,7 +161,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             <Link
               to="/profile"
               title={`${user.fullName} (${user.role})`}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-[12px] bg-white border border-[#E2E8F0] text-[#475569] flex items-center justify-center text-xs font-medium hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center text-xs font-medium hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
             >
               <IconUser size={15} />
             </Link>
@@ -170,7 +170,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               onClick={handleLogout}
               aria-label="Sign out"
               title="Sign out"
-              className="p-1.5 text-[#475569] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-[#64748B] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer"
             >
               <IconLogOut size={14} />
             </button>
@@ -178,7 +178,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         ) : (
           <Link
             to="/login"
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-[12px] bg-white border border-[#E2E8F0] text-[#0F172A] flex items-center justify-center text-xs font-semibold hover:bg-[#F1F5F9] transition-colors"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-[#E2E8F0] text-[#0F172A] flex items-center justify-center text-xs font-semibold hover:bg-[#F1F5F9] transition-colors"
             title="Sign in"
           >
             →
@@ -188,31 +188,31 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       {/* Main Canvas Area (Panes 2 & 3 with top breadcrumb bar) */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        {/* Minimal Floating Top Breadcrumb Bar (Left Only, Interrupted Sky on Right) */}
+        {/* Minimal Top Breadcrumb Bar */}
         <header className="h-9 px-2 flex items-center justify-between text-xs mb-1.5 shrink-0 select-none">
-          {/* Left: Breadcrumbs & Branch info + minimal borderless 1.5px outline icons */}
+          {/* Left: Breadcrumbs & Branch info */}
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Mobile menu toggle */}
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-1 text-[#475569] hover:text-[#0F172A] rounded-lg transition-colors shrink-0"
+              className="md:hidden p-1 text-[#64748B] hover:text-[#0F172A] rounded-lg transition-colors shrink-0"
               aria-label="Toggle navigation menu"
             >
               {isMobileMenuOpen ? <IconClose size={15} /> : <IconMenu size={15} />}
             </button>
 
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100/90 border border-slate-200/90 shadow-2xs max-w-[200px] sm:max-w-none truncate">
-              <span className="text-xs font-medium text-slate-600 shrink-0">Branch</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-[#CBD5E1]/70 max-w-[200px] sm:max-w-none truncate">
+              <span className="text-xs font-medium text-slate-500 shrink-0">Branch</span>
               <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">{user?.primaryBranchName || 'Branch Operations'}</span>
             </div>
 
-            {/* Clean borderless clock icon right next to Branch Main */}
+            {/* Clean clock icon right next to Branch Main */}
             <div className="flex items-center gap-1 ml-1.5">
               <Link
                 to="/attendance"
                 title="Punch attendance clock"
-                className="p-1 text-[#475569] hover:text-[#0F172A] rounded transition-colors"
+                className="p-1 text-[#64748B] hover:text-[#0F172A] rounded transition-colors"
                 aria-label="Punch attendance clock"
               >
                 <IconClock size={15} />
@@ -222,8 +222,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
           {/* Right: Operations status & Notification bell */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/80 border border-[#CBD5E1]/70 text-[11px] font-medium text-[#475569] shadow-[inset_0_1px_0_#FFFFFF,0_1px_2px_rgba(15,23,42,0.04)]">
-              <span className={`w-1.5 h-1.5 rounded-full ${wsStatus === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_6px_#10B981]' : wsStatus === 'RECONNECTING' ? 'bg-amber-500 animate-pulse' : 'bg-zinc-400'}`} />
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-[#CBD5E1]/70 text-[11px] font-medium text-[#475569]">
+              <span className={`w-1.5 h-1.5 rounded-full ${wsStatus === 'CONNECTED' ? 'bg-emerald-600' : wsStatus === 'RECONNECTING' ? 'bg-amber-600' : 'bg-zinc-400'}`} />
               <span className="tabular-nums">{wsStatus === 'CONNECTED' ? 'Live' : wsStatus === 'RECONNECTING' ? 'Syncing' : 'Offline'}</span>
             </div>
             <NotificationBell />
@@ -232,7 +232,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
         {/* Mobile Navigation Drawer */}
         {isAuthenticated && isMobileMenuOpen && (
-          <div className="md:hidden bg-[#F8FAFC] rounded-2xl border border-[#CBD5E1]/70 p-3 mb-2 shadow-lg space-y-2 shrink-0 z-30 /* taste-skill-ignore */">
+          <div className="md:hidden bg-white rounded-xl border border-[#CBD5E1]/80 p-3 mb-2 space-y-2 shrink-0 z-30">
             <div className="grid grid-cols-2 gap-1.5 pb-2 border-b border-[#E2E8F0]">
               {allNav.map((item) => (
                 <NavLink

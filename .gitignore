@@ -21,4 +21,13 @@ docker/*.log
 /backend/uploads/*
 !/backend/uploads/.gitkeep
 
+# AI & Agent Skills (Local only)
+.agents/
+.claude/
+agent/
+.stitch/
+.taste-skill/
+skills-lock.json
+
+
 

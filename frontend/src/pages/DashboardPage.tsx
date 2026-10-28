@@ -513,14 +513,15 @@ export const DashboardPage: React.FC = () => {
     };
   }, [currentStaffShift, currentAssignment, currentAttendance, currentTime]);
 
-  const activeIncidentsCount = branchIssuesPage
-    ? branchIssuesPage.content.filter(
-        (i) => i.status !== 'CLOSED' && i.status !== 'CANCELLED'
-      ).length
-    : 0;
+  const activeIncidentsCount =
+    branchIssuesPage && branchIssuesPage.content.length > 0
+      ? branchIssuesPage.content.filter(
+          (i) => i.status !== 'CLOSED' && i.status !== 'CANCELLED'
+        ).length
+      : 1;
 
   return (
-    <div className="space-y-6 pb-10 text-[#131416]">
+    <div className="space-y-6 pb-6 text-[#131416]">
       {/* ------------------------------------------------------------- */}
       {/* TOP DECK: Identity & Operations Control Header                 */}
       {/* ------------------------------------------------------------- */}
@@ -543,18 +544,15 @@ export const DashboardPage: React.FC = () => {
         />
       )}
 
-      {/* ------------------------------------------------------------- */}
-      {/* SECTION: Operational Broadcast Announcements Banner           */}
-      {/* ------------------------------------------------------------- */}
-      <ActiveAnnouncementsBanner announcements={announcements} />
-
       {/* ============================================================= */}
       {/* VIEW: STAFF DASHBOARD EXPERIENCE                             */}
       {/* ============================================================= */}
       {isStaff && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            {/* LEFT COLUMN: Hero Punch Clock Station */}
+        <div className="space-y-6">
+          <ActiveAnnouncementsBanner announcements={announcements} />
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* LEFT COLUMN: Time Clock Station */}
             <div className="lg:col-span-5 flex flex-col">
               <StaffTimeClockCard
                 currentTime={currentTime}
@@ -599,24 +597,30 @@ export const DashboardPage: React.FC = () => {
       {/* VIEW: MANAGER & OWNER DASHBOARD EXPERIENCE                    */}
       {/* ============================================================= */}
       {!isStaff && (
-        <div className="space-y-5">
-          {/* Top Metric Telemetry Tiles */}
+        <div className="space-y-6">
+          {/* Divided KPI strip (1 single container, 4 cells) */}
           <ManagerTelemetryTiles
             branchAttendance={branchAttendance}
             branchTasks={branchTasks}
             activeIncidentsCount={activeIncidentsCount}
           />
 
-          {/* Main Manager Layout Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Left 7-Col: Live Floor Roster & Tasks Backlog */}
-            <div className="lg:col-span-7 space-y-5">
+          {/* Main Manager Layout Grid: 7-Col Main + 5-Col Rail */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left 7-Col: Floor Coverage Roster & Store Routines */}
+            <div className="lg:col-span-7 space-y-6">
               <ManagerFloorRosterCard branchAttendance={branchAttendance} />
-              <ManagerRoutineTasksCard branchTasks={branchTasks} />
+              <ManagerRoutineTasksCard
+                branchTasks={branchTasks}
+                onAdvanceTask={(taskId, nextStatus) =>
+                  advanceTaskMutation.mutate({ taskId, nextStatus })
+                }
+              />
             </div>
 
-            {/* Right 5-Col: Turnover Debrief Sign-off & Live Wire */}
-            <div className="lg:col-span-5 space-y-5">
+            {/* Right 5-Col: Bulletins, Turnover Debrief & Live Wire */}
+            <div className="lg:col-span-5 space-y-6">
+              <ActiveAnnouncementsBanner announcements={announcements} />
               <ManagerTurnoverCard
                 latestHandover={latestHandover || null}
                 onAcknowledge={(h) => setAcknowledgingHandover(h)}

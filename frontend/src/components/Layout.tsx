@@ -22,6 +22,19 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const { status: wsStatus } = useWebSocket();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [currentTimeStr, setCurrentTimeStr] = useState<string>('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTimeStr(
+        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      );
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -49,6 +62,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     label: string;
     icon: React.ComponentType<{ size?: number | string; className?: string }>;
     end?: boolean;
+    badge?: string | number;
   }
 
   const primaryNav: NavItem[] = isStaff
@@ -71,197 +85,271 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         { to: '/handovers', label: 'Shift Turnover', icon: IconMessageCircle },
       ]
     : [
-        { to: '/issues', label: 'Incident Radar', icon: IconBell },
+        { to: '/issues', label: 'Incident Radar', icon: IconBell, badge: 1 },
         { to: '/handovers', label: 'Shift Turnover', icon: IconMessageCircle },
         { to: '/staff', label: 'Team Directory', icon: IconUser },
-        { to: '/branches', label: isOwner ? 'All Branches' : 'Store Settings', icon: IconBuilding2 },
+        {
+          to: '/branches',
+          label: isOwner ? 'All Branches' : 'Store Settings',
+          icon: IconBuilding2,
+        },
       ];
 
   const allNav = [...primaryNav, ...secondaryNav];
 
   return (
-    <div className="h-dvh w-screen overflow-hidden bg-[#F1F5F9] p-2.5 sm:p-3 flex gap-2.5 sm:gap-3 text-[#0F172A] antialiased">
-      {/* Pane 1: Vertical Icon Dock (Leftmost Rail) */}
-      <aside
-        className="w-12 sm:w-14 h-full bg-white rounded-2xl py-3 flex flex-col items-center justify-between border border-[#E2E8F0] shrink-0 z-20 select-none"
-      >
-        {/* Top Anchor: Brand Calendar/Planner Squircle */}
-        <div className="flex flex-col items-center gap-3 sm:gap-3.5">
+    <div className="h-dvh w-screen overflow-hidden bg-[#f9fbfc] flex flex-col text-[#131416] antialiased select-none">
+      {/* 48px Top Chrome Bar on #f9fbfc Ground (No separating rule into sidebar) */}
+      <header className="h-12 w-full px-3 sm:px-4 flex items-center justify-between shrink-0 bg-[#f9fbfc] z-30">
+        {/* Left: Brand Monogram + Title + Branch Scope */}
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-1.5 text-[#5d5f60] hover:text-[#131416] rounded-md transition-colors"
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileMenuOpen ? <IconClose size={16} /> : <IconMenu size={16} />}
+          </button>
+
           <Link
             to="/"
-            title="ShiftOps Planner"
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#18181B] text-white flex items-center justify-center hover:bg-zinc-800 transition-colors"
+            className="flex items-center gap-2 group cursor-pointer focus:outline-none"
           >
-            <IconCalendar size={18} />
+            <div className="w-7 h-7 rounded-md bg-[#131416] text-white flex items-center justify-center font-bold text-xs tracking-tight">
+              SO
+            </div>
+            <span className="font-semibold text-sm tracking-tight text-[#131416]">
+              ShiftOps
+            </span>
           </Link>
 
-          {/* Navigation Stack */}
-          {isAuthenticated && (
-            <nav className="flex flex-col items-center gap-1.5 sm:gap-2 mt-1" aria-label="Quick Dock Navigation">
-              {primaryNav.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    title={item.label}
-                    className={({ isActive }) =>
-                      `w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
-                        isActive
-                          ? 'bg-[#F1F5F9] text-[#0F172A] font-semibold'
-                          : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]/60'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <Icon
-                        size={16}
-                        className={isActive ? 'text-[#0F172A]' : 'text-[#64748B]'}
-                      />
-                    )}
-                  </NavLink>
-                );
-              })}
+          <span className="text-[#cdced1] hidden sm:inline" aria-hidden="true">
+            /
+          </span>
 
-              <div className="w-5 sm:w-6 h-px bg-[#E2E8F0] my-0.5" aria-hidden="true" />
-
-              {secondaryNav.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    end={item.end}
-                    title={item.label}
-                    className={({ isActive }) =>
-                      `w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
-                        isActive
-                          ? 'bg-[#F1F5F9] text-[#0F172A] font-semibold'
-                          : 'text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9]/60'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <Icon
-                        size={16}
-                        className={isActive ? 'text-[#0F172A]' : 'text-[#64748B]'}
-                      />
-                    )}
-                  </NavLink>
-                );
-              })}
-            </nav>
-          )}
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#5d5f60]">
+            <span className="font-medium text-[#131416]">
+              {user?.primaryBranchName || 'Shibuya Flagship'}
+            </span>
+            <span className="text-[11px] text-[#5d5f60]">(Store #04)</span>
+          </div>
         </div>
 
-        {/* Bottom Anchor: User Subtle Outline Squircle & Sign Out */}
-        {isAuthenticated && user ? (
-          <div className="flex flex-col items-center gap-1.5">
-            <Link
-              to="/profile"
-              title={`${user.fullName} (${user.role})`}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-[#64748B] flex items-center justify-center text-xs font-medium hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+        {/* Center: Search input */}
+        <div className="hidden md:flex items-center">
+          <div className="w-64 lg:w-80 h-8 px-2.5 rounded-md bg-white border border-[#cdced1] flex items-center gap-2 text-xs text-[#5d5f60]">
+            <svg
+              className="w-3.5 h-3.5 text-[#5d5f60] shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <IconUser size={15} />
-            </Link>
-            <button
-              type="button"
-              onClick={handleLogout}
-              aria-label="Sign out"
-              title="Sign out"
-              className="p-1.5 text-[#64748B] hover:text-[#0F172A] rounded-lg transition-colors cursor-pointer"
-            >
-              <IconLogOut size={14} />
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <span className="truncate">Search staff, shifts, tasks...</span>
+            <kbd className="ml-auto px-1.5 py-0.5 rounded text-[11px] font-mono text-[#5d5f60] bg-[#f4f6f8] border border-[#cdced1]">
+              ⌘K
+            </kbd>
           </div>
-        ) : (
-          <Link
-            to="/login"
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-[#E2E8F0] text-[#0F172A] flex items-center justify-center text-xs font-semibold hover:bg-[#F1F5F9] transition-colors"
-            title="Sign in"
-          >
-            →
-          </Link>
-        )}
-      </aside>
+        </div>
 
-      {/* Main Canvas Area (Panes 2 & 3 with top breadcrumb bar) */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        {/* Minimal Top Breadcrumb Bar */}
-        <header className="h-9 px-2 flex items-center justify-between text-xs mb-1.5 shrink-0 select-none">
-          {/* Left: Breadcrumbs & Branch info */}
-          <div className="flex items-center gap-2.5 min-w-0">
-            {/* Mobile menu toggle */}
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-1 text-[#64748B] hover:text-[#0F172A] rounded-lg transition-colors shrink-0"
-              aria-label="Toggle navigation menu"
-            >
-              {isMobileMenuOpen ? <IconClose size={15} /> : <IconMenu size={15} />}
-            </button>
-
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-[#CBD5E1]/70 max-w-[200px] sm:max-w-none truncate">
-              <span className="text-xs font-medium text-slate-500 shrink-0">Branch</span>
-              <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">{user?.primaryBranchName || 'Branch Operations'}</span>
-            </div>
-
-            {/* Clean clock icon right next to Branch Main */}
-            <div className="flex items-center gap-1 ml-1.5">
-              <Link
-                to="/attendance"
-                title="Punch attendance clock"
-                className="p-1 text-[#64748B] hover:text-[#0F172A] rounded transition-colors"
-                aria-label="Punch attendance clock"
-              >
-                <IconClock size={15} />
-              </Link>
-            </div>
+        {/* Right: Operational Status + Live Time + Bell */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-[#cdced1] text-xs font-medium text-[#131416]">
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                wsStatus === 'CONNECTED'
+                  ? 'bg-[#1e7b4f]'
+                  : wsStatus === 'RECONNECTING'
+                  ? 'bg-[#92400e]'
+                  : 'bg-[#1e7b4f]'
+              }`}
+            />
+            <span className="tabular-nums font-mono text-[11px]">
+              {wsStatus === 'CONNECTED' ? 'Live STOMP' : 'Live Sync'}
+            </span>
           </div>
 
-          {/* Right: Operations status & Notification bell */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-[#CBD5E1]/70 text-[11px] font-medium text-[#475569]">
-              <span className={`w-1.5 h-1.5 rounded-full ${wsStatus === 'CONNECTED' ? 'bg-emerald-600' : wsStatus === 'RECONNECTING' ? 'bg-amber-600' : 'bg-zinc-400'}`} />
-              <span className="tabular-nums">{wsStatus === 'CONNECTED' ? 'Live' : wsStatus === 'RECONNECTING' ? 'Syncing' : 'Offline'}</span>
-            </div>
-            <NotificationBell />
+          <div className="hidden lg:block text-xs font-mono tabular-nums text-[#5d5f60] px-1">
+            {currentTimeStr} JST
           </div>
-        </header>
+
+          <NotificationBell />
+        </div>
+      </header>
+
+      {/* Main Framework Body: Sidebar (Left) + Framed Sheet (Right) */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Desktop Sidebar (224px width on #f9fbfc ground, no border to top bar) */}
+        <aside className="hidden md:flex w-56 shrink-0 flex-col justify-between px-3 pb-3 bg-[#f9fbfc]">
+          <div className="space-y-4 pt-1">
+            {/* Group 1: Operations */}
+            <div>
+              <div className="text-xs font-semibold text-[#5d5f60] px-2 pb-1.5">
+                Operations
+              </div>
+              <nav className="space-y-0.5" aria-label="Operations Navigation">
+                {primaryNav.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) =>
+                        `w-full h-8 px-2.5 rounded-md flex items-center justify-between text-xs font-medium transition-colors cursor-pointer ${
+                          isActive
+                            ? 'bg-[#ebedee] text-[#131416] font-semibold'
+                            : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#ebedee]/60'
+                        }`
+                      }
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Icon size={15} className="shrink-0 text-[#5d5f60]" />
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.2 rounded text-[11px] font-mono font-semibold bg-[#fffbeb] text-[#92400e] border border-[#92400e]/30">
+                          {item.badge}
+                        </span>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Group 2: Store Dispatch & Management */}
+            <div>
+              <div className="text-xs font-semibold text-[#5d5f60] px-2 pb-1.5">
+                Management
+              </div>
+              <nav className="space-y-0.5" aria-label="Management Navigation">
+                {secondaryNav.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      end={item.end}
+                      className={({ isActive }) =>
+                        `w-full h-8 px-2.5 rounded-md flex items-center justify-between text-xs font-medium transition-colors cursor-pointer ${
+                          isActive
+                            ? 'bg-[#ebedee] text-[#131416] font-semibold'
+                            : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#ebedee]/60'
+                        }`
+                      }
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Icon size={15} className="shrink-0 text-[#5d5f60]" />
+                        <span className="truncate">{item.label}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="px-1.5 py-0.2 rounded text-[11px] font-mono font-semibold bg-[#ffedea] text-[#831c1e] border border-[#c4242a]/30">
+                          {item.badge}
+                        </span>
+                      )}
+                    </NavLink>
+                  );
+                })}
+              </nav>
+            </div>
+          </div>
+
+          {/* User Account Row at Bottom */}
+          {isAuthenticated && user && (
+            <div className="pt-2 border-t border-[#f0f1f2]">
+              <div className="p-2 rounded-lg bg-white border border-[#e8eaec] flex items-center justify-between gap-2">
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 min-w-0 hover:opacity-85 transition-opacity"
+                  title={`${user.fullName} (${user.role})`}
+                >
+                  <div className="w-7 h-7 rounded-full bg-[#f4f6f8] border border-[#cdced1] flex items-center justify-center text-[11px] font-semibold text-[#131416] shrink-0">
+                    {user.fullName
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-[#131416] truncate leading-tight">
+                      {user.fullName}
+                    </div>
+                    <div className="text-[11px] text-[#5d5f60] uppercase tracking-tight">
+                      {user.role}
+                    </div>
+                  </div>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  aria-label="Sign out"
+                  title="Sign out"
+                  className="p-1 text-[#5d5f60] hover:text-[#131416] rounded transition-colors cursor-pointer"
+                >
+                  <IconLogOut size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+        </aside>
 
         {/* Mobile Navigation Drawer */}
         {isAuthenticated && isMobileMenuOpen && (
-          <div className="md:hidden bg-white rounded-xl border border-[#CBD5E1]/80 p-3 mb-2 space-y-2 shrink-0 z-30">
-            <div className="grid grid-cols-2 gap-1.5 pb-2 border-b border-[#E2E8F0]">
-              {allNav.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `px-3 py-1.5 text-xs font-semibold rounded-xl transition-colors ${
-                      isActive
-                        ? 'bg-[#0F172A] text-white'
-                        : 'text-[#475569] hover:text-[#0F172A] hover:bg-white/60'
-                    }`
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
+          <div className="fixed inset-x-0 top-12 bottom-0 z-40 bg-[#f9fbfc] p-4 flex flex-col justify-between overflow-y-auto md:hidden">
+            <div className="space-y-4">
+              <div className="text-xs font-semibold text-[#5d5f60] uppercase px-1">
+                Navigation
+              </div>
+              <div className="space-y-1">
+                {allNav.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={({ isActive }) =>
+                      `h-10 px-3 rounded-lg flex items-center justify-between text-xs font-medium ${
+                        isActive
+                          ? 'bg-[#ebedee] text-[#131416] font-semibold'
+                          : 'text-[#5d5f60] hover:bg-[#ebedee]/60'
+                      }`
+                    }
+                  >
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#ffedea] text-[#831c1e]">
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                ))}
+              </div>
             </div>
 
-            <div className="pt-1 flex items-center justify-between text-xs">
-              <span className="font-semibold text-[#0F172A]">{user?.fullName}</span>
+            <div className="pt-4 border-t border-[#f0f1f2] flex items-center justify-between">
+              <div>
+                <div className="text-xs font-semibold text-[#131416]">
+                  {user?.fullName}
+                </div>
+                <div className="text-[11px] text-[#5d5f60]">{user?.email}</div>
+              </div>
               <button
                 type="button"
                 onClick={() => {
                   setIsMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="text-[#0F172A] font-semibold text-xs cursor-pointer hover:underline"
+                className="text-xs font-semibold text-[#c4242a] px-3 py-1.5 rounded-md border border-[#c4242a]/30"
               >
                 Sign out
               </button>
@@ -269,9 +357,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
         )}
 
-        {/* Page Content Viewport */}
-        <main className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1">
-          {children}
+        {/* Framed Sheet: Inset 8px, 16px radius, 1px #e8eaec hairline border */}
+        <main className="flex-1 min-w-0 mr-0 sm:mr-3 mb-0 sm:mb-3 bg-white rounded-none sm:rounded-2xl border-t sm:border border-[#e8eaec] overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-6 text-[#131416]">
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -3,11 +3,11 @@ import fs from 'fs';
 import path from 'path';
 
 async function extractHtml() {
-  console.log('Capturing self-contained static HTML for /attendance?demo=staff...');
+  console.log('Capturing self-contained static HTML for /attendance?demo=manager...');
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   
-  await page.goto('http://localhost:5173/attendance?demo=staff', { waitUntil: 'networkidle' });
+  await page.goto('http://localhost:5173/attendance?demo=manager', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
 
   // Evaluate and inline style definitions

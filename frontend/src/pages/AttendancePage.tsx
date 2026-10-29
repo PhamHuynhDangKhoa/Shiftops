@@ -17,6 +17,9 @@ import {
   StaffAttendanceMetrics,
   AttendanceTable,
   AttendanceDetailDrawer,
+  ManagerCoverageBanner,
+  AttendanceMetricsPanel,
+  exportAttendanceToCsv,
   generateFallbackAttendance,
   generateFallbackStaffShift,
 } from '../components/attendance';
@@ -57,6 +60,12 @@ export const AttendancePage: React.FC = () => {
 
   // Status filter for Manager / Owner
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+
+  // Search filter for Manager / Owner
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Collapsible metrics panel state (defaults to false for visual cleanliness)
+  const [showMetrics, setShowMetrics] = useState<boolean>(false);
 
   // Action message / error state
   const [actionMessage, setActionMessage] = useState<{
@@ -316,16 +325,43 @@ export const AttendancePage: React.FC = () => {
   });
 
   const effectiveBranchAttendance = useMemo(() => {
+    let list: Attendance[] = [];
     if (branchAttendanceList && branchAttendanceList.length > 0) {
-      return branchAttendanceList;
+      list = branchAttendanceList;
+    } else {
+      list = generateFallbackAttendance(
+        selectedBranchId || 'b1',
+        currentBranch?.name || 'Shibuya Flagship'
+      );
     }
-    const fallback = generateFallbackAttendance(
-      selectedBranchId || 'b1',
+
+    if (statusFilter !== 'ALL') {
+      list = list.filter((a) => a.status === statusFilter);
+    }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (a) =>
+          a.userName?.toLowerCase().includes(q) ||
+          a.userEmail?.toLowerCase().includes(q) ||
+          a.shiftName?.toLowerCase().includes(q)
+      );
+    }
+
+    return list;
+  }, [branchAttendanceList, selectedBranchId, currentBranch, statusFilter, searchQuery]);
+
+  const handleExportCsv = () => {
+    exportAttendanceToCsv(
+      effectiveBranchAttendance,
       currentBranch?.name || 'Shibuya Flagship'
     );
-    if (statusFilter === 'ALL') return fallback;
-    return fallback.filter((a) => a.status === statusFilter);
-  }, [branchAttendanceList, selectedBranchId, currentBranch, statusFilter]);
+    setActionMessage({
+      type: 'success',
+      text: `Exported ${effectiveBranchAttendance.length} timecard records to CSV successfully.`,
+    });
+  };
 
   const handleRefresh = () => {
     if (isStaff) {
@@ -357,6 +393,11 @@ export const AttendancePage: React.FC = () => {
         onStatusFilterChange={setStatusFilter}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        onExportCsv={handleExportCsv}
+        showMetrics={showMetrics}
+        onToggleMetrics={() => setShowMetrics((prev) => !prev)}
       />
 
       {/* Action Notification Message */}
@@ -432,9 +473,55 @@ export const AttendancePage: React.FC = () => {
 
       {/* MANAGER / OWNER AUDIT VIEW */}
       {!isStaff && (
-        <div className="space-y-6">
-          {/* Real-time Branch Telemetry Metric Strip */}
-          <AttendanceTelemetryStrip records={effectiveBranchAttendance} />
+        <div className="space-y-4">
+          {/* Floor Exceptions Callout (Progressive disclosure: only shows when exceptions require supervisor review) */}
+          {(() => {
+            const lateCount = effectiveBranchAttendance.filter((a) => a.late).length;
+            const absentCount = effectiveBranchAttendance.filter(
+              (a) => a.status === 'ABSENT'
+            ).length;
+
+            if (lateCount + absentCount === 0) return null;
+
+            return (
+              <div className="flex items-center justify-between px-4 py-2.5 rounded-lg bg-[#fffbeb] border border-[#fef3c7] text-[13px] text-[#92400e]">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#d97706]" />
+                  <span className="font-medium">
+                    {lateCount > 0 &&
+                      `${lateCount} tardy arrival${lateCount > 1 ? 's' : ''}`}
+                    {lateCount > 0 && absentCount > 0 && ' · '}
+                    {absentCount > 0 && `${absentCount} absence logged`}
+                    {' '}requiring floor supervisor review.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setStatusFilter(
+                      statusFilter === 'LATE' || statusFilter === 'ABSENT'
+                        ? 'ALL'
+                        : 'LATE'
+                    )
+                  }
+                  className="text-xs font-semibold px-2.5 py-1 rounded bg-white border border-[#d97706]/30 hover:bg-[#fde68a]/50 transition-colors cursor-pointer"
+                >
+                  {statusFilter === 'LATE' || statusFilter === 'ABSENT'
+                    ? 'Show all records'
+                    : 'Review exceptions →'}
+                </button>
+              </div>
+            );
+          })()}
+
+          {/* Collapsible Floor Presence & Compliance Metrics Panel */}
+          {showMetrics && (
+            <AttendanceMetricsPanel
+              records={effectiveBranchAttendance}
+              activeStatusFilter={statusFilter}
+              onSelectStatusFilter={setStatusFilter}
+            />
+          )}
 
           {/* Master Operational Attendance Table */}
           <div className="space-y-3">

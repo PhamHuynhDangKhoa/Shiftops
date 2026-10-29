@@ -9,3 +9,6 @@ export * from './AttendanceFilterBar';
 export * from './StaffShiftCheckInCard';
 export * from './StaffAttendanceMetrics';
 export * from './AttendanceDetailDrawer';
+export * from './ManagerCoverageBanner';
+export * from './AttendanceMetricsPanel';
+export * from './attendanceExport';

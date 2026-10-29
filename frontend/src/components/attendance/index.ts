@@ -7,3 +7,5 @@ export * from './AttendanceStatusBadge';
 export * from './AttendanceMetricsSummary';
 export * from './AttendanceFilterBar';
 export * from './StaffShiftCheckInCard';
+export * from './StaffAttendanceMetrics';
+export * from './AttendanceDetailDrawer';

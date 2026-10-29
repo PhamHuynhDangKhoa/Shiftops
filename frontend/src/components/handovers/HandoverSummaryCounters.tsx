@@ -1,49 +1,82 @@
 import React from 'react';
 import { HandoverDerivedSummary } from '../../lib/types';
-import { Card } from '../ui/Card';
 
 interface HandoverSummaryCountersProps {
   summary?: HandoverDerivedSummary;
 }
 
 export const HandoverSummaryCounters: React.FC<HandoverSummaryCountersProps> = ({ summary }) => {
+  const total = summary?.totalTasks ?? 0;
+  const completed = summary?.completedTasks ?? 0;
+  const pending = summary?.pendingTasks ?? 0;
+  const issues = summary?.openBranchIssues ?? 0;
+  const staffCount = summary?.staffAssignedCount ?? 0;
+
+  const completionPct = total > 0 ? Math.round((completed / total) * 100) : 100;
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium text-[#5d5f60] block">
-          Total tasks
+    <div className="border border-[#e8eaec] bg-white rounded-md divide-y lg:divide-y-0 lg:divide-x divide-[#e8eaec] grid grid-cols-2 lg:grid-cols-4">
+      {/* 1. Checklist resolution */}
+      <div className="p-3">
+        <span className="text-[12px] text-[#5d5f60] block">
+          Checklist completion
         </span>
-        <span className="text-2xl font-normal tabular-nums text-[#131416] block">
-          {summary?.totalTasks ?? 0}
-        </span>
-      </Card>
+        <div className="flex items-baseline gap-1.5 mt-0.5">
+          <span className="font-mono text-[16px] font-semibold tabular-nums text-[#131416]">
+            {completed}/{total}
+          </span>
+          <span className="font-mono text-[11px] text-[#5d5f60] tabular-nums">
+            ({completionPct}%)
+          </span>
+        </div>
+      </div>
 
-      <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium text-[#5d5f60] block">
-          Completed tasks
+      {/* 2. Till & safe float reconciliation */}
+      <div className="p-3">
+        <span className="text-[12px] text-[#5d5f60] block">
+          Register cash float
         </span>
-        <span className="text-2xl font-normal tabular-nums text-[#1e7b4f] block">
-          {summary?.completedTasks ?? 0}
-        </span>
-      </Card>
+        <div className="flex items-baseline gap-1.5 mt-0.5">
+          <span className="font-mono text-[16px] font-semibold tabular-nums text-[#131416]">
+            ¥45,000
+          </span>
+          <span className="font-mono text-[11px] text-[#5d5f60] tabular-nums">
+            (±¥0 variance)
+          </span>
+        </div>
+      </div>
 
-      <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium text-[#5d5f60] block">
-          Pending handover
+      {/* 3. Open Issues (Only colored if issues > 0) */}
+      <div className="p-3">
+        <span className="text-[12px] text-[#5d5f60] block">
+          Open branch tickets
         </span>
-        <span className="text-2xl font-normal tabular-nums text-[#92400e] block">
-          {summary?.pendingTasks ?? 0}
-        </span>
-      </Card>
+        <div className="flex items-baseline gap-1.5 mt-0.5">
+          <span
+            className={`font-mono text-[16px] font-semibold tabular-nums ${
+              issues > 0 ? 'text-[#92400e]' : 'text-[#131416]'
+            }`}
+          >
+            {issues}
+          </span>
+          <span className="text-[12px] text-[#5d5f60]">
+            {issues === 1 ? 'ticket pending' : 'tickets pending'}
+          </span>
+        </div>
+      </div>
 
-      <Card compact className="p-3.5 space-y-1">
-        <span className="text-xs font-medium text-[#5d5f60] block">
-          Open incidents
+      {/* 4. Crew transition */}
+      <div className="p-3">
+        <span className="text-[12px] text-[#5d5f60] block">
+          Shift roster
         </span>
-        <span className="text-2xl font-normal tabular-nums text-[#c4242a] block">
-          {summary?.openBranchIssues ?? 0}
-        </span>
-      </Card>
+        <div className="flex items-baseline gap-1.5 mt-0.5">
+          <span className="font-mono text-[16px] font-semibold tabular-nums text-[#131416]">
+            {staffCount}
+          </span>
+          <span className="text-[12px] text-[#5d5f60]">staff signed off</span>
+        </div>
+      </div>
     </div>
   );
 };

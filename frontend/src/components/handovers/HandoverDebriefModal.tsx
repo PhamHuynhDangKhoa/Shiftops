@@ -1,23 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ShiftHandover, HandoverItemType, Issue } from '../../lib/types';
-import { Modal, Button, Input, Badge } from '../ui';
-import { IconPlus, IconClose, IconAlertTriangle } from '../ui/Icons';
+import { Modal, Button } from '../ui';
+import { IconPlus, IconClose, IconAlertTriangle, IconCheck, IconClock, IconFileText } from '../ui/Icons';
 import { HandoverStatusBadge } from './HandoverStatusBadge';
-
-const getItemBadgeVariant = (type: HandoverItemType): 'success' | 'warning' | 'urgent' | 'brand' | 'neutral' => {
-  switch (type) {
-    case 'COMPLETED':
-      return 'success';
-    case 'PENDING':
-      return 'warning';
-    case 'ISSUE':
-      return 'urgent';
-    case 'NOTE':
-      return 'brand';
-    default:
-      return 'neutral';
-  }
-};
+import { formatHandoverTime, formatHandoverDateTime } from './handoverUtils';
 
 export interface DebriefItemState {
   type: HandoverItemType;
@@ -38,6 +24,20 @@ interface HandoverDebriefModalProps {
   isSubmitting: boolean;
 }
 
+const getItemPillClasses = (type: HandoverItemType) => {
+  switch (type) {
+    case 'COMPLETED':
+      return 'bg-[#eaf5ef] border-[#c2e4d0] text-[#1e7b4f]';
+    case 'PENDING':
+      return 'bg-[#fef3c7] border-[#fde68a] text-[#92400e]';
+    case 'ISSUE':
+      return 'bg-[#fdeeed] border-[#f7c5c2] text-[#c4242a]';
+    case 'NOTE':
+    default:
+      return 'bg-[#eef7f9] border-[#cde5eb] text-[#1b6c80]';
+  }
+};
+
 export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
   isOpen,
   handover,
@@ -51,7 +51,7 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
 }) => {
   const [debriefNotes, setDebriefNotes] = useState('');
   const [debriefItems, setDebriefItems] = useState<DebriefItemState[]>([]);
-  const [newItemType, setNewItemType] = useState<HandoverItemType>('COMPLETED');
+  const [newItemType, setNewItemType] = useState<HandoverItemType>('PENDING');
   const [newItemContent, setNewItemContent] = useState('');
   const [newItemIssueId, setNewItemIssueId] = useState('');
 
@@ -59,7 +59,7 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
     if (handover) {
       setDebriefNotes(handover.notes || '');
       setDebriefItems(
-        handover.items.map((it) => ({
+        (handover.items || []).map((it) => ({
           type: it.type,
           content: it.content,
           issueId: it.issueId,
@@ -96,63 +96,79 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isDraft ? 'Prepare Shift Handover Debrief' : 'Shift Handover Details'}
+      title={isDraft ? 'Prepare Shift Handover Debrief' : 'Shift Handover Dossier & Audit'}
       maxWidth="lg"
     >
-      <div className="space-y-5">
+      <div className="space-y-4">
         {errorMessage && (
-          <div className="p-3 bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 rounded-lg flex items-center gap-2">
-            <IconAlertTriangle size={15} />
-            <span>{errorMessage}</span>
+          <div className="p-3 bg-[#fdeeed] border border-[#f7c5c2] text-[13px] font-medium text-[#c4242a] rounded-lg flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <IconAlertTriangle size={15} />
+              <span>{errorMessage}</span>
+            </div>
           </div>
         )}
 
+        {/* Handover Metadata Banner */}
         {handover && (
-          <div className="flex items-center justify-between p-3.5 bg-zinc-50 border border-zinc-200/80 rounded-xl text-xs">
+          <div className="p-4 bg-[#f9fbfc] border border-[#e8eaec] rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[13px]">
             <div>
-              <span className="font-semibold text-zinc-900 block text-sm">{handover.shiftName || 'Shift'}</span>
-              <span className="text-zinc-500">
-                {new Date(handover.shiftStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} –{' '}
-                {new Date(handover.shiftEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <span className="font-semibold text-[#131416] block text-[15px]">
+                {handover.shiftName || 'Operational Shift'}
+              </span>
+              <span className="text-[#5d5f60] tabular-nums mt-0.5 block">
+                Window: {formatHandoverTime(handover.shiftStartTime)} – {formatHandoverTime(handover.shiftEndTime)} · Branch: {handover.branchName}
               </span>
             </div>
-            <HandoverStatusBadge status={handover.status} />
+            <div className="flex items-center gap-2">
+              <HandoverStatusBadge status={handover.status} size="md" />
+            </div>
           </div>
         )}
 
         {/* Debrief Notes */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-semibold text-zinc-700">
-            Debrief Summary & Operational Notes
+        <div className="space-y-1.5">
+          <label className="text-[13px] font-semibold text-[#131416] block">
+            Debrief Summary & Operational Narrative
           </label>
           <textarea
             value={debriefNotes}
             onChange={(e) => setDebriefNotes(e.target.value)}
             disabled={!isDraft}
             rows={3}
-            placeholder="Summarize key store conditions, inventory shortages, customer highlights..."
-            className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs disabled:bg-zinc-100 disabled:text-zinc-600"
+            placeholder="Summarize store conditions, revenue variance, refrigeration temperatures, customer highlights..."
+            className="w-full px-3 py-2 text-[13px] rounded-lg border border-[#e8eaec] bg-white text-[#131416] placeholder:text-[#8c8f92] focus:outline-none focus:border-[#131416] disabled:bg-[#f0f1f2] disabled:text-[#5d5f60]"
           />
         </div>
 
-        {/* Existing Items */}
+        {/* Turnover Checklist Items */}
         <div className="space-y-2">
-          <div className="text-xs font-medium text-[#131416]">
-            Turnover checklist items ({debriefItems.length})
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] font-semibold text-[#131416]">
+              Turnover checklist items ({debriefItems.length})
+            </span>
           </div>
 
-          <div className="max-h-52 overflow-y-auto space-y-2 pr-1">
+          <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
             {debriefItems.map((item, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-zinc-50 border border-zinc-200/80 rounded-xl flex items-start justify-between gap-2.5 text-xs"
+                className="p-3 bg-white border border-[#e8eaec] rounded-lg flex items-start justify-between gap-2.5 text-[13px]"
               >
-                <div className="flex items-start gap-2 flex-1 min-w-0">
-                  <Badge variant={getItemBadgeVariant(item.type)} size="sm">{item.type}</Badge>
+                <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                  <span
+                    className={`text-[11px] font-medium px-2 py-0.5 rounded border uppercase flex-shrink-0 ${getItemPillClasses(
+                      item.type
+                    )}`}
+                  >
+                    {item.type}
+                  </span>
                   <div className="flex-1 min-w-0">
-                    <span className="text-zinc-800 text-sm leading-relaxed block">{item.content}</span>
+                    <p className="text-[#131416] text-[13px] leading-relaxed">
+                      {item.content}
+                    </p>
                     {item.issueId && (
-                      <span className="text-xs text-rose-700 font-medium block mt-0.5">
+                      <span className="text-[12px] text-[#c4242a] font-medium block mt-1">
                         Linked Issue ID: {item.issueId.slice(0, 8)}
                       </span>
                     )}
@@ -161,8 +177,9 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
 
                 {isDraft && (
                   <button
+                    type="button"
                     onClick={() => handleRemoveItem(idx)}
-                    className="text-zinc-400 hover:text-rose-600 p-1 cursor-pointer transition-colors"
+                    className="text-[#8c8f92] hover:text-[#c4242a] p-1 transition-colors"
                   >
                     <IconClose size={14} />
                   </button>
@@ -172,19 +189,21 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
           </div>
         </div>
 
-        {/* Add New Item (Only if Draft) */}
+        {/* Add New Item Form (Only when Draft) */}
         {isDraft && (
-          <div className="p-3.5 border border-zinc-200/90 bg-zinc-50/60 rounded-xl space-y-3">
-            <span className="text-xs font-semibold text-zinc-800 block">Add Turnover Item</span>
+          <div className="p-3.5 border border-[#e8eaec] bg-[#f9fbfc] rounded-lg space-y-3">
+            <span className="text-[13px] font-semibold text-[#131416] block">
+              Add Turnover Checklist Item
+            </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <select
                 value={newItemType}
                 onChange={(e) => setNewItemType(e.target.value as HandoverItemType)}
-                className="px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                className="px-3 py-1.5 text-[13px] rounded-md border border-[#e8eaec] bg-white text-[#131416] focus:outline-none focus:border-[#131416]"
               >
+                <option value="PENDING">Pending Carryover</option>
+                <option value="ISSUE">Linked Incident</option>
                 <option value="COMPLETED">Completed Task</option>
-                <option value="PENDING">Pending Handover</option>
-                <option value="ISSUE">Linked Issue</option>
                 <option value="NOTE">General Note</option>
               </select>
 
@@ -198,7 +217,7 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
                       setNewItemContent(selected.title);
                     }
                   }}
-                  className="sm:col-span-2 px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  className="sm:col-span-2 px-3 py-1.5 text-[13px] rounded-md border border-[#e8eaec] bg-white text-[#131416] focus:outline-none focus:border-[#131416]"
                 >
                   <option value="">-- Select Active Issue --</option>
                   {branchIssues?.map((iss) => (
@@ -212,61 +231,85 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
                   type="text"
                   value={newItemContent}
                   onChange={(e) => setNewItemContent(e.target.value)}
-                  placeholder="Describe status, action taken, or reminder..."
-                  className="sm:col-span-2 px-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  placeholder="Describe task status, maintenance instructions, or cash note..."
+                  className="sm:col-span-2 px-3 py-1.5 text-[13px] rounded-md border border-[#e8eaec] bg-white text-[#131416] focus:outline-none focus:border-[#131416]"
                 />
               )}
             </div>
 
-            {newItemType === 'ISSUE' && (
-              <Input
-                label="Custom Issue Note (Optional)"
-                value={newItemContent}
-                onChange={(e) => setNewItemContent(e.target.value)}
-                placeholder="Additional instructions for incoming supervisor regarding this incident..."
-              />
-            )}
-
             <div className="flex justify-end">
-              <Button
+              <button
                 type="button"
-                variant="secondary"
-                size="sm"
                 onClick={handleAddItem}
                 disabled={!newItemContent.trim()}
-                className="gap-1 text-xs"
+                className="h-8 px-3 text-[12px] font-medium rounded border border-[#131416] bg-[#131416] text-white hover:bg-black transition-colors disabled:opacity-40 inline-flex items-center gap-1.5"
               >
                 <IconPlus size={13} />
                 <span>Add Item</span>
-              </Button>
+              </button>
             </div>
           </div>
         )}
 
-        {/* Modal Actions */}
-        <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
-          <Button variant="secondary" size="sm" onClick={onClose}>
+        {/* Audit Trail Sign-off Details (When Not Draft) */}
+        {!isDraft && handover && (
+          <div className="p-3.5 border border-[#e8eaec] bg-[#f9fbfc] rounded-lg space-y-2 text-[13px]">
+            <span className="text-[12px] font-medium text-[#5d5f60] block tracking-wide">
+              Supervisor Sign-off Audit Trail
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div>
+                <span className="text-[12px] text-[#5d5f60] block">Outgoing Submission</span>
+                <span className="font-medium text-[#131416]">
+                  {handover.submittedByName || 'Staff Member'}
+                </span>
+                <span className="text-[12px] text-[#5d5f60] block tabular-nums">
+                  {formatHandoverDateTime(handover.submittedAt)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[12px] text-[#5d5f60] block">Incoming Acknowledgment</span>
+                <span className="font-medium text-[#131416]">
+                  {handover.acknowledgedByName || 'Pending Incoming Signature'}
+                </span>
+                {handover.acknowledgedAt && (
+                  <span className="text-[12px] text-[#5d5f60] block tabular-nums">
+                    {formatHandoverDateTime(handover.acknowledgedAt)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Action Controls */}
+        <div className="flex justify-end gap-2 pt-3 border-t border-[#e8eaec]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-9 px-4 text-[13px] font-medium rounded-md border border-[#e8eaec] bg-white text-[#131416] hover:bg-[#f0f1f2] transition-colors"
+          >
             Close
-          </Button>
+          </button>
 
           {isDraft && (
             <>
-              <Button
-                variant="outline"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => onSaveDraft(debriefNotes, debriefItems)}
                 disabled={isSaving}
+                className="h-9 px-4 text-[13px] font-medium rounded-md border border-[#e8eaec] bg-white text-[#131416] hover:bg-[#f0f1f2] transition-colors disabled:opacity-50"
               >
                 {isSaving ? 'Saving...' : 'Save Draft'}
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
+              </button>
+              <button
+                type="button"
                 onClick={() => onSubmit(debriefNotes, debriefItems)}
                 disabled={isSubmitting}
+                className="h-9 px-4 text-[13px] font-medium rounded-md bg-[#131416] text-white hover:bg-black transition-colors disabled:opacity-50"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Handover'}
-              </Button>
+              </button>
             </>
           )}
         </div>

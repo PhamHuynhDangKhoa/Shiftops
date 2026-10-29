@@ -183,11 +183,13 @@ export const TasksPage: React.FC = () => {
   const tasks: Task[] = useMemo(() => {
     if (isStaff) {
       if (rawMyTasks && rawMyTasks.length > 0) return rawMyTasks;
-      return fallbackTasks.filter((t) => t.userId === 'user-kenji' || t.userId === 'user-01');
+      return fallbackTasks.filter(
+        (t) => t.userId === user?.id || t.userId === 'user-kenji' || t.userId === 'u-staff-1'
+      );
     }
     if (rawBranchTasks && rawBranchTasks.length > 0) return rawBranchTasks;
     return fallbackTasks;
-  }, [isStaff, rawMyTasks, rawBranchTasks, fallbackTasks]);
+  }, [isStaff, rawMyTasks, rawBranchTasks, fallbackTasks, user]);
 
   const templates: TaskTemplate[] = useMemo(() => {
     if (rawBranchTemplates && rawBranchTemplates.length > 0) return rawBranchTemplates;
@@ -477,14 +479,14 @@ export const TasksPage: React.FC = () => {
       {isStaff ? (
         <StaffTaskStation
           tasks={tasks}
-          isLoading={isLoadingMyTasks}
+          isLoading={isLoadingMyTasks && tasks.length === 0}
           onUpdateStatus={(taskId, status) => updateStatusMutation.mutate({ taskId, status })}
           isUpdating={updateStatusMutation.isPending}
         />
       ) : activeTab === 'MONITORING' ? (
         <ManagerTaskMatrix
           tasks={tasks}
-          isLoading={isLoadingBranchTasks}
+          isLoading={isLoadingBranchTasks && tasks.length === 0}
           shifts={branchShifts}
           selectedShiftId={selectedShiftId}
           onSelectShiftId={setSelectedShiftId}
@@ -494,7 +496,7 @@ export const TasksPage: React.FC = () => {
       ) : (
         <TaskTemplateDeck
           templates={templates}
-          isLoading={isLoadingTemplates}
+          isLoading={isLoadingTemplates && templates.length === 0}
           onOpenCreate={handleOpenCreateTemplate}
           onOpenEdit={handleOpenEditTemplate}
           onToggleStatus={(templateId, active) =>

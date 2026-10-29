@@ -117,13 +117,13 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
             aria-selected={activeTab === 'MONITORING'}
             aria-controls="panel-monitoring"
             onClick={() => onChangeTab('MONITORING')}
-            className={`pb-2.5 px-3 text-xs font-medium transition-colors cursor-pointer border-b-2 focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 ${
+            className={`pb-2.5 px-3.5 text-[13px] font-medium transition-colors cursor-pointer border-b-2 focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 ${
               activeTab === 'MONITORING'
                 ? 'border-[#1b6c80] text-[#1b6c80] font-semibold'
                 : 'border-transparent text-[#5d5f60] hover:text-[#131416]'
             }`}
           >
-            Task Monitoring Grid
+            Task Monitoring Matrix
           </button>
           <button
             role="tab"
@@ -131,7 +131,7 @@ export const TaskHeader: React.FC<TaskHeaderProps> = ({
             aria-selected={activeTab === 'TEMPLATES'}
             aria-controls="panel-templates"
             onClick={() => onChangeTab('TEMPLATES')}
-            className={`pb-2.5 px-3 text-xs font-medium transition-colors cursor-pointer border-b-2 focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 ${
+            className={`pb-2.5 px-3.5 text-[13px] font-medium transition-colors cursor-pointer border-b-2 focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 ${
               activeTab === 'TEMPLATES'
                 ? 'border-[#1b6c80] text-[#1b6c80] font-semibold'
                 : 'border-transparent text-[#5d5f60] hover:text-[#131416]'

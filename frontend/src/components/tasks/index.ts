@@ -6,6 +6,7 @@ export * from './TaskHeader';
 export * from './StaffTaskStation';
 export * from './ManagerTaskMatrix';
 export * from './TaskTemplateDeck';
+export * from './TaskDetailDrawer';
 export * from './TaskCard';
 export * from './ManagerTaskTable';
 export * from './GenerateTasksModal';

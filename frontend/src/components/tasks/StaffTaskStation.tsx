@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Task, TaskStatus } from '../../lib/types';
 import { TaskStatusBadge } from './TaskStatusBadge';
 import { TaskPriorityBadge } from './TaskPriorityBadge';
+import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { formatTaskTime } from './taskUtils';
 import { IconCheck, IconClock, IconMapPin, IconCheckCircle2 } from '../ui/Icons';
 
@@ -19,6 +20,7 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
   isUpdating,
 }) => {
   const [filter, setFilter] = useState<string>('ALL');
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const filteredTasks = useMemo(() => {
     if (filter === 'ALL') return tasks;
@@ -42,16 +44,16 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
   return (
     <div className="space-y-4">
       {/* Shift Progress Card */}
-      <div className="bg-white border border-[#e8eaec] rounded-lg p-4 space-y-2.5">
+      <div className="bg-white border border-[#e8eaec] rounded-lg p-4 sm:p-5 space-y-2.5">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-[#5d5f60] font-medium">Shift Duty Completion</span>
+          <span className="text-[13px] text-[#5d5f60] font-medium">Shift Duty Completion</span>
           <span className="font-mono text-xs font-semibold text-[#131416] tabular-nums">
             {completedCount} of {tasks.length} duties finished ({progressPercent}%)
           </span>
         </div>
-        <div className="w-full h-1.5 bg-[#f0f1f2] rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-[#f0f1f2] rounded-full overflow-hidden">
           <div
-            className="h-full bg-[#1e7b4f] rounded-full transition-[width] duration-200 ease-out"
+            className="h-full bg-[#1e7b4f] rounded-full transition-[width] duration-300 ease-out"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -68,7 +70,7 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`h-7 px-3 rounded-md text-xs font-medium transition-colors cursor-pointer border focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 ${
+            className={`h-8 px-3 rounded-md text-xs font-medium transition-colors cursor-pointer border focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 ${
               filter === tab.key
                 ? 'bg-[#131416] text-white border-[#131416]'
                 : 'bg-white text-[#5d5f60] border-[#cdced1] hover:bg-[#f4f6f8]'
@@ -101,7 +103,7 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
             return (
               <div
                 key={t.id}
-                className={`bg-white border rounded-lg p-4 transition-colors duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                className={`bg-white border rounded-lg p-4 sm:p-4.5 transition-colors duration-150 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                   isDone
                     ? 'border-[#e8eaec] bg-[#f9fbfc] opacity-80'
                     : isHigh
@@ -109,12 +111,15 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
                     : 'border-[#e8eaec] hover:border-[#cdced1]'
                 }`}
               >
-                <div className="space-y-1.5 flex-1 min-w-0">
+                <div
+                  onClick={() => setSelectedTask(t)}
+                  className="space-y-1.5 flex-1 min-w-0 cursor-pointer group"
+                >
                   <div className="flex items-center gap-2 flex-wrap">
                     <TaskStatusBadge status={t.status} />
                     <TaskPriorityBadge priority={t.priority} />
                     <span
-                      className={`text-sm font-semibold ${
+                      className={`text-sm font-semibold group-hover:text-[#1b6c80] transition-colors ${
                         isDone ? 'line-through text-[#5d5f60]' : 'text-[#131416]'
                       }`}
                     >
@@ -155,29 +160,29 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
                   </div>
                 </div>
 
-                {/* State-aware Action Buttons */}
+                {/* State-aware Action Buttons (Ergonomic 40px Height for Fast Kitchen/Floor Tapping) */}
                 <div className="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
                   {isDone ? (
-                    <div className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#dcfae5] text-[#04250e] border border-[#1e7b4f]/20 text-xs font-semibold">
-                      <IconCheck size={13} className="text-[#1e7b4f]" />
+                    <div className="flex items-center gap-1.5 px-3.5 h-10 rounded-md bg-[#dcfae5] text-[#04250e] border border-[#1e7b4f]/20 text-xs font-semibold">
+                      <IconCheck size={14} className="text-[#1e7b4f]" />
                       <span>Verified Complete</span>
                     </div>
                   ) : t.status === 'TODO' ? (
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => onUpdateStatus(t.id, 'IN_PROGRESS')}
                         disabled={isUpdating}
-                        className="h-8 px-3 rounded-md text-xs font-medium bg-white border border-[#cdced1] text-[#131416] hover:bg-[#f4f6f8] transition-colors cursor-pointer flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 disabled:opacity-60"
+                        className="h-10 px-4 rounded-md text-xs font-semibold bg-white border border-[#cdced1] text-[#131416] hover:bg-[#f4f6f8] active:bg-[#e8eaec] transition-colors cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#1b6c80] focus-visible:ring-offset-1 disabled:opacity-60"
                       >
-                        <IconCheckCircle2 size={12} className="text-[#b25e02]" />
+                        <IconCheckCircle2 size={13} className="text-[#b25e02]" />
                         <span>Start</span>
                       </button>
                       <button
                         onClick={() => onUpdateStatus(t.id, 'COMPLETED')}
                         disabled={isUpdating}
-                        className="h-8 px-3 rounded-md text-xs font-medium bg-[#1e7b4f] text-white hover:bg-[#18633f] transition-colors cursor-pointer flex items-center gap-1 shadow-none focus-visible:ring-2 focus-visible:ring-[#1e7b4f] focus-visible:ring-offset-1 disabled:opacity-60"
+                        className="h-10 px-4 rounded-md text-xs font-semibold bg-[#1e7b4f] text-white hover:bg-[#18633f] active:bg-[#124d31] transition-colors cursor-pointer flex items-center gap-1.5 shadow-none focus-visible:ring-2 focus-visible:ring-[#1e7b4f] focus-visible:ring-offset-1 disabled:opacity-60"
                       >
-                        <IconCheck size={13} />
+                        <IconCheck size={14} />
                         <span>Done</span>
                       </button>
                     </div>
@@ -186,7 +191,7 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
                     <button
                       onClick={() => onUpdateStatus(t.id, 'COMPLETED')}
                       disabled={isUpdating}
-                      className="h-8 px-3.5 rounded-md text-xs font-medium bg-[#1e7b4f] text-white hover:bg-[#18633f] transition-colors cursor-pointer flex items-center gap-1.5 shadow-none focus-visible:ring-2 focus-visible:ring-[#1e7b4f] focus-visible:ring-offset-1 disabled:opacity-60"
+                      className="h-10 px-5 rounded-md text-xs font-semibold bg-[#1e7b4f] text-white hover:bg-[#18633f] active:bg-[#124d31] transition-colors cursor-pointer flex items-center gap-1.5 shadow-none focus-visible:ring-2 focus-visible:ring-[#1e7b4f] focus-visible:ring-offset-1 disabled:opacity-60"
                     >
                       <IconCheck size={14} />
                       <span>Mark Complete</span>
@@ -198,6 +203,12 @@ export const StaffTaskStation: React.FC<StaffTaskStationProps> = ({
           })}
         </div>
       )}
+
+      {/* Slide-Over Detail Drawer */}
+      <TaskDetailDrawer
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
+      />
     </div>
   );
 };

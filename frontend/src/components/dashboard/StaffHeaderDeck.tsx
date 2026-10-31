@@ -1,47 +1,50 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { User } from '../../lib/types';
 
 export interface StaffHeaderDeckProps {
   user: User | null;
-  punchStateLabel: string;
+  punchStateLabel?: string;
   currentShiftName?: string;
+  stationName?: string;
 }
 
 export const StaffHeaderDeck: React.FC<StaffHeaderDeckProps> = ({
   user,
-  punchStateLabel,
-  currentShiftName,
+  stationName,
 }) => {
+  const todayStr = useMemo(() => {
+    return new Date().toLocaleDateString([], {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    });
+  }, []);
+
+  const station = stationName || 'Espresso Bar 1';
+
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
-      {/* Title + Staff Identity */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1">
+      {/* Functional Station Title */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-[#131416]">
-          Staff Operations Hub
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416]">
+          {station} · Shift Workbench
         </h1>
-        <p className="text-xs text-[#5d5f60] mt-1 flex items-center gap-2">
+        <p className="text-xs sm:text-sm text-[#475569] mt-1 flex flex-wrap items-center gap-2">
           <span className="font-semibold text-[#131416]">
-            {user?.fullName || 'Shift Associate'}
+            {user?.fullName || 'Jordan Kim'}
           </span>
-          <span className="text-[#9ca3af]">·</span>
-          <span>{user?.primaryBranchName || 'Shibuya Flagship'}</span>
-          <span className="text-[#9ca3af]">·</span>
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e2e8f0] text-[#334155]">
-            {user?.role}
-          </span>
+          <span className="text-[#cbd5e1]">·</span>
+          <span>Staff #ST-8821</span>
+          <span className="text-[#cbd5e1]">·</span>
+          <span>{user?.primaryBranchName || 'Shibuya Flagship'} (Store #04)</span>
         </p>
       </div>
 
-      {/* Shift & Status Pill (No Card Borders) */}
-      <div className="flex items-center gap-3">
-        <div className="px-3.5 py-2 rounded-xl bg-white shadow-xs text-xs">
-          <span className="text-[#64748b] block text-[10px]">Active Shift</span>
-          <span className="font-semibold text-[#131416]">
-            {currentShiftName || 'Scheduled Floor Shift'}
-          </span>
-        </div>
-        <div className="px-3.5 py-2 rounded-xl bg-[#e2e8f0] text-xs font-semibold text-[#131416]">
-          {punchStateLabel}
+      {/* Date Chip */}
+      <div className="flex items-center gap-2 self-start sm:self-center">
+        <div className="px-3 py-1.5 rounded-lg bg-white text-xs sm:text-sm font-medium text-[#131416] shadow-xs flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
+          <span>{todayStr}</span>
         </div>
       </div>
     </div>

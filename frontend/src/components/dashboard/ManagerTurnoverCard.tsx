@@ -60,7 +60,7 @@ export const ManagerTurnoverCard: React.FC<ManagerTurnoverCardProps> = ({
         </div>
         <Link
           to="/handovers"
-          className="text-xs text-[#1b6c80] hover:text-[#155464] font-medium transition-colors"
+          className="text-xs text-[#131416] hover:underline font-semibold transition-colors"
         >
           All debriefs →
         </Link>

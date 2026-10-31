@@ -68,7 +68,7 @@ export const ManagerHeaderDeck: React.FC<ManagerHeaderDeckProps> = ({
           <button
             type="button"
             onClick={onOpenBroadcast}
-            className="h-9 px-4 rounded-xl bg-[#1b6c80] hover:bg-[#155464] text-white text-xs font-medium shadow-xs transition-colors flex items-center gap-2 cursor-pointer shrink-0"
+            className="h-9 px-4 rounded-xl bg-[#131416] hover:bg-[#282a2d] text-white text-xs font-semibold shadow-xs transition-colors flex items-center gap-2 cursor-pointer shrink-0"
           >
             <svg
               className="w-3.5 h-3.5 text-white"

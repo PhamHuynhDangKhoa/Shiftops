@@ -114,16 +114,16 @@ export const ManagerRoutineTasksCard: React.FC<ManagerRoutineTasksCardProps> = (
         </div>
         <Link
           to="/tasks"
-          className="text-xs text-[#1b6c80] hover:text-[#155464] font-medium transition-colors"
+          className="text-xs text-[#131416] hover:underline font-semibold transition-colors"
         >
           Manage tasks →
         </Link>
       </div>
 
-      {/* Clean Tone Progress Bar */}
+      {/* Clean Tone Progress Bar: Solid Black Bar */}
       <div className="w-full h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#1b6c80] rounded-full transition-all duration-300"
+          className="h-full bg-[#131416] rounded-full transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>

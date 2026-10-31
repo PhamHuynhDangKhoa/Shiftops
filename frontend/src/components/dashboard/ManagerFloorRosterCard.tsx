@@ -198,7 +198,7 @@ export const ManagerFloorRosterCard: React.FC<ManagerFloorRosterCardProps> = ({
         </div>
         <Link
           to="/attendance"
-          className="text-xs text-[#1b6c80] hover:text-[#155464] font-medium transition-colors"
+          className="text-xs text-[#131416] hover:underline font-semibold transition-colors"
         >
           Attendance log →
         </Link>

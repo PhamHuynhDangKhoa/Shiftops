@@ -1,4 +1,6 @@
 export * from './StaffHeaderDeck';
+export * from './StaffNoticeBanner';
+export * from './StaffTeamRosterCard';
 export * from './ManagerHeaderDeck';
 export * from './ActiveAnnouncementsBanner';
 export * from './StaffTimeClockCard';

@@ -37,7 +37,7 @@ export const ActiveAnnouncementsBanner: React.FC<ActiveAnnouncementsBannerProps>
     <div className="bg-white rounded-2xl p-6 shadow-xs space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#1b6c80]" />
+          <span className="w-2 h-2 rounded-full bg-[#131416]" />
           <h3 className="text-base font-bold text-[#131416]">
             Store Operations Bulletin
           </h3>

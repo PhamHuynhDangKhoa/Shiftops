@@ -444,15 +444,15 @@ export const AttendancePage: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm sm:text-base font-semibold text-[#131416]">
+                <h2 className="text-sm sm:text-base font-bold text-[#131416]">
                   Personal Shift Attendance Ledger
                 </h2>
                 <p className="text-xs text-[#5d5f60] mt-0.5">
                   Verified store timecards and punctuality receipts. Tap any row to inspect audit details.
                 </p>
               </div>
-              <span className="text-xs text-[#5d5f60] font-mono tabular-nums">
-                {effectiveStaffAttendance.length} records in active window
+              <span className="text-xs text-[#5d5f60]">
+                <span className="font-mono tabular-nums font-medium text-[#131416]">{effectiveStaffAttendance.length}</span> records in active window
               </span>
             </div>
 
@@ -525,15 +525,15 @@ export const AttendancePage: React.FC = () => {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-sm sm:text-base font-semibold text-[#131416]">
+                <h2 className="text-sm sm:text-base font-bold text-[#131416]">
                   Shift Punch Ledger &amp; Punctuality Audit
                 </h2>
                 <p className="text-xs text-[#5d5f60] mt-0.5">
                   Live store check-in compliance, active floor staffing, and supervisor records.
                 </p>
               </div>
-              <span className="text-xs text-[#5d5f60] font-mono tabular-nums">
-                {effectiveBranchAttendance.length} records in active window
+              <span className="text-xs text-[#5d5f60]">
+                <span className="font-mono tabular-nums font-medium text-[#131416]">{effectiveBranchAttendance.length}</span> records in active window
               </span>
             </div>
 

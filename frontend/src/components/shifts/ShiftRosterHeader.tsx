@@ -47,7 +47,7 @@ export const ShiftRosterHeader: React.FC<ShiftRosterHeaderProps> = ({
       {/* Top Deck: Page Title + Branch Scope + Primary Action */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#131416]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416]">
             {isStaff ? 'My Shift Schedule' : 'Shift Roster & Scheduling'}
           </h1>
           <p className="text-xs text-[#5d5f60] mt-1">

@@ -25,7 +25,7 @@ export const ManagerHeaderDeck: React.FC<ManagerHeaderDeckProps> = ({
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 pr-2 border-b border-[#f0f1f2]">
       {/* Title + Subline */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#131416]">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416]">
           Operations Command
         </h1>
         <p className="text-xs text-[#5d5f60] mt-1">

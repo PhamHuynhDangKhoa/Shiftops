@@ -48,8 +48,8 @@ export const AttendanceMetricsPanel: React.FC<AttendanceMetricsPanelProps> = ({
             staff clocked in
           </span>
         </div>
-        <span className="text-xs text-[#5d5f60] mt-1 block font-mono">
-          {coveragePercent}% roster fulfillment ({accountedFor}/{total})
+        <span className="text-xs text-[#5d5f60] mt-1 block">
+          <span className="font-mono tabular-nums font-medium text-[#131416]">{coveragePercent}%</span> roster fulfillment (<span className="font-mono tabular-nums">{accountedFor}/{total}</span>)
         </span>
       </div>
 
@@ -61,8 +61,8 @@ export const AttendanceMetricsPanel: React.FC<AttendanceMetricsPanelProps> = ({
         <div className="text-2xl sm:text-3xl font-semibold text-[#1e7b4f] tabular-nums font-mono mt-1">
           {onTimeRate}%
         </div>
-        <span className="text-xs text-[#5d5f60] mt-1 block font-mono">
-          {onTimeCount} on-time arrivals
+        <span className="text-xs text-[#5d5f60] mt-1 block">
+          <span className="font-mono tabular-nums font-medium text-[#1e7b4f]">{onTimeCount}</span> on-time arrivals
         </span>
       </div>
 
@@ -77,7 +77,7 @@ export const AttendanceMetricsPanel: React.FC<AttendanceMetricsPanelProps> = ({
             of {total} shifts
           </span>
         </div>
-        <span className="text-xs text-[#5d5f60] mt-1 block font-mono">
+        <span className="text-xs text-[#5d5f60] mt-1 block">
           Concluded today
         </span>
       </div>
@@ -99,7 +99,7 @@ export const AttendanceMetricsPanel: React.FC<AttendanceMetricsPanelProps> = ({
             flagged
           </span>
         </div>
-        <div className="mt-1 flex items-center gap-2 text-xs font-mono">
+        <div className="mt-1 flex items-center gap-2 text-xs">
           {lateCount > 0 ? (
             <button
               type="button"
@@ -110,10 +110,10 @@ export const AttendanceMetricsPanel: React.FC<AttendanceMetricsPanelProps> = ({
               }
               className="text-[#92400e] hover:underline cursor-pointer"
             >
-              {lateCount} late
+              <span className="font-mono tabular-nums font-medium">{lateCount}</span> late
             </button>
           ) : (
-            <span className="text-[#1e7b4f]">0 late</span>
+            <span className="text-[#1e7b4f]"><span className="font-mono tabular-nums font-medium">0</span> late</span>
           )}
           <span className="text-[#cdced1]">·</span>
           {absentCount > 0 ? (
@@ -126,10 +126,10 @@ export const AttendanceMetricsPanel: React.FC<AttendanceMetricsPanelProps> = ({
               }
               className="text-[#c4242a] hover:underline cursor-pointer"
             >
-              {absentCount} absent
+              <span className="font-mono tabular-nums font-medium">{absentCount}</span> absent
             </button>
           ) : (
-            <span className="text-[#5d5f60]">0 absent</span>
+            <span className="text-[#5d5f60]"><span className="font-mono tabular-nums font-medium">0</span> absent</span>
           )}
         </div>
       </div>

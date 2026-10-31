@@ -21,7 +21,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
 }) => {
   if (isLoading) {
     return (
-      <div className="py-12 text-center text-[13px] text-[#5d5f60] font-mono border border-[#e8eaec] bg-white rounded-xl">
+      <div className="py-12 text-center text-[13px] text-[#5d5f60] border border-[#e8eaec] bg-white rounded-xl">
         Loading attendance records from store database...
       </div>
     );
@@ -117,10 +117,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 </td>
 
                 {/* Clock In + Punctuality Column */}
-                <td className="py-3.5 px-3 font-mono tabular-nums">
+                <td className="py-3.5 px-3">
                   {att.checkInAt ? (
                     <div>
-                      <span className="font-semibold text-[13px] text-[#131416] block">
+                      <span className="font-semibold text-[13px] text-[#131416] block font-mono tabular-nums">
                         {formatTimeShort(att.checkInAt)}
                       </span>
                       <span
@@ -141,10 +141,10 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                 </td>
 
                 {/* Clock Out Column */}
-                <td className="py-3.5 px-3 font-mono tabular-nums">
+                <td className="py-3.5 px-3">
                   {att.checkOutAt ? (
                     <div>
-                      <span className="font-semibold text-[13px] text-[#131416] block">
+                      <span className="font-semibold text-[13px] text-[#131416] block font-mono tabular-nums">
                         {formatTimeShort(att.checkOutAt)}
                       </span>
                       <span className="text-[13px] text-[#5d5f60] block mt-0.5">
@@ -157,7 +157,7 @@ export const AttendanceTable: React.FC<AttendanceTableProps> = ({
                       On floor
                     </span>
                   ) : (
-                    <span className="text-[#cdced1] text-[13px]">—</span>
+                    <span className="text-[#cdced1] text-[13px] font-mono">—</span>
                   )}
                 </td>
 

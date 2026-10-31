@@ -51,7 +51,7 @@ export const AttendanceHeader: React.FC<AttendanceHeaderProps> = ({
       {/* Top Deck: Page Title + Branch Scope + Actions */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-[#131416]">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416]">
             {isStaff ? 'My Attendance & Punch Terminal' : 'Staff Attendance Ledger'}
           </h1>
           <p className="text-[13px] text-[#5d5f60] mt-1">

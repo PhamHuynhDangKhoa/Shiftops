@@ -139,14 +139,14 @@ export const ShiftRosterTable: React.FC<ShiftRosterTableProps> = ({
                             <button
                               type="button"
                               onClick={() => onAssignClick(shift)}
-                              className="h-7 px-2.5 rounded border border-[#cdced1] bg-white text-xs font-medium text-[#131416] hover:bg-[#f4f6f8] transition-colors cursor-pointer"
+                              className="h-7 px-2.5 rounded bg-[#1b6c80] text-white text-xs font-medium hover:bg-[#155464] border border-[#1b6c80] transition-colors cursor-pointer"
                             >
                               Assign
                             </button>
                             <button
                               type="button"
                               onClick={() => onUpdateStatus(shift.id, 'PUBLISHED')}
-                              className="h-7 px-2.5 rounded bg-[#131416] text-white text-xs font-medium hover:bg-[#1f2326] transition-colors cursor-pointer"
+                              className="h-7 px-2.5 rounded bg-[#1e7b4f] text-white text-xs font-medium hover:bg-[#165c3b] border border-[#1e7b4f] transition-colors cursor-pointer"
                             >
                               Publish
                             </button>

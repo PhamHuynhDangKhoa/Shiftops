@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShiftHandover, HandoverItemType, Issue } from '../../lib/types';
-import { Modal, Button } from '../ui';
-import { IconPlus, IconClose, IconAlertTriangle, IconCheck, IconClock, IconFileText } from '../ui/Icons';
+import { Modal } from '../ui';
+import { IconPlus, IconClose, IconAlertTriangle } from '../ui/Icons';
 import { HandoverStatusBadge } from './HandoverStatusBadge';
 import { formatHandoverTime, formatHandoverDateTime } from './handoverUtils';
 
@@ -242,7 +242,7 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
                 type="button"
                 onClick={handleAddItem}
                 disabled={!newItemContent.trim()}
-                className="h-8 px-3 text-[12px] font-medium rounded border border-[#131416] bg-[#131416] text-white hover:bg-black transition-colors disabled:opacity-40 inline-flex items-center gap-1.5"
+                className="h-8 px-3 text-xs font-medium rounded bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] transition-colors disabled:opacity-40 inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <IconPlus size={13} />
                 <span>Add Item</span>
@@ -306,7 +306,7 @@ export const HandoverDebriefModal: React.FC<HandoverDebriefModalProps> = ({
                 type="button"
                 onClick={() => onSubmit(debriefNotes, debriefItems)}
                 disabled={isSubmitting}
-                className="h-9 px-4 text-[13px] font-medium rounded-md bg-[#131416] text-white hover:bg-black transition-colors disabled:opacity-50"
+                className="h-9 px-4 text-xs font-medium rounded-md bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] transition-colors disabled:opacity-50 cursor-pointer shadow-xs"
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Handover'}
               </button>

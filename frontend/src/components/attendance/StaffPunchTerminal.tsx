@@ -290,7 +290,7 @@ export const StaffPunchTerminal: React.FC<StaffPunchTerminalProps> = ({
                         type="button"
                         onClick={() => onCheckIn(myAssignment.id)}
                         disabled={isCheckingIn}
-                        className="w-full h-12 sm:h-14 px-5 rounded-lg bg-[#131416] text-white text-base font-semibold hover:bg-[#1f2326] active:bg-[#2d3236] transition-colors cursor-pointer flex items-center justify-center gap-2"
+                        className="w-full h-12 sm:h-14 px-5 rounded-lg bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] shadow-xs text-base font-semibold active:bg-[#113f4c] transition-colors cursor-pointer flex items-center justify-center gap-2"
                       >
                         <span>
                           {isCheckingIn

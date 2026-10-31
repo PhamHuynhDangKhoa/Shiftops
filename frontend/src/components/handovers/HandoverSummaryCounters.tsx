@@ -8,7 +8,6 @@ interface HandoverSummaryCountersProps {
 export const HandoverSummaryCounters: React.FC<HandoverSummaryCountersProps> = ({ summary }) => {
   const total = summary?.totalTasks ?? 0;
   const completed = summary?.completedTasks ?? 0;
-  const pending = summary?.pendingTasks ?? 0;
   const issues = summary?.openBranchIssues ?? 0;
   const staffCount = summary?.staffAssignedCount ?? 0;
 

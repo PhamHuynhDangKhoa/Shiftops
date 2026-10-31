@@ -81,7 +81,7 @@ export const LatestHandoverCard: React.FC<LatestHandoverCardProps> = ({
             <button
               type="button"
               onClick={() => onAcknowledgeClick(handover)}
-              className="h-8 px-3.5 text-[13px] font-medium rounded bg-[#131416] text-white hover:bg-black transition-colors inline-flex items-center gap-1.5"
+              className="h-8 px-3.5 text-xs font-medium rounded bg-[#1e7b4f] text-white hover:bg-[#165c3b] border border-[#1e7b4f] transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <IconCheck size={14} />
               <span>Sign Turnover</span>

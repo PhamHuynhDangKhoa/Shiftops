@@ -79,7 +79,7 @@ export const ShiftRosterHeader: React.FC<ShiftRosterHeaderProps> = ({
             <button
               type="button"
               onClick={onCreateClick}
-              className="h-8 px-3.5 rounded-md bg-[#131416] text-white text-xs font-medium hover:bg-[#1f2326] transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+              className="h-8 px-3.5 rounded-md bg-[#1b6c80] text-white text-xs font-medium hover:bg-[#155464] border border-[#1b6c80] shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <svg
                 className="w-3.5 h-3.5 text-white"

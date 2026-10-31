@@ -65,7 +65,7 @@ export const OutgoingDebriefCard: React.FC<OutgoingDebriefCardProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenDebrief(shift.id)}
-                  className="w-full h-8 text-[13px] font-medium rounded border border-[#131416] bg-[#131416] text-white hover:bg-black transition-colors inline-flex items-center justify-center gap-1.5"
+                  className="w-full h-8 text-xs font-medium rounded bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <IconPlus size={13} />
                   <span>Prepare Debrief</span>

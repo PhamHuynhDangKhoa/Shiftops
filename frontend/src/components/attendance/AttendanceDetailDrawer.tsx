@@ -277,7 +277,7 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="h-10 px-5 rounded-md bg-[#131416] text-white text-xs font-medium hover:bg-[#1f2326] transition-colors cursor-pointer"
+            className="h-9 px-4 rounded-md border border-[#cdced1] bg-white text-xs font-medium text-[#131416] hover:bg-[#f4f6f8] transition-colors cursor-pointer"
           >
             Close Receipt
           </button>

@@ -1,4 +1,4 @@
-import { ShiftHandover, Shift, HandoverItem, HandoverItemType } from '../../lib/types';
+import { ShiftHandover, Shift, HandoverItem } from '../../lib/types';
 
 export const formatHandoverTime = (isoString?: string): string => {
   if (!isoString) return '—';
@@ -22,7 +22,6 @@ export const formatHandoverDate = (isoString?: string): string => {
 
 export const formatHandoverDateTime = (isoString?: string): string => {
   if (!isoString) return '—';
-  const d = new Date(isoString);
   return `${formatHandoverDate(isoString)} · ${formatHandoverTime(isoString)}`;
 };
 

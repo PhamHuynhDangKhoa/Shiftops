@@ -21,6 +21,9 @@ docker/*.log
 /backend/uploads/*
 !/backend/uploads/.gitkeep
 
+# Dependencies
+node_modules/
+
 # AI & Agent Skills (Local only)
 .agents/
 .claude/

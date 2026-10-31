@@ -12,12 +12,10 @@ import {
 } from '../lib/types';
 import {
   AttendanceHeader,
-  AttendanceTelemetryStrip,
   StaffPunchTerminal,
   StaffAttendanceMetrics,
   AttendanceTable,
   AttendanceDetailDrawer,
-  ManagerCoverageBanner,
   AttendanceMetricsPanel,
   exportAttendanceToCsv,
   generateFallbackAttendance,

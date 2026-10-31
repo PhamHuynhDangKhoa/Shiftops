@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShiftHandover, PagedResponse } from '../../lib/types';
 import { HandoverStatusBadge } from './HandoverStatusBadge';
-import { IconFileText, IconSearch, IconArrowRight } from '../ui/Icons';
+import { IconFileText, IconSearch } from '../ui/Icons';
 import { formatHandoverDate, formatHandoverTime } from './handoverUtils';
 
 interface HandoverHistoryTableProps {

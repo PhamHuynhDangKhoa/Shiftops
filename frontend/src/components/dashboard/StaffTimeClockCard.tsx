@@ -162,7 +162,7 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
             type="button"
             onClick={onCheckIn}
             disabled={isCheckingIn}
-            className="w-full h-10 rounded-md bg-[#131416] text-white text-xs font-semibold hover:bg-[#1f2326] transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full h-10 rounded-md bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
           >
             {isCheckingIn ? 'Clocking in...' : 'Clock In Now'}
           </button>

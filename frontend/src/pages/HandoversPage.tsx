@@ -362,11 +362,11 @@ export const HandoversPage: React.FC = () => {
             </select>
           )}
 
-          {effectiveAvailableShifts.length > 0 && (
+          {effectiveAvailableShifts.length > 0 && effectiveAvailableShifts[0] && (
             <button
               type="button"
-              onClick={() => handleOpenDebrief(effectiveAvailableShifts[0].id)}
-              className="h-8 px-3 text-[13px] font-medium rounded border border-[#131416] bg-white text-[#131416] hover:bg-[#f0f1f2] transition-colors inline-flex items-center gap-1.5 whitespace-nowrap flex-shrink-0"
+              onClick={() => handleOpenDebrief(effectiveAvailableShifts[0]!.id)}
+              className="h-8 px-3.5 text-xs font-medium rounded bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] shadow-xs transition-colors inline-flex items-center gap-1.5 whitespace-nowrap flex-shrink-0 cursor-pointer"
             >
               <IconPlus size={13} />
               <span>Prepare Debrief</span>

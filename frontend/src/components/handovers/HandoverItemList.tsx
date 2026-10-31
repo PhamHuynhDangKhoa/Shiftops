@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { HandoverItem, HandoverItemType } from '../../lib/types';
-import { IconAlertTriangle, IconCheck, IconClock, IconFileText } from '../ui/Icons';
+import { HandoverItem } from '../../lib/types';
+import { IconAlertTriangle, IconCheck, IconClock } from '../ui/Icons';
 
 interface HandoverItemListProps {
   items: HandoverItem[];

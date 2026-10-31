@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ShiftHandover } from '../../lib/types';
 import { Modal } from '../ui';
-import { IconCheck, IconAlertTriangle } from '../ui/Icons';
+import { IconCheck } from '../ui/Icons';
 import { formatHandoverTime } from './handoverUtils';
 
 interface HandoverAcknowledgeModalProps {
@@ -99,7 +99,7 @@ export const HandoverAcknowledgeModal: React.FC<HandoverAcknowledgeModalProps> =
             type="button"
             onClick={handleConfirm}
             disabled={isPending}
-            className="h-9 px-4 text-[13px] font-medium rounded-md bg-[#131416] text-white hover:bg-black transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+            className="h-9 px-4 text-xs font-medium rounded-md bg-[#1e7b4f] text-white hover:bg-[#165c3b] border border-[#1e7b4f] transition-colors disabled:opacity-50 inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <IconCheck size={14} />
             <span>{isPending ? 'Signing Turnover...' : 'Confirm & Sign Turnover'}</span>

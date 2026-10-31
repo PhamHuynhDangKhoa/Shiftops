@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShiftHandover, Shift, PagedResponse } from '../../lib/types';
-import { IconCheck, IconClock, IconFileText, IconPlus, IconUser } from '../ui/Icons';
+import { IconCheck, IconClock, IconFileText, IconPlus } from '../ui/Icons';
 import { formatHandoverDate, formatHandoverTime } from './handoverUtils';
 import { HandoverStatusBadge } from './HandoverStatusBadge';
 
@@ -89,7 +89,7 @@ export const HandoverSupervisorAuditRail: React.FC<HandoverSupervisorAuditRailPr
             <button
               type="button"
               onClick={() => onAcknowledgeClick(currentHandover)}
-              className="w-full h-8 px-3 text-[13px] font-medium rounded bg-[#131416] text-white hover:bg-black transition-colors inline-flex items-center justify-center gap-1.5"
+              className="w-full h-8 px-3 text-xs font-medium rounded bg-[#1e7b4f] text-white hover:bg-[#165c3b] border border-[#1e7b4f] transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
             >
               <IconCheck size={14} />
               <span>Sign & Accept Store</span>

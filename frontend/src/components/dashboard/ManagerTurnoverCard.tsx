@@ -108,7 +108,7 @@ export const ManagerTurnoverCard: React.FC<ManagerTurnoverCardProps> = ({
           <button
             type="button"
             onClick={() => onAcknowledge(handover)}
-            className="w-full mt-2 h-8 px-3 rounded-md bg-[#131416] text-white text-xs font-medium hover:bg-[#1f2326] transition-colors cursor-pointer"
+            className="w-full mt-2 h-8 px-3 rounded-md bg-[#1e7b4f] text-white hover:bg-[#165c3b] border border-[#1e7b4f] text-xs font-medium transition-colors cursor-pointer shadow-xs"
           >
             Sign & Acknowledge Handover
           </button>

@@ -217,7 +217,7 @@ export const LoginPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-11 bg-[#1d1d1f] hover:bg-[#323236] text-white font-medium text-sm rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border-none"
+                  className="w-full h-11 bg-[#1b6c80] hover:bg-[#155464] text-white font-medium text-sm rounded-xl transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 border-none shadow-xs"
                 >
                   {isSubmitting ? (
                     <span>Signing in...</span>

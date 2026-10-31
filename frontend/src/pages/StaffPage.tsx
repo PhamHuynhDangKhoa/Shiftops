@@ -101,33 +101,30 @@ export const StaffPage: React.FC = () => {
       }
     },
     onError: (err: unknown) => {
-      setFormError(err instanceof Error ? err.message : 'Failed to register staff');
+      const anyErr = err as { response?: { data?: { error?: { message?: string } } } };
+      const msg = anyErr.response?.data?.error?.message || (err instanceof Error ? err.message : 'Failed to register user');
+      setFormError(msg);
     },
   });
 
   // Update User Mutation
   const updateMutation = useMutation({
-    mutationFn: async ({
-      id,
-      payload,
-    }: {
-      id: string;
-      payload: { fullName: string; phone?: string; role?: Role; primaryBranchId?: string };
-    }) => {
+    mutationFn: async ({ id, payload }: { id: string; payload: { fullName: string; phone?: string; role?: Role; primaryBranchId?: string } }) => {
       const res = await api.put<ApiResponse<User>>(`/users/${id}`, payload);
       return res.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setEditingUser(null);
-      resetEditForm();
     },
     onError: (err: unknown) => {
-      setFormError(err instanceof Error ? err.message : 'Failed to update staff member');
+      const anyErr = err as { response?: { data?: { error?: { message?: string } } } };
+      const msg = anyErr.response?.data?.error?.message || (err instanceof Error ? err.message : 'Failed to update user');
+      setFormError(msg);
     },
   });
 
-  // Toggle Active Status
+  // Toggle User Status Mutation
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
       const res = await api.patch<ApiResponse<User>>(`/users/${id}/status`, { active });
@@ -141,9 +138,7 @@ export const StaffPage: React.FC = () => {
   // Transfer Branch Mutation
   const transferMutation = useMutation({
     mutationFn: async ({ id, targetBranchId }: { id: string; targetBranchId: string }) => {
-      const res = await api.post<ApiResponse<User>>(`/users/${id}/transfer-branch`, {
-        targetBranchId,
-      });
+      const res = await api.post<ApiResponse<User>>(`/users/${id}/transfer`, { targetBranchId });
       return res.data.data;
     },
     onSuccess: () => {
@@ -152,14 +147,16 @@ export const StaffPage: React.FC = () => {
       setTargetTransferBranchId('');
     },
     onError: (err: unknown) => {
-      alert(err instanceof Error ? err.message : 'Failed to transfer user');
+      const anyErr = err as { response?: { data?: { error?: { message?: string } } } };
+      const msg = anyErr.response?.data?.error?.message || (err instanceof Error ? err.message : 'Failed to transfer user');
+      alert(msg);
     },
   });
 
   // Reset Password Mutation
   const resetPasswordMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await api.post<ApiResponse<ResetPasswordResponse>>(`/users/${id}/reset-password`);
+    mutationFn: async (userId: string) => {
+      const res = await api.post<ApiResponse<ResetPasswordResponse>>(`/users/${userId}/reset-password`);
       return res.data.data;
     },
     onSuccess: (data) => {
@@ -170,7 +167,9 @@ export const StaffPage: React.FC = () => {
       });
     },
     onError: (err: unknown) => {
-      alert(err instanceof Error ? err.message : 'Failed to reset password');
+      const anyErr = err as { response?: { data?: { error?: { message?: string } } } };
+      const msg = anyErr.response?.data?.error?.message || (err instanceof Error ? err.message : 'Failed to reset password');
+      alert(msg);
     },
   });
 
@@ -184,14 +183,6 @@ export const StaffPage: React.FC = () => {
     setFormError(null);
   };
 
-  const resetEditForm = () => {
-    setEditFullName('');
-    setEditPhone('');
-    setEditRole('STAFF');
-    setEditBranchId('');
-    setFormError(null);
-  };
-
   const handleOpenEdit = (user: User) => {
     setEditingUser(user);
     setEditFullName(user.fullName);
@@ -201,22 +192,6 @@ export const StaffPage: React.FC = () => {
     setFormError(null);
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingUser) return;
-    setFormError(null);
-
-    const payload: { fullName: string; phone?: string; role?: Role; primaryBranchId?: string } = {
-      fullName: editFullName,
-      phone: editPhone || undefined,
-    };
-    if (isOwner) {
-      payload.role = editRole;
-      if (editBranchId) payload.primaryBranchId = editBranchId;
-    }
-    updateMutation.mutate({ id: editingUser.id, payload });
-  };
-
   const handleSaveInvite = (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
@@ -224,16 +199,32 @@ export const StaffPage: React.FC = () => {
       email: inviteEmail,
       fullName: inviteFullName,
       phone: invitePhone || undefined,
-      role: isOwner ? inviteRole : 'STAFF',
-      primaryBranchId: isOwner ? (inviteRole === 'OWNER' ? undefined : inviteBranchId) : currentUser?.primaryBranchId,
+      role: inviteRole,
+      primaryBranchId: inviteRole === 'OWNER' ? undefined : inviteBranchId,
       password: invitePassword || undefined,
     });
   };
 
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setFormError(null);
+
+    updateMutation.mutate({
+      id: editingUser.id,
+      payload: {
+        fullName: editFullName,
+        phone: editPhone || undefined,
+        role: isOwner ? editRole : undefined,
+        primaryBranchId: isOwner && editRole !== 'OWNER' ? editBranchId : undefined,
+      },
+    });
+  };
+
   const handleCopyTempPassword = () => {
-    if (tempPasswordModal?.tempPass) {
+    if (tempPasswordModal) {
       navigator.clipboard.writeText(tempPasswordModal.tempPass);
-      alert('Temporary password copied to clipboard');
+      alert('Temporary password copied to clipboard.');
     }
   };
 
@@ -252,13 +243,13 @@ export const StaffPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#f0f1f2]">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
-            <IconUsers size={22} className="text-zinc-700" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416] flex items-center gap-2.5">
+            <IconUsers size={22} className="text-[#131416]" />
             <span>Staff Directory</span>
           </h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-xs text-[#5d5f60] mt-1">
             Manage team members, branch assignments, account status, and role access permissions
           </p>
         </div>
@@ -270,7 +261,7 @@ export const StaffPage: React.FC = () => {
             resetInviteForm();
             setIsInviteOpen(true);
           }}
-          className="gap-2 shadow-xs"
+          className="gap-2 shadow-xs shrink-0"
         >
           <IconPlus size={15} />
           <span>Add Staff Member</span>
@@ -278,9 +269,9 @@ export const StaffPage: React.FC = () => {
       </div>
 
       {/* Filters Toolbar */}
-      <div className="bg-white border border-zinc-200/80 rounded-xl p-4 flex flex-wrap items-center gap-3.5 text-sm shadow-2xs">
+      <div className="bg-white border border-[#e8eaec] rounded-xl p-3 sm:p-3.5 flex flex-wrap items-center gap-3 text-xs">
         <div className="flex-1 min-w-[200px] relative">
-          <IconSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <IconSearch size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#727477]" />
           <input
             type="text"
             placeholder="Search by name or email..."
@@ -289,7 +280,7 @@ export const StaffPage: React.FC = () => {
               setSearch(e.target.value);
               setPage(0);
             }}
-            className="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-900 shadow-2xs"
+            className="w-full pl-9 pr-3 py-1.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] placeholder:text-[#727477] focus:outline-none focus:border-[#1b6c80]"
           />
         </div>
 
@@ -349,67 +340,67 @@ export const StaffPage: React.FC = () => {
       </div>
 
       {/* Staff Table */}
-      <div className="overflow-x-auto border border-[#e8eaec] bg-white rounded-lg">
-        <table className="w-full text-left text-xs border-collapse">
+      <div className="overflow-x-auto border border-[#e8eaec] bg-white rounded-xl">
+        <table className="w-full text-left text-xs border-collapse min-w-[760px]">
           <thead>
-            <tr className="border-b border-[#e8eaec] text-[#5d5f60] text-xs font-normal">
-              <th className="py-2.5 px-3.5 font-normal">Employee</th>
-              <th className="py-2.5 px-3.5 font-normal">Role</th>
-              <th className="py-2.5 px-3.5 font-normal">Branch</th>
-              <th className="py-2.5 px-3.5 font-normal">Contact phone</th>
-              <th className="py-2.5 px-3.5 font-normal">Status</th>
-              <th className="py-2.5 px-3.5 font-normal text-right">Actions</th>
+            <tr className="border-b border-[#e8eaec] bg-[#f9fbfc] text-[#5d5f60] text-xs font-medium h-10">
+              <th className="py-2.5 px-4 font-medium">Employee</th>
+              <th className="py-2.5 px-4 font-medium">Role</th>
+              <th className="py-2.5 px-4 font-medium">Branch</th>
+              <th className="py-2.5 px-4 font-medium">Contact phone</th>
+              <th className="py-2.5 px-4 font-medium">Status</th>
+              <th className="py-2.5 px-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200/70 text-zinc-800">
+          <tbody className="divide-y divide-[#f0f1f2] text-[#131416]">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-sm text-zinc-500">
+                <td colSpan={6} className="py-12 text-center text-xs text-[#5d5f60]">
                   Loading staff directory...
                 </td>
               </tr>
             ) : pagedUsers?.content.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-sm text-zinc-500">
+                <td colSpan={6} className="py-12 text-center text-xs text-[#5d5f60]">
                   No personnel matching the given search or filters.
                 </td>
               </tr>
             ) : (
               pagedUsers?.content.map((member) => (
-                <tr key={member.id} className="hover:bg-zinc-50/70 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="font-semibold text-zinc-900">{member.fullName}</div>
-                    <div className="text-xs text-zinc-500">{member.email}</div>
+                <tr key={member.id} className="hover:bg-[#f4f6f8] transition-colors">
+                  <td className="py-3 px-4">
+                    <div className="font-semibold text-[#131416]">{member.fullName}</div>
+                    <div className="text-xs text-[#5d5f60]">{member.email}</div>
                     {member.mustChangePassword && (
-                      <span className="inline-block mt-1 text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-full">
+                      <span className="inline-block mt-1 text-[11px] font-medium text-[#92400e] bg-[#fffbeb] border border-[#92400e]/30 px-2 py-0.5 rounded-full">
                         Temporary Password
                       </span>
                     )}
                   </td>
-                  <td className="py-3.5 px-4 whitespace-nowrap">
+                  <td className="py-3 px-4 whitespace-nowrap">
                     <Badge variant={getRoleVariant(member.role)} size="sm">
                       {member.role}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-4 text-zinc-600 text-xs whitespace-nowrap">
+                  <td className="py-3 px-4 text-[#5d5f60] text-xs whitespace-nowrap">
                     {member.primaryBranchName ? (
                       <span className="flex items-center gap-1 font-medium text-[#131416]">
-                        <IconMapPin size={12} className="text-[#5d5f60]" />
+                        <IconMapPin size={12} className="text-[#727477]" />
                         <span>{member.primaryBranchName}</span>
                       </span>
                     ) : (
-                      '-'
+                      '—'
                     )}
                   </td>
-                  <td className="py-2.5 px-3.5 text-[#5d5f60] text-xs whitespace-nowrap">
-                    {member.phone || '-'}
+                  <td className="py-3 px-4 text-[#5d5f60] text-xs whitespace-nowrap font-mono tabular-nums">
+                    {member.phone || '—'}
                   </td>
-                  <td className="py-3.5 px-4 whitespace-nowrap">
+                  <td className="py-3 px-4 whitespace-nowrap">
                     <Badge variant={member.active ? 'success' : 'neutral'} size="sm" showDot>
                       {member.active ? 'Active' : 'Inactive'}
                     </Badge>
                   </td>
-                  <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                  <td className="py-3 px-4 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-1.5">
                       <Button
                         variant="secondary"
@@ -450,7 +441,7 @@ export const StaffPage: React.FC = () => {
                           </Button>
 
                           <Button
-                            variant={member.active ? 'outline' : 'secondary'}
+                            variant={member.active ? 'danger' : 'emerald'}
                             size="sm"
                             onClick={() => {
                               const action = member.active ? 'deactivate' : 'activate';
@@ -458,7 +449,7 @@ export const StaffPage: React.FC = () => {
                                 toggleStatusMutation.mutate({ id: member.id, active: !member.active });
                               }
                             }}
-                            className={`text-xs py-1 px-2.5 ${member.active ? 'text-rose-600 hover:text-rose-700 hover:border-rose-300' : ''}`}
+                            className="text-xs py-1 px-2.5"
                           >
                             {member.active ? 'Deactivate' : 'Activate'}
                           </Button>
@@ -474,9 +465,9 @@ export const StaffPage: React.FC = () => {
 
         {/* Pagination Bar */}
         {pagedUsers && pagedUsers.totalPages > 1 && (
-          <div className="p-3.5 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between text-xs text-zinc-500">
+          <div className="p-3.5 bg-[#f9fbfc] border-t border-[#e8eaec] flex items-center justify-between text-xs text-[#5d5f60]">
             <span>
-              Showing {pagedUsers.content.length} of {pagedUsers.totalElements} staff members (Page {pagedUsers.page + 1} of {pagedUsers.totalPages})
+              Showing <span className="font-mono tabular-nums font-medium text-[#131416]">{pagedUsers.content.length}</span> of <span className="font-mono tabular-nums font-medium text-[#131416]">{pagedUsers.totalElements}</span> staff members (Page <span className="font-mono tabular-nums">{pagedUsers.page + 1}</span> of <span className="font-mono tabular-nums">{pagedUsers.totalPages}</span>)
             </span>
             <div className="flex gap-2">
               <Button
@@ -508,7 +499,7 @@ export const StaffPage: React.FC = () => {
         description="Provision account credentials and branch operating assignment"
       >
         {formError && (
-          <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700">
+          <div className="p-3 mb-4 rounded-lg bg-[#ffedea] border border-[#c4242a]/30 text-xs font-medium text-[#831c1e]">
             {formError}
           </div>
         )}
@@ -541,11 +532,11 @@ export const StaffPage: React.FC = () => {
 
           {isOwner && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-700">Access Role *</label>
+              <label className="text-xs font-medium text-[#131416]">Access Role *</label>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as Role)}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                className="w-full h-9 px-3 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
               >
                 <option value="STAFF">Staff (Store Operations)</option>
                 <option value="MANAGER">Manager (Branch Supervisor)</option>
@@ -556,13 +547,13 @@ export const StaffPage: React.FC = () => {
 
           {inviteRole !== 'OWNER' && (
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-700">Primary Branch *</label>
+              <label className="text-xs font-medium text-[#131416]">Primary Branch *</label>
               {isOwner ? (
                 <select
                   required
                   value={inviteBranchId}
                   onChange={(e) => setInviteBranchId(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  className="w-full h-9 px-3 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
                 >
                   <option value="">Select a Branch...</option>
                   {branches?.filter((b) => b.active).map((b) => (
@@ -576,7 +567,7 @@ export const StaffPage: React.FC = () => {
                   type="text"
                   disabled
                   value={currentUser?.primaryBranchName || 'Assigned Branch'}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-600 cursor-not-allowed"
+                  className="w-full h-9 px-3 text-xs rounded-md border border-[#e8eaec] bg-[#f4f6f8] text-[#5d5f60] cursor-not-allowed"
                 />
               )}
             </div>
@@ -590,7 +581,7 @@ export const StaffPage: React.FC = () => {
             placeholder="Leave blank for secure auto-generation"
           />
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#f0f1f2]">
             <Button
               type="button"
               variant="secondary"
@@ -619,7 +610,7 @@ export const StaffPage: React.FC = () => {
         description="Update profile metadata, branch assignment, or role permissions"
       >
         {formError && (
-          <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700">
+          <div className="p-3 mb-4 rounded-lg bg-[#ffedea] border border-[#c4242a]/30 text-xs font-medium text-[#831c1e]">
             {formError}
           </div>
         )}
@@ -642,11 +633,11 @@ export const StaffPage: React.FC = () => {
           {isOwner && (
             <>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-zinc-700">Access Role</label>
+                <label className="text-xs font-medium text-[#131416]">Access Role</label>
                 <select
                   value={editRole}
                   onChange={(e) => setEditRole(e.target.value as Role)}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                  className="w-full h-9 px-3 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
                 >
                   <option value="STAFF">Staff</option>
                   <option value="MANAGER">Manager</option>
@@ -656,11 +647,11 @@ export const StaffPage: React.FC = () => {
 
               {editRole !== 'OWNER' && (
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-semibold text-zinc-700">Primary Branch</label>
+                  <label className="text-xs font-medium text-[#131416]">Primary Branch</label>
                   <select
                     value={editBranchId}
                     onChange={(e) => setEditBranchId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+                    className="w-full h-9 px-3 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
                   >
                     {branches?.filter((b) => b.active).map((b) => (
                       <option key={b.id} value={b.id}>
@@ -673,7 +664,7 @@ export const StaffPage: React.FC = () => {
             </>
           )}
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#f0f1f2]">
             <Button
               type="button"
               variant="secondary"
@@ -704,11 +695,11 @@ export const StaffPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-700">Target Branch *</label>
+            <label className="text-xs font-medium text-[#131416]">Target Branch *</label>
             <select
               value={targetTransferBranchId}
               onChange={(e) => setTargetTransferBranchId(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+              className="w-full h-9 px-3 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
             >
               <option value="">Select target branch...</option>
               {branches
@@ -721,7 +712,7 @@ export const StaffPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#f0f1f2]">
             <Button
               variant="secondary"
               size="sm"
@@ -757,7 +748,7 @@ export const StaffPage: React.FC = () => {
         maxWidth="sm"
       >
         <div className="space-y-4 text-center">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 mx-auto">
+          <div className="w-12 h-12 rounded-full bg-[#dcfae5] border border-[#1e7b4f]/20 flex items-center justify-center text-[#1e7b4f] mx-auto">
             <IconKey size={22} />
           </div>
 
@@ -770,11 +761,11 @@ export const StaffPage: React.FC = () => {
             </code>
           </div>
 
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-[#5d5f60]">
             The user will be required to update this temporary password upon their next session login.
           </p>
 
-          <div className="flex justify-center gap-2 pt-2 border-t border-zinc-200">
+          <div className="flex justify-center gap-2 pt-2 border-t border-[#f0f1f2]">
             <Button
               variant="secondary"
               size="sm"

@@ -120,13 +120,13 @@ export const BranchesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-zinc-200/80">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#f0f1f2]">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
-            <IconBuilding size={22} className="text-zinc-700" />
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416] flex items-center gap-2.5">
+            <IconBuilding size={22} className="text-[#131416]" />
             <span>Branch Locations</span>
           </h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-xs text-[#5d5f60] mt-1">
             Manage physical operational stores, operating timezones, and branch rosters
           </p>
         </div>
@@ -139,7 +139,7 @@ export const BranchesPage: React.FC = () => {
               resetForm();
               setIsCreateOpen(true);
             }}
-            className="gap-2 shadow-xs"
+            className="gap-2 shadow-xs shrink-0"
           >
             <IconPlus size={15} />
             <span>Register Branch</span>
@@ -148,13 +148,13 @@ export const BranchesPage: React.FC = () => {
       </div>
 
       {isLoading && (
-        <div className="py-12 text-center text-sm text-zinc-500 bg-white border border-zinc-200/80 rounded-xl">
+        <div className="py-12 text-center text-xs text-[#5d5f60] bg-white border border-[#e8eaec] rounded-xl">
           Loading branch locations...
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-800 shadow-2xs">
+        <div className="p-3.5 rounded-xl bg-[#ffedea] border border-[#c4242a]/30 text-xs text-[#831c1e]">
           Failed to load branch records. Please verify connectivity.
         </div>
       )}
@@ -183,7 +183,7 @@ export const BranchesPage: React.FC = () => {
         maxWidth="md"
       >
         {formError && (
-          <div className="p-3 mb-4 rounded-lg bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700">
+          <div className="p-3 mb-4 rounded-lg bg-[#ffedea] border border-[#c4242a]/30 text-xs font-medium text-[#831c1e]">
             {formError}
           </div>
         )}
@@ -205,11 +205,11 @@ export const BranchesPage: React.FC = () => {
           />
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-zinc-700">Operating Timezone</label>
+            <label className="text-xs font-medium text-[#131416]">Operating Timezone</label>
             <select
               value={timezone}
               onChange={(e) => setTimezone(e.target.value)}
-              className="w-full px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 shadow-2xs"
+              className="w-full h-9 px-3 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
             >
               <option value="UTC">UTC (Universal Coordinated)</option>
               <option value="Asia/Jakarta">Asia/Jakarta (WIB, UTC+7)</option>
@@ -220,7 +220,7 @@ export const BranchesPage: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex justify-end gap-2.5 pt-3 border-t border-zinc-200">
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-[#f0f1f2]">
             <Button
               type="button"
               variant="secondary"
@@ -263,13 +263,13 @@ const BranchCard: React.FC<{
   });
 
   return (
-    <Card className="flex flex-col justify-between gap-4 p-5 hover:border-zinc-300 transition-colors">
+    <Card className="flex flex-col justify-between gap-4 p-4 sm:p-5 border border-[#e8eaec] bg-white rounded-xl hover:border-[#cdced1] transition-colors">
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h3 className="font-bold text-base text-zinc-900">{branch.name}</h3>
-            <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
-              <IconMapPin size={12} className="text-zinc-400" />
+            <h3 className="font-bold text-base text-[#131416]">{branch.name}</h3>
+            <p className="text-xs text-[#5d5f60] flex items-center gap-1.5 mt-0.5">
+              <IconMapPin size={12} className="text-[#727477]" />
               <span>{branch.address || 'No physical address specified'}</span>
             </p>
           </div>
@@ -278,31 +278,31 @@ const BranchCard: React.FC<{
           </Badge>
         </div>
 
-        <div className="text-xs text-zinc-500 flex items-center gap-1.5">
-          <IconClock size={13} className="text-zinc-400" />
-          <span>Timezone: {branch.timezone}</span>
+        <div className="text-xs text-[#5d5f60] flex items-center gap-1.5">
+          <IconClock size={13} className="text-[#727477]" />
+          <span>Timezone: <span className="font-mono">{branch.timezone}</span></span>
         </div>
 
         {summary && (
           <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-[#f9fbfc] border border-[#e8eaec] text-xs">
             <div>
               <span className="text-[#5d5f60] text-xs font-normal block">Total staff</span>
-              <span className="font-normal text-[#131416] text-sm tabular-nums">{summary.totalStaff}</span>
+              <span className="font-mono font-semibold text-[#131416] text-sm tabular-nums">{summary.totalStaff}</span>
             </div>
             <div className="border-l border-[#e8eaec] pl-2.5">
               <span className="text-[#5d5f60] text-xs font-normal block">Active</span>
-              <span className="font-normal text-[#1e7b4f] text-sm tabular-nums">{summary.activeStaff}</span>
+              <span className="font-mono font-semibold text-[#1e7b4f] text-sm tabular-nums">{summary.activeStaff}</span>
             </div>
             <div className="border-l border-[#e8eaec] pl-2.5">
               <span className="text-[#5d5f60] text-xs font-normal block">Managers</span>
-              <span className="font-normal text-[#131416] text-sm tabular-nums">{summary.managerCount}</span>
+              <span className="font-mono font-semibold text-[#131416] text-sm tabular-nums">{summary.managerCount}</span>
             </div>
           </div>
         )}
       </div>
 
       {isOwner && (
-        <div className="pt-3 border-t border-zinc-100 flex items-center gap-2">
+        <div className="pt-3 border-t border-[#f0f1f2] flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
@@ -312,10 +312,10 @@ const BranchCard: React.FC<{
             Edit
           </Button>
           <Button
-            variant={branch.active ? 'outline' : 'secondary'}
+            variant={branch.active ? 'danger' : 'emerald'}
             size="sm"
             onClick={onToggleStatus}
-            className={`flex-1 justify-center text-xs ${branch.active ? 'text-rose-600 hover:text-rose-700 hover:border-rose-300' : ''}`}
+            className="flex-1 justify-center text-xs"
           >
             {branch.active ? 'Deactivate' : 'Activate'}
           </Button>

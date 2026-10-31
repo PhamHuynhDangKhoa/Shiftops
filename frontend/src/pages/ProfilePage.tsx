@@ -96,30 +96,30 @@ export const ProfilePage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
-      <div className="pb-4 border-b border-zinc-200/80">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
-          <IconUser size={22} className="text-zinc-700" />
-          <span>My Profile & Settings</span>
+      <div className="pb-4 border-b border-[#f0f1f2]">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416] flex items-center gap-2.5">
+          <IconUser size={22} className="text-[#131416]" />
+          <span>My Profile &amp; Settings</span>
         </h1>
-        <p className="text-sm text-zinc-500 mt-1">
+        <p className="text-xs text-[#5d5f60] mt-1">
           Manage your personal details, contact information, and security password
         </p>
       </div>
 
       {/* Account Info Summary Card */}
-      <Card compact className="p-5 sm:p-6">
+      <Card compact className="p-4 sm:p-5 border border-[#e8eaec] bg-white rounded-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-zinc-900">{user?.fullName}</h2>
-            <p className="text-sm text-zinc-500 mt-0.5">{user?.email}</p>
+            <h2 className="text-base font-bold text-[#131416]">{user?.fullName}</h2>
+            <p className="text-xs text-[#5d5f60] mt-0.5">{user?.email}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="brand" size="md">
               {user?.role}
             </Badge>
             {user?.primaryBranchName && (
-              <span className="text-xs font-medium text-zinc-700 flex items-center gap-1.5 bg-zinc-100 border border-zinc-200/80 px-2.5 py-1 rounded-full">
-                <IconMapPin size={12} className="text-zinc-400" />
+              <span className="text-xs font-medium text-[#131416] flex items-center gap-1.5 bg-[#f4f6f8] border border-[#cdced1] px-2.5 py-1 rounded-md">
+                <IconMapPin size={12} className="text-[#727477]" />
                 <span>{user.primaryBranchName}</span>
               </span>
             )}
@@ -134,24 +134,24 @@ export const ProfilePage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Personal Details Form */}
-        <Card className="p-5 sm:p-6 space-y-4">
-          <div className="pb-3 border-b border-zinc-100">
-            <h3 className="text-base font-bold text-zinc-900">Personal Information</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Keep your contact details up to date</p>
+        <Card className="p-4 sm:p-5 space-y-4 border border-[#e8eaec] bg-white rounded-xl">
+          <div className="pb-3 border-b border-[#f0f1f2]">
+            <h3 className="text-sm font-bold text-[#131416]">Personal Information</h3>
+            <p className="text-xs text-[#5d5f60] mt-0.5">Keep your contact details up to date</p>
           </div>
 
           {profileMsg && (
             <div
-              className={`p-3.5 rounded-xl text-xs font-medium border flex items-center gap-2 ${
+              className={`p-3 rounded-lg text-xs font-medium border flex items-center gap-2 ${
                 profileMsg.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  : 'bg-rose-50 text-rose-800 border-rose-200'
+                  ? 'bg-[#dcfae5] text-[#04250e] border-[#1e7b4f]/20'
+                  : 'bg-[#ffedea] text-[#831c1e] border-[#c4242a]/30'
               }`}
             >
               {profileMsg.type === 'success' ? (
-                <IconCheck size={14} className="text-emerald-600 flex-shrink-0" />
+                <IconCheck size={14} className="text-[#1e7b4f] flex-shrink-0" />
               ) : (
-                <IconAlertTriangle size={14} className="text-rose-600 flex-shrink-0" />
+                <IconAlertTriangle size={14} className="text-[#c4242a] flex-shrink-0" />
               )}
               <span>{profileMsg.text}</span>
             </div>
@@ -185,27 +185,27 @@ export const ProfilePage: React.FC = () => {
         </Card>
 
         {/* Change Password Form */}
-        <Card className="p-5 sm:p-6 space-y-4">
-          <div className="pb-3 border-b border-zinc-100">
-            <h3 className="text-base font-bold text-zinc-900 flex items-center gap-1.5">
-              <IconKey size={16} className="text-zinc-600" />
+        <Card className="p-4 sm:p-5 space-y-4 border border-[#e8eaec] bg-white rounded-xl">
+          <div className="pb-3 border-b border-[#f0f1f2]">
+            <h3 className="text-sm font-bold text-[#131416] flex items-center gap-1.5">
+              <IconKey size={16} className="text-[#5d5f60]" />
               <span>Change Password</span>
             </h3>
-            <p className="text-xs text-zinc-500 mt-0.5">Update password and secure your account</p>
+            <p className="text-xs text-[#5d5f60] mt-0.5">Update password and secure your account</p>
           </div>
 
           {passwordMsg && (
             <div
-              className={`p-3.5 rounded-xl text-xs font-medium border flex items-center gap-2 ${
+              className={`p-3 rounded-lg text-xs font-medium border flex items-center gap-2 ${
                 passwordMsg.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  : 'bg-rose-50 text-rose-800 border-rose-200'
+                  ? 'bg-[#dcfae5] text-[#04250e] border-[#1e7b4f]/20'
+                  : 'bg-[#ffedea] text-[#831c1e] border-[#c4242a]/30'
               }`}
             >
               {passwordMsg.type === 'success' ? (
-                <IconCheck size={14} className="text-emerald-600 flex-shrink-0" />
+                <IconCheck size={14} className="text-[#1e7b4f] flex-shrink-0" />
               ) : (
-                <IconAlertTriangle size={14} className="text-rose-600 flex-shrink-0" />
+                <IconAlertTriangle size={14} className="text-[#c4242a] flex-shrink-0" />
               )}
               <span>{passwordMsg.text}</span>
             </div>

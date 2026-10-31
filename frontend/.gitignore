@@ -5,3 +5,10 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Temporary test scripts & snapshots
+*-verified.png
+*.verified.png
+test-*-e2e.mjs
+extract-*.mjs
+

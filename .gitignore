@@ -24,13 +24,17 @@ docker/*.log
 # Dependencies
 node_modules/
 
-# AI & Agent Skills (Local only)
+# AI & Agent Skills, Artifacts & Temporary Test Scripts
 .agents/
 .claude/
 agent/
 .stitch/
 .taste-skill/
 skills-lock.json
+*-verified.png
+*.verified.png
+test-*-e2e.mjs
+extract-*.mjs
 
 
 

@@ -521,7 +521,7 @@ export const DashboardPage: React.FC = () => {
       : 1;
 
   return (
-    <div className="space-y-6 pb-6 text-[#131416]">
+    <div className="min-h-full -m-4 sm:-m-6 lg:-m-6 p-4 sm:p-6 lg:p-8 bg-[#f4f5f7] space-y-6 text-[#131416]">
       {/* ------------------------------------------------------------- */}
       {/* TOP DECK: Identity & Operations Control Header                 */}
       {/* ------------------------------------------------------------- */}

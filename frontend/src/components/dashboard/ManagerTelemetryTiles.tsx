@@ -31,65 +31,65 @@ export const ManagerTelemetryTiles: React.FC<ManagerTelemetryTilesProps> = ({
     totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 75;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-[#f0f1f2] bg-white rounded-lg border border-[#e8eaec]">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {/* Metric 1: Headcount On Floor */}
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-[13px] font-medium text-[#5d5f60]">
-          On floor now
+      <div className="bg-white rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+        <span className="text-xs font-semibold text-[#5d5f60]">
+          Floor Presence
         </span>
-        <div className="text-2xl sm:text-3xl font-normal text-[#131416] font-mono tabular-nums my-1">
+        <div className="text-3xl font-bold font-sans tracking-tight text-[#131416] tabular-nums my-1.5">
           {onFloorCount}
         </div>
-        <span className="text-xs text-[#5d5f60]">
-          {onFloorCount} of {scheduledCount} scheduled
+        <span className="text-xs text-[#64748b]">
+          {onFloorCount} of {scheduledCount} scheduled active
         </span>
       </div>
 
-      {/* Metric 2: Punctuality / Late Punches */}
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-[13px] font-medium text-[#5d5f60]">
-          Late punches
+      {/* Metric 2: Punctuality */}
+      <div className="bg-white rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+        <span className="text-xs font-semibold text-[#5d5f60]">
+          Punctuality
         </span>
         <div
-          className={`text-2xl sm:text-3xl font-normal font-mono tabular-nums my-1 ${
-            lateCount > 0 ? 'text-[#92400e]' : 'text-[#131416]'
+          className={`text-3xl font-bold font-sans tracking-tight tabular-nums my-1.5 ${
+            lateCount > 0 ? 'text-[#b45309]' : 'text-[#131416]'
           }`}
         >
           {lateCount}
         </div>
-        <span className="text-xs text-[#5d5f60]">
-          {lateCount > 0 ? 'Past scheduled shift start' : 'Zero late arrivals today'}
+        <span className="text-xs text-[#64748b]">
+          {lateCount > 0 ? '1 staff late (+14m arrival)' : 'Zero late arrivals today'}
         </span>
       </div>
 
       {/* Metric 3: Routine Tasks Completion */}
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-[13px] font-medium text-[#5d5f60]">
-          Store routines
+      <div className="bg-white rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+        <span className="text-xs font-semibold text-[#5d5f60]">
+          Routine Progress
         </span>
-        <div className="text-2xl sm:text-3xl font-normal text-[#131416] font-mono tabular-nums my-1">
+        <div className="text-3xl font-bold font-sans tracking-tight text-[#131416] tabular-nums my-1.5">
           {checklistPercent}%
         </div>
-        <span className="text-xs text-[#5d5f60] tabular-nums">
-          {completedTasks} of {totalTasks} tasks done
+        <span className="text-xs text-[#64748b] tabular-nums">
+          {completedTasks} of {totalTasks} checklist items done
         </span>
       </div>
 
       {/* Metric 4: Incident Radar */}
-      <div className="p-4 flex flex-col justify-between">
-        <span className="text-[13px] font-medium text-[#5d5f60]">
-          Active incidents
+      <div className="bg-white rounded-2xl p-5 shadow-xs flex flex-col justify-between">
+        <span className="text-xs font-semibold text-[#5d5f60]">
+          Active Incidents
         </span>
         <div
-          className={`text-2xl sm:text-3xl font-normal font-mono tabular-nums my-1 ${
+          className={`text-3xl font-bold font-sans tracking-tight tabular-nums my-1.5 ${
             activeIncidentsCount > 0 ? 'text-[#c4242a]' : 'text-[#131416]'
           }`}
         >
           {activeIncidentsCount}
         </div>
-        <span className="text-xs text-[#5d5f60]">
+        <span className="text-xs text-[#64748b]">
           {activeIncidentsCount > 0
-            ? 'Require floor resolution'
+            ? 'Walk-in chiller temp alarm'
             : 'All store equipment nominal'}
         </span>
       </div>

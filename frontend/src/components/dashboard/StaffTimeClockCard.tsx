@@ -37,17 +37,17 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
   isCheckingOut,
 }) => {
   return (
-    <div className="rounded-xl bg-white border border-[#e8eaec] p-5 h-full flex flex-col justify-between space-y-4">
+    <div className="bg-white rounded-2xl p-6 shadow-xs h-full flex flex-col justify-between space-y-4">
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#f0f1f2]">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#1e7b4f]" />
-            <h2 className="text-base font-semibold text-[#131416]">
+            <span className="w-2 h-2 rounded-full bg-[#16a34a]" />
+            <h2 className="text-base font-bold text-[#131416]">
               Time Clock Station
             </h2>
           </div>
-          <span className="text-xs font-mono tabular-nums text-[#5d5f60]">
+          <span className="text-xs font-sans tabular-nums text-[#64748b]">
             {currentTime.toLocaleDateString([], {
               weekday: 'short',
               month: 'short',
@@ -56,42 +56,42 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
           </span>
         </div>
 
-        {/* Digital Time Readout */}
-        <div className="p-4 rounded-lg bg-[#f9fbfc] border border-[#e8eaec] text-center">
-          <div className="text-3xl sm:text-4xl font-normal font-mono tabular-nums text-[#131416] tracking-tight">
+        {/* Digital Time Readout (Tone Contrast, Zero Card Borders) */}
+        <div className="p-5 rounded-xl bg-[#f8f9fa] text-center">
+          <div className="text-3xl sm:text-4xl font-bold font-sans tabular-nums text-[#131416] tracking-tight">
             {currentTime.toLocaleTimeString([], {
               hour: '2-digit',
               minute: '2-digit',
               second: '2-digit',
             })}
           </div>
-          <div className="text-xs text-[#5d5f60] mt-1">
+          <div className="text-xs text-[#64748b] mt-1">
             Station Synchronized (JST)
           </div>
         </div>
 
-        {/* Shift Details */}
+        {/* Shift Details (Tone Contrast, Zero Card Borders) */}
         {isLoadingMyShifts ? (
-          <div className="py-6 text-center text-xs text-[#5d5f60]">
+          <div className="py-6 text-center text-xs text-[#64748b]">
             Loading shift schedule...
           </div>
         ) : currentStaffShift ? (
-          <div className="p-4 rounded-lg bg-[#f9fbfc] border border-[#e8eaec] space-y-2.5 text-xs">
-            <div className="flex items-center justify-between pb-2 border-b border-[#f0f1f2]">
+          <div className="p-4 rounded-xl bg-[#f8f9fa] space-y-2.5 text-xs">
+            <div className="flex items-center justify-between pb-1">
               <div>
-                <span className="text-[11px] text-[#5d5f60] block">Shift Assignment</span>
-                <span className="font-semibold text-[#131416]">
+                <span className="text-[11px] text-[#64748b] block">Shift Assignment</span>
+                <span className="font-semibold text-sm text-[#131416]">
                   {currentStaffShift.name || 'Scheduled Shift'}
                 </span>
               </div>
-              <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#ebedee] text-[#131416]">
+              <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-[#e2e8f0] text-[#334155]">
                 {punchState.label}
               </span>
             </div>
 
-            <div className="flex justify-between items-center text-[#5d5f60]">
+            <div className="flex justify-between items-center text-[#64748b]">
               <span>Scheduled Window</span>
-              <span className="font-mono tabular-nums text-[#131416] font-medium">
+              <span className="font-sans tabular-nums text-[#131416] font-medium">
                 {new Date(currentStaffShift.startTime).toLocaleTimeString([], {
                   hour: '2-digit',
                   minute: '2-digit',
@@ -105,10 +105,10 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
             </div>
 
             {currentAttendance && (
-              <div className="pt-2 border-t border-[#f0f1f2] space-y-1 text-[#5d5f60]">
+              <div className="pt-2 space-y-1 text-[#64748b]">
                 <div className="flex justify-between">
                   <span>Clocked in:</span>
-                  <span className="font-mono tabular-nums text-[#131416] font-medium">
+                  <span className="font-sans tabular-nums text-[#131416] font-semibold">
                     {currentAttendance.checkInAt
                       ? new Date(currentAttendance.checkInAt).toLocaleTimeString([], {
                           hour: '2-digit',
@@ -116,14 +116,14 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
                         })
                       : '—'}
                     {currentAttendance.late && (
-                      <span className="text-[#92400e] ml-1 font-semibold">(Late)</span>
+                      <span className="text-[#b45309] ml-1 font-semibold">(Late)</span>
                     )}
                   </span>
                 </div>
                 {currentAttendance.checkOutAt && (
                   <div className="flex justify-between">
                     <span>Clocked out:</span>
-                    <span className="font-mono tabular-nums text-[#131416] font-medium">
+                    <span className="font-sans tabular-nums text-[#131416] font-semibold">
                       {new Date(currentAttendance.checkOutAt).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -135,19 +135,19 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
             )}
           </div>
         ) : (
-          <div className="p-4 rounded-lg bg-[#f9fbfc] border border-[#e8eaec] text-center text-xs text-[#5d5f60]">
+          <div className="p-4 rounded-xl bg-[#f8f9fa] text-center text-xs text-[#64748b]">
             No active shift scheduled for today.
           </div>
         )}
 
         {/* Feedback alert if any */}
         {punchFeedback && (
-          <div className="p-3 rounded-lg bg-[#ebedee] border border-[#cdced1] flex items-center justify-between text-xs">
-            <span className="text-[#131416]">{punchFeedback}</span>
+          <div className="p-3.5 rounded-xl bg-[#e2e8f0] flex items-center justify-between text-xs">
+            <span className="text-[#131416] font-medium">{punchFeedback}</span>
             <button
               type="button"
               onClick={onClearPunchFeedback}
-              className="text-[#5d5f60] hover:text-[#131416] text-xs font-semibold cursor-pointer"
+              className="text-[#64748b] hover:text-[#131416] text-xs font-semibold cursor-pointer"
             >
               Dismiss
             </button>
@@ -156,13 +156,13 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-3 border-t border-[#f0f1f2] space-y-2">
+      <div className="space-y-2.5 pt-2">
         {punchState.canIn && (
           <button
             type="button"
             onClick={onCheckIn}
             disabled={isCheckingIn}
-            className="w-full h-10 rounded-md bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full h-11 rounded-xl bg-[#1b6c80] text-white hover:bg-[#155464] text-xs font-semibold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
           >
             {isCheckingIn ? 'Clocking in...' : 'Clock In Now'}
           </button>
@@ -173,7 +173,7 @@ export const StaffTimeClockCard: React.FC<StaffTimeClockCardProps> = ({
             type="button"
             onClick={onCheckOut}
             disabled={isCheckingOut}
-            className="w-full h-10 rounded-md bg-[#c4242a] text-white text-xs font-semibold hover:bg-[#a51d22] transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full h-11 rounded-xl bg-[#c4242a] text-white text-xs font-semibold hover:bg-[#a51d22] shadow-xs transition-colors cursor-pointer disabled:opacity-50"
           >
             {isCheckingOut ? 'Clocking out...' : 'Clock Out Now'}
           </button>

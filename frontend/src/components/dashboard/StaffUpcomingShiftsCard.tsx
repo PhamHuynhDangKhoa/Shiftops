@@ -13,11 +13,11 @@ export const StaffUpcomingShiftsCard: React.FC<StaffUpcomingShiftsCardProps> = (
   const upcomingList = shifts && shifts.length > 1 ? shifts.slice(1, 4) : [];
 
   return (
-    <div className="p-5 rounded-xl bg-[#ffffff] border border-[#e8eaec]">
-      <div className="flex items-center justify-between pb-3 border-b border-[#f0f1f2]">
+    <div className="bg-white rounded-2xl p-6 shadow-xs space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <IconClock size={16} className="text-[#131416]" />
-          <h3 className="text-sm font-bold text-[#131416]">
+          <IconClock size={18} className="text-[#131416]" />
+          <h3 className="text-base font-bold text-[#131416]">
             Upcoming Shifts This Week
           </h3>
         </div>
@@ -30,9 +30,9 @@ export const StaffUpcomingShiftsCard: React.FC<StaffUpcomingShiftsCardProps> = (
         </Link>
       </div>
 
-      <div className="mt-4">
+      <div>
         {upcomingList.length === 0 ? (
-          <div className="py-5 text-center text-xs text-[#5d5f60] leading-relaxed">
+          <div className="py-6 text-center text-xs text-[#64748b] leading-relaxed">
             No other shifts scheduled for this week. Check the roster for upcoming assignments.
           </div>
         ) : (
@@ -40,13 +40,13 @@ export const StaffUpcomingShiftsCard: React.FC<StaffUpcomingShiftsCardProps> = (
             {upcomingList.map((shift) => (
               <div
                 key={shift.id}
-                className="p-3.5 rounded-lg bg-[#f9fbfc] border border-[#e8eaec] space-y-1.5"
+                className="p-4 rounded-xl bg-[#f8f9fa] space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-[#131416]">
                     {shift.name || 'Shift'}
                   </span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#ebedee] text-[#131416]">
+                  <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#e2e8f0] text-[#334155]">
                     {new Date(shift.startTime).toLocaleDateString([], {
                       weekday: 'short',
                       month: 'short',
@@ -54,9 +54,9 @@ export const StaffUpcomingShiftsCard: React.FC<StaffUpcomingShiftsCardProps> = (
                     })}
                   </span>
                 </div>
-                <div className="text-xs text-[#5d5f60] flex items-center gap-1">
-                  <IconClock size={13} className="text-[#727477]" />
-                  <span className="tabular-nums">
+                <div className="text-xs text-[#64748b] flex items-center gap-1.5">
+                  <IconClock size={13} className="text-[#94a3b8]" />
+                  <span className="font-sans tabular-nums">
                     {new Date(shift.startTime).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',

@@ -101,11 +101,11 @@ export const ManagerRoutineTasksCard: React.FC<ManagerRoutineTasksCardProps> = (
   };
 
   return (
-    <div className="rounded-xl bg-white border border-[#e8eaec] p-5">
+    <div className="bg-white rounded-2xl p-6 shadow-xs space-y-4">
       {/* Header & Progress */}
-      <div className="flex items-center justify-between pb-2">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-[#131416]">
+          <h2 className="text-lg font-bold text-[#131416]">
             Store Routine Tasks
           </h2>
           <p className="text-xs text-[#5d5f60] mt-0.5">
@@ -120,37 +120,37 @@ export const ManagerRoutineTasksCard: React.FC<ManagerRoutineTasksCardProps> = (
         </Link>
       </div>
 
-      {/* 4px Progress Track */}
-      <div className="w-full h-1 bg-[#f0f1f2] rounded-full overflow-hidden mb-3">
+      {/* Clean Tone Progress Bar */}
+      <div className="w-full h-2 bg-[#f1f5f9] rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#1b6c80] transition-[width] duration-300"
+          className="h-full bg-[#1b6c80] rounded-full transition-all duration-300"
           style={{ width: `${pct}%` }}
         />
       </div>
 
-      {/* Task List */}
-      <div className="divide-y divide-[#f0f1f2]">
+      {/* Task List (Zero Card Borders) */}
+      <div className="space-y-1.5 pt-1">
         {displayTasks.map((t) => {
           const isDone = t.status === 'COMPLETED';
           return (
             <div
               key={t.id}
-              className="py-2.5 flex items-center justify-between gap-3 text-[13px]"
+              className="p-3 rounded-xl hover:bg-[#f8f9fa] transition-colors flex items-center justify-between gap-3 text-xs"
             >
-              <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex items-center gap-3 min-w-0">
                 <button
                   type="button"
                   onClick={() => handleToggle(t)}
                   aria-label={isDone ? 'Mark task pending' : 'Mark task completed'}
-                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 cursor-pointer ${
+                  className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors shrink-0 cursor-pointer ${
                     isDone
-                      ? 'bg-[#1e7b4f] border-[#1e7b4f] text-white'
-                      : 'border-[#cdced1] bg-white hover:border-[#131416]'
+                      ? 'bg-[#1e7b4f] text-white'
+                      : 'bg-[#f1f5f9] hover:bg-[#e2e8f0]'
                   }`}
                 >
                   {isDone && (
                     <svg
-                      className="w-3 h-3"
+                      className="w-3.5 h-3.5"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -167,36 +167,39 @@ export const ManagerRoutineTasksCard: React.FC<ManagerRoutineTasksCardProps> = (
 
                 <div className="min-w-0">
                   <span
-                    className={`block truncate ${
+                    className={`block leading-snug font-medium ${
                       isDone
-                        ? 'line-through text-[#5d5f60]'
-                        : 'font-medium text-[#131416] text-sm'
+                        ? 'line-through text-[#94a3b8]'
+                        : 'text-[#131416]'
                     }`}
                   >
                     {t.title}
                   </span>
-                  <span className="text-xs text-[#5d5f60]">
+                  <span className="text-[11px] text-[#64748b]">
                     Assigned: {t.assignedStaff}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 shrink-0">
-                {t.priority === 'HIGH' && (
-                  <span className="px-1.5 py-0.5 rounded text-[11px] font-medium bg-[#fffbeb] text-[#92400e]">
-                    High
-                  </span>
-                )}
+              <div className="flex items-center gap-2 shrink-0">
                 <span
-                  className={`px-2 py-0.5 rounded text-[11px] font-medium tabular-nums ${
-                    isDone
-                      ? 'bg-[#dcfae5] text-[#04250e]'
-                      : t.status === 'IN_PROGRESS'
-                      ? 'bg-[#e9f4f7] text-[#1b6c80]'
-                      : 'bg-[#ebedee] text-[#353736]'
+                  className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                    t.priority === 'HIGH'
+                      ? 'bg-[#fee2e2] text-[#991b1b]'
+                      : 'bg-[#f1f5f9] text-[#475569]'
                   }`}
                 >
-                  {isDone ? 'Done' : t.status === 'IN_PROGRESS' ? 'Active' : 'Pending'}
+                  {t.priority}
+                </span>
+
+                <span
+                  className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                    isDone
+                      ? 'bg-[#dcfce7] text-[#14532d]'
+                      : 'bg-[#f1f5f9] text-[#64748b]'
+                  }`}
+                >
+                  {t.status}
                 </span>
               </div>
             </div>

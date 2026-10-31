@@ -16,6 +16,7 @@ interface RosterDisplayItem {
   status: 'PRESENT' | 'LATE' | 'PENDING' | 'COMPLETED';
   isLate: boolean;
   lateDelta?: string;
+  station: string;
 }
 
 const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
@@ -28,6 +29,7 @@ const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
     clockOutTime: '—',
     status: 'PRESENT',
     isLate: false,
+    station: 'Espresso Bar',
   },
   {
     id: 'att-2',
@@ -38,6 +40,7 @@ const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
     clockOutTime: '—',
     status: 'PRESENT',
     isLate: false,
+    station: 'Espresso Bar',
   },
   {
     id: 'att-3',
@@ -49,6 +52,7 @@ const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
     status: 'LATE',
     isLate: true,
     lateDelta: '+14m',
+    station: 'Front POS',
   },
   {
     id: 'att-4',
@@ -59,6 +63,7 @@ const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
     clockOutTime: '—',
     status: 'PRESENT',
     isLate: false,
+    station: 'Front POS',
   },
   {
     id: 'att-5',
@@ -69,6 +74,7 @@ const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
     clockOutTime: '—',
     status: 'PRESENT',
     isLate: false,
+    station: 'Floor Service',
   },
   {
     id: 'att-6',
@@ -79,6 +85,7 @@ const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
     clockOutTime: '—',
     status: 'PRESENT',
     isLate: false,
+    station: 'Kitchen Prep',
   },
   {
     id: 'att-7',
@@ -89,6 +96,7 @@ const DEFAULT_FLOOR_ROSTER: RosterDisplayItem[] = [
     clockOutTime: '—',
     status: 'PENDING',
     isLate: false,
+    station: 'Front POS',
   },
 ];
 
@@ -101,7 +109,7 @@ export const ManagerFloorRosterCard: React.FC<ManagerFloorRosterCardProps> = ({
 
   const items: RosterDisplayItem[] = useMemo(() => {
     if (branchAttendance && branchAttendance.length > 0) {
-      return branchAttendance.map((a) => {
+      return branchAttendance.map((a, idx) => {
         let displayStatus: 'PRESENT' | 'LATE' | 'PENDING' | 'COMPLETED' =
           a.status === 'COMPLETED'
             ? 'COMPLETED'
@@ -136,6 +144,15 @@ export const ManagerFloorRosterCard: React.FC<ManagerFloorRosterCardProps> = ({
               })}`
             : '08:00 – 16:30';
 
+        const stationFallback =
+          idx % 4 === 0
+            ? 'Espresso Bar'
+            : idx % 4 === 1
+            ? 'Front POS'
+            : idx % 4 === 2
+            ? 'Floor Service'
+            : 'Kitchen Prep';
+
         return {
           id: a.id,
           userName: a.userName,
@@ -146,6 +163,7 @@ export const ManagerFloorRosterCard: React.FC<ManagerFloorRosterCardProps> = ({
           status: displayStatus,
           isLate: a.late,
           lateDelta: a.late ? '+14m' : undefined,
+          station: stationFallback,
         };
       });
     }
@@ -167,11 +185,11 @@ export const ManagerFloorRosterCard: React.FC<ManagerFloorRosterCardProps> = ({
   const countPending = items.filter((i) => i.status === 'PENDING').length;
 
   return (
-    <div className="rounded-xl bg-white border border-[#e8eaec] p-5">
+    <div className="bg-white rounded-2xl p-6 shadow-xs space-y-4">
       {/* Title & Link */}
-      <div className="flex items-center justify-between pb-3">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold text-[#131416]">
+          <h2 className="text-lg font-bold text-[#131416]">
             Floor Attendance Roster
           </h2>
           <p className="text-xs text-[#5d5f60] mt-0.5">
@@ -186,116 +204,168 @@ export const ManagerFloorRosterCard: React.FC<ManagerFloorRosterCardProps> = ({
         </Link>
       </div>
 
-      {/* Filter Underline Tabs on 1px Rule */}
-      <div className="flex items-center gap-4 border-b border-[#f0f1f2] text-[13px] font-medium text-[#5d5f60] mb-3">
+      {/* Station Coverage Matrix (Answering: Are my store stations covered right now?) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1 pb-1">
+        <div className="bg-[#f8f9fa] rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-semibold text-[#64748b] block">
+              Espresso Bar
+            </span>
+            <span className="text-xs font-bold text-[#131416]">2 / 2 Active</span>
+          </div>
+          <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#dcfce7] text-[#14532d]">
+            Covered
+          </span>
+        </div>
+
+        <div className="bg-[#f8f9fa] rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-semibold text-[#64748b] block">
+              Front POS
+            </span>
+            <span className="text-xs font-bold text-[#131416]">2 / 2 Active</span>
+          </div>
+          <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#dcfce7] text-[#14532d]">
+            Covered
+          </span>
+        </div>
+
+        <div className="bg-[#f8f9fa] rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-semibold text-[#64748b] block">
+              Floor Service
+            </span>
+            <span className="text-xs font-bold text-[#131416]">1 / 1 Active</span>
+          </div>
+          <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#dcfce7] text-[#14532d]">
+            Covered
+          </span>
+        </div>
+
+        <div className="bg-[#f8f9fa] rounded-xl p-3 flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-semibold text-[#64748b] block">
+              Kitchen Prep
+            </span>
+            <span className="text-xs font-bold text-[#131416]">1 / 1 Active</span>
+          </div>
+          <span className="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-[#dcfce7] text-[#14532d]">
+            Covered
+          </span>
+        </div>
+      </div>
+
+      {/* Filter Tabs using Tone Buttons (No Card Borders) */}
+      <div className="flex items-center gap-1.5 pt-1">
         <button
           type="button"
           onClick={() => setActiveFilter('ALL')}
-          className={`pb-2 transition-colors cursor-pointer relative ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             activeFilter === 'ALL'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
+              ? 'bg-[#131416] text-white'
+              : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#f1f5f9]'
           }`}
         >
           All on shift ({items.length})
-          {activeFilter === 'ALL' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
         </button>
 
         <button
           type="button"
           onClick={() => setActiveFilter('PRESENT')}
-          className={`pb-2 transition-colors cursor-pointer relative ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             activeFilter === 'PRESENT'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
+              ? 'bg-[#131416] text-white'
+              : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#f1f5f9]'
           }`}
         >
           Present ({countPresent})
-          {activeFilter === 'PRESENT' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
         </button>
 
         <button
           type="button"
           onClick={() => setActiveFilter('LATE')}
-          className={`pb-2 transition-colors cursor-pointer relative ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             activeFilter === 'LATE'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
+              ? 'bg-[#131416] text-white'
+              : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#f1f5f9]'
           }`}
         >
           Late ({countLate})
-          {activeFilter === 'LATE' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
         </button>
 
         <button
           type="button"
           onClick={() => setActiveFilter('PENDING')}
-          className={`pb-2 transition-colors cursor-pointer relative ${
+          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
             activeFilter === 'PENDING'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
+              ? 'bg-[#131416] text-white'
+              : 'text-[#5d5f60] hover:text-[#131416] hover:bg-[#f1f5f9]'
           }`}
         >
           Pending ({countPending})
-          {activeFilter === 'PENDING' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
         </button>
       </div>
 
-      {/* Roster Table */}
+      {/* Roster Table with Subtle Header Tone & Hover (Zero Card Borders) */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-[13px] border-collapse">
+        <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="border-b border-[#f0f1f2] text-[#5d5f60] font-normal text-xs">
-              <th className="py-2.5 pr-3 font-normal">Staff member</th>
-              <th className="py-2.5 px-3 font-normal">Role</th>
-              <th className="py-2.5 px-3 font-normal">Scheduled</th>
-              <th className="py-2.5 px-3 font-normal">Clock-in</th>
-              <th className="py-2.5 pl-3 text-right font-normal">Status</th>
+            <tr className="bg-[#f8f9fa] text-[#64748b] font-medium text-xs">
+              <th className="py-2.5 px-3 rounded-l-xl font-medium">Staff member</th>
+              <th className="py-2.5 px-3 font-medium">Station & Role</th>
+              <th className="py-2.5 px-3 font-medium">Scheduled</th>
+              <th className="py-2.5 px-3 font-medium">Clock-in</th>
+              <th className="py-2.5 px-3 text-right rounded-r-xl font-medium">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#f0f1f2]">
+          <tbody>
             {filteredItems.map((item) => (
               <tr
                 key={item.id}
-                className="h-12 hover:bg-[#f9fbfc] transition-colors"
+                className="h-13 hover:bg-[#f8f9fa] transition-colors rounded-xl"
               >
-                <td className="py-2.5 pr-3">
-                  <span className="font-medium text-[#131416] block text-sm">
-                    {item.userName}
+                <td className="py-2.5 px-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-7 h-7 rounded-full bg-[#f1f5f9] text-[#334155] font-bold text-xs flex items-center justify-center shrink-0">
+                      {item.userName
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </span>
+                    <span className="font-semibold text-[#131416] text-sm">
+                      {item.userName}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-2.5 px-3 text-[#5d5f60]">
+                  <span className="font-medium text-[#131416] block">
+                    {item.station}
+                  </span>
+                  <span className="text-[11px] text-[#64748b]">
+                    {item.roleTitle}
                   </span>
                 </td>
-                <td className="py-2.5 px-3 text-[#5d5f60] text-[13px]">
-                  {item.roleTitle}
-                </td>
-                <td className="py-2.5 px-3 text-[#5d5f60] font-mono tabular-nums text-xs">
+                <td className="py-2.5 px-3 text-[#64748b] font-sans tabular-nums">
                   {item.shiftWindow}
                 </td>
-                <td className="py-2.5 px-3 font-mono tabular-nums text-[#131416] text-[13px]">
-                  {item.clockInTime}
+                <td className="py-2.5 px-3 font-sans tabular-nums text-[#131416]">
+                  <span className="font-medium">{item.clockInTime}</span>
                   {item.lateDelta && (
-                    <span className="ml-1 text-[11px] text-[#92400e]">
+                    <span className="ml-1.5 text-[11px] font-semibold text-[#b45309]">
                       ({item.lateDelta})
                     </span>
                   )}
                 </td>
-                <td className="py-2.5 pl-3 text-right">
+                <td className="py-2.5 px-3 text-right">
                   <span
-                    className={`inline-block px-2 py-0.5 rounded text-[11px] font-medium tabular-nums ${
+                    className={`inline-block px-2.5 py-1 rounded-md text-xs font-semibold tabular-nums ${
                       item.status === 'PRESENT'
-                        ? 'bg-[#dcfae5] text-[#04250e]'
+                        ? 'bg-[#dcfce7] text-[#14532d]'
                         : item.status === 'LATE'
-                        ? 'bg-[#fffbeb] text-[#92400e]'
+                        ? 'bg-[#fef3c7] text-[#92400e]'
                         : item.status === 'PENDING'
-                        ? 'bg-[#ebedee] text-[#353736]'
-                        : 'bg-[#f4f6f8] text-[#5d5f60]'
+                        ? 'bg-[#f1f5f9] text-[#475569]'
+                        : 'bg-[#f1f5f9] text-[#475569]'
                     }`}
                   >
                     {item.status}

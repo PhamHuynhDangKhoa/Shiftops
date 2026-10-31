@@ -22,28 +22,38 @@ export const ManagerHeaderDeck: React.FC<ManagerHeaderDeckProps> = ({
   isManager,
 }) => {
   return (
-    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3 pr-2 border-b border-[#f0f1f2]">
-      {/* Title + Subline */}
+    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2">
+      {/* Title + Subline with Store Hierarchy */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#131416]">
-          Operations Command
-        </h1>
-        <p className="text-xs text-[#5d5f60] mt-1">
-          <span className="font-medium text-[#131416]">
+        <div className="flex items-center gap-2.5">
+          <h1 className="text-2xl font-bold tracking-tight text-[#131416]">
+            Operations Command
+          </h1>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#dcfce7] text-[#14532d]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#16a34a]" />
+            Live Store Active
+          </span>
+        </div>
+        <p className="text-xs text-[#5d5f60] mt-1 flex flex-wrap items-center gap-2">
+          <span className="font-semibold text-[#131416]">
             {currentBranchName || 'Shibuya Flagship'}
-          </span>{' '}
-          · Morning Shift (08:00 – 16:30) · Real-time attendance, routines and incidents
+          </span>
+          <span className="text-[#9ca3af]">·</span>
+          <span>Morning Shift (08:00 – 16:30)</span>
+          <span className="text-[#9ca3af]">·</span>
+          <span>Lead Manager: Marcus Tanaka</span>
         </p>
       </div>
 
-      {/* Scope Selector & Primary Action */}
-      <div className="flex items-center gap-2.5">
+      {/* Scope Selector & Primary Action (No Card Borders) */}
+      <div className="flex items-center gap-3">
         {(isOwner || isManager) && branches && branches.length > 1 && (
           <div className="flex items-center">
             <select
               value={selectedBranchId}
               onChange={(e) => onSelectBranch(e.target.value)}
-              className="h-8 px-2.5 rounded-md bg-white border border-[#cdced1] text-xs font-medium text-[#131416] focus:outline-none cursor-pointer"
+              className="h-9 px-3 rounded-xl bg-white text-xs font-medium text-[#131416] focus:outline-none cursor-pointer shadow-xs"
+              aria-label="Select Operating Branch"
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -58,7 +68,7 @@ export const ManagerHeaderDeck: React.FC<ManagerHeaderDeckProps> = ({
           <button
             type="button"
             onClick={onOpenBroadcast}
-            className="h-8 px-3.5 rounded-md bg-[#1b6c80] text-white text-xs font-medium hover:bg-[#155464] border border-[#1b6c80] shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+            className="h-9 px-4 rounded-xl bg-[#1b6c80] hover:bg-[#155464] text-white text-xs font-medium shadow-xs transition-colors flex items-center gap-2 cursor-pointer shrink-0"
           >
             <svg
               className="w-3.5 h-3.5 text-white"

@@ -58,32 +58,35 @@ export const LiveOperationsWireCard: React.FC<LiveOperationsWireCardProps> = ({
   const displayEvents = events.length > 0 ? events : DEFAULT_WIRE_EVENTS;
 
   return (
-    <div className="rounded-xl bg-white border border-[#e8eaec] p-5 space-y-3">
+    <div className="bg-white rounded-2xl p-6 shadow-xs space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b border-[#f0f1f2]">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span
             className={`w-2 h-2 rounded-full ${
-              wsStatus === 'CONNECTED' ? 'bg-[#1e7b4f]' : 'bg-[#1e7b4f]'
+              wsStatus === 'CONNECTED' ? 'bg-[#16a34a]' : 'bg-[#16a34a]'
             }`}
           />
-          <h3 className="text-sm font-semibold text-[#131416]">
-            Operations Live Wire
+          <h3 className="text-base font-bold text-[#131416]">
+            Live Floor Activity
           </h3>
         </div>
-        <span className="text-[11px] font-mono text-[#5d5f60] tabular-nums">
-          STOMP 1.2 Connected
+        <span className="text-xs text-[#64748b] font-medium">
+          Live sync
         </span>
       </div>
 
-      {/* Feed Items */}
-      <div className="divide-y divide-[#f0f1f2] text-xs">
+      {/* Feed Items (Clean Timeline, Zero Monospace Trap, Zero Card Borders) */}
+      <div className="space-y-1 text-xs">
         {displayEvents.slice(0, 5).map((e) => (
-          <div key={e.id} className="py-2 flex items-start gap-2.5">
-            <span className="text-[11px] text-[#5d5f60] font-mono shrink-0 tabular-nums pt-0.5">
+          <div
+            key={e.id}
+            className="p-2.5 rounded-xl hover:bg-[#f8f9fa] transition-colors flex items-start gap-3"
+          >
+            <span className="text-xs text-[#94a3b8] font-sans tabular-nums shrink-0 pt-0.5">
               {e.time}
             </span>
-            <span className="text-[#131416] text-[13px] leading-snug">
+            <span className="text-xs text-[#334155] leading-snug">
               {e.text}
             </span>
           </div>

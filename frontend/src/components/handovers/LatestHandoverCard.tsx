@@ -1,89 +1,128 @@
 import React from 'react';
 import { ShiftHandover } from '../../lib/types';
-import { Card, Button } from '../ui';
 import { HandoverStatusBadge } from './HandoverStatusBadge';
 import { HandoverSummaryCounters } from './HandoverSummaryCounters';
 import { HandoverItemList } from './HandoverItemList';
+import { IconCheck, IconFileText } from '../ui/Icons';
+import { formatHandoverTime, formatHandoverDateTime } from './handoverUtils';
 
 interface LatestHandoverCardProps {
   handover: ShiftHandover | null;
   isLoading: boolean;
   onAcknowledgeClick: (handover: ShiftHandover) => void;
+  onOpenDebriefModal?: (handover: ShiftHandover) => void;
 }
 
 export const LatestHandoverCard: React.FC<LatestHandoverCardProps> = ({
   handover,
   isLoading,
   onAcknowledgeClick,
+  onOpenDebriefModal,
 }) => {
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center text-[13px] text-[#5d5f60] border border-[#e8eaec] bg-white rounded-md">
+        Loading operational turnover briefing...
+      </div>
+    );
+  }
+
+  if (!handover) {
+    return (
+      <div className="p-8 text-center text-[#5d5f60] border border-[#e8eaec] bg-white rounded-md">
+        <p className="font-semibold text-[#131416] text-[14px]">
+          No active shift handover recorded
+        </p>
+        <p className="text-[13px] text-[#5d5f60] mt-1">
+          Outgoing supervisor will log turnover notes at the close of their shift.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <Card className="p-6 md:p-8 border-l-4 border-l-blue-600 shadow-sm bg-gradient-to-r from-white via-white to-blue-50/20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-200">
+    <div className="space-y-4">
+      {/* Dossier Header: Pure title, transfer path, and action */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-[#e8eaec]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold tracking-wider uppercase text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
-              Incoming Shift Debrief
-            </span>
-            {handover && <HandoverStatusBadge status={handover.status} />}
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-[18px] font-bold text-[#131416]">
+              {handover.shiftName || 'Operational Shift'}
+            </h2>
+            <HandoverStatusBadge status={handover.status} />
           </div>
-          <h2 className="text-xl font-bold text-gray-900">
-            {handover ? `Handover: ${handover.shiftName || 'Shift'}` : 'No active handover for branch'}
-          </h2>
-          {handover && (
-            <p className="text-xs text-gray-500 mt-0.5">
-              Shift: {new Date(handover.shiftStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -{' '}
-              {new Date(handover.shiftEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} •{' '}
-              Submitted by <strong>{handover.submittedByName || 'Staff'}</strong> at{' '}
-              {handover.submittedAt ? new Date(handover.submittedAt).toLocaleTimeString() : 'N/A'}
-            </p>
-          )}
+
+          {/* Supervisor transfer path & hours */}
+          <p className="text-[13px] text-[#5d5f60] mt-1 tabular-nums">
+            <strong className="text-[#131416] font-medium">{handover.submittedByName || 'Outgoing Supervisor'}</strong>
+            <span className="text-[#8c8f92] mx-1.5">→</span>
+            <span className={handover.acknowledgedByName ? 'text-[#1e7b4f] font-medium' : 'text-[#5d5f60] italic'}>
+              {handover.acknowledgedByName || 'Pending Acceptance'}
+            </span>
+            <span className="text-[#5d5f60] mx-2">·</span>
+            <span className="font-mono text-[12px]">{formatHandoverTime(handover.shiftStartTime)} – {formatHandoverTime(handover.shiftEndTime)}</span>
+          </p>
         </div>
 
-        {handover && handover.status === 'SUBMITTED' && (
-          <Button
-            variant="primary"
-            onClick={() => onAcknowledgeClick(handover)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-          >
-            ✓ Acknowledge Handover
-          </Button>
-        )}
+        {/* Action Controls */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {onOpenDebriefModal && (
+            <button
+              type="button"
+              onClick={() => onOpenDebriefModal(handover)}
+              className="h-8 px-3 text-[13px] font-medium rounded border border-[#e8eaec] bg-white text-[#131416] hover:bg-[#f0f1f2] transition-colors inline-flex items-center gap-1.5"
+            >
+              <IconFileText size={13} className="text-[#5d5f60]" />
+              <span>Full Dossier</span>
+            </button>
+          )}
+
+          {handover.status === 'SUBMITTED' && (
+            <button
+              type="button"
+              onClick={() => onAcknowledgeClick(handover)}
+              className="h-8 px-3.5 text-xs font-medium rounded bg-[#1e7b4f] text-white hover:bg-[#165c3b] border border-[#1e7b4f] transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <IconCheck size={14} />
+              <span>Sign Turnover</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {isLoading ? (
-        <div className="py-8 text-center text-gray-400">Loading incoming shift handover...</div>
-      ) : handover ? (
-        <div className="space-y-6">
-          {/* Live Derived Operational Counters */}
-          <HandoverSummaryCounters summary={handover.summary} />
+      {/* 1. Flat 4-Cell Telemetry Strip */}
+      <HandoverSummaryCounters summary={handover.summary} />
 
-          {/* Outgoing Notes */}
-          {handover.notes && (
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <h4 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Operational Notes</h4>
-              <p className="text-sm text-gray-800 whitespace-pre-wrap">{handover.notes}</p>
-            </div>
-          )}
-
-          {/* Structured Handover Items */}
-          <HandoverItemList items={handover.items} />
-
-          {/* Acknowledgement Status Info */}
-          {handover.status === 'ACKNOWLEDGED' && (
-            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-900">
-              <strong>Acknowledged by:</strong> {handover.acknowledgedByName || 'Manager'} at{' '}
-              {handover.acknowledgedAt ? new Date(handover.acknowledgedAt).toLocaleString() : 'N/A'}
-              {handover.acknowledgementNotes && (
-                <p className="mt-1 text-emerald-800 italic">"{handover.acknowledgementNotes}"</p>
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="py-6 text-center text-sm text-gray-500">
-          No outgoing handover debriefs have been submitted for this branch yet.
+      {/* 2. Supervisor Narrative */}
+      {handover.notes && (
+        <div className="p-3.5 rounded-md bg-[#f9fbfc] border border-[#e8eaec] text-[13px] text-[#131416] leading-relaxed">
+          <span className="text-[12px] text-[#5d5f60] font-medium block mb-1">
+            Supervisor debrief note:
+          </span>
+          <p className="whitespace-pre-line">{handover.notes}</p>
         </div>
       )}
-    </Card>
+
+      {/* 3. Items Ledger */}
+      <HandoverItemList items={handover.items} />
+
+      {/* 4. Verified Sign-Off Confirmation (If Acknowledged) */}
+      {handover.status === 'ACKNOWLEDGED' && (
+        <div className="p-3 rounded-md border border-[#c2e4d0] bg-[#eaf5ef] flex items-center justify-between gap-3 text-[13px]">
+          <div className="flex items-center gap-2 text-[#1e7b4f]">
+            <IconCheck size={15} className="flex-shrink-0" />
+            <span>
+              Store responsibility formally accepted by <strong>{handover.acknowledgedByName}</strong> at{' '}
+              {formatHandoverDateTime(handover.acknowledgedAt)}.
+            </span>
+          </div>
+          {handover.acknowledgementNotes && (
+            <span className="text-[12px] text-[#5d5f60] italic truncate max-w-xs">
+              &ldquo;{handover.acknowledgementNotes}&rdquo;
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 };

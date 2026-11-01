@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card } from '../ui/Card';
 
 export interface IssueMetrics {
   urgentCount: number;
@@ -13,85 +14,58 @@ interface IssueSummaryCardsProps {
 
 export const IssueSummaryCards: React.FC<IssueSummaryCardsProps> = ({ metrics }) => {
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem',
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #fee2e2',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #ef4444',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#991b1b', fontWeight: 600 }}>
-          🚨 Urgent Issues
-        </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#991b1b', marginTop: '0.25rem' }}>
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            Urgent incidents
+          </span>
+          {metrics.urgentCount > 0 && <span className="w-2 h-2 rounded-full bg-[#c4242a]" />}
+        </div>
+        <div className="text-2xl font-normal text-[#c4242a] tabular-nums">
           {metrics.urgentCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#b91c1c' }}>Immediate action required</span>
-      </div>
+        <span className="text-[11px] text-[#5d5f60] block">Immediate attention</span>
+      </Card>
 
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #ffedd5',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #f97316',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#9a3412', fontWeight: 600 }}>
-          High Priority
-        </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#9a3412', marginTop: '0.25rem' }}>
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            High priority
+          </span>
+          {metrics.highCount > 0 && <span className="w-2 h-2 rounded-full bg-[#92400e]" />}
+        </div>
+        <div className="text-2xl font-normal text-[#92400e] tabular-nums">
           {metrics.highCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#c2410c' }}>Pending resolution</span>
-      </div>
+        <span className="text-[11px] text-[#5d5f60] block">Action queue active</span>
+      </Card>
 
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #dbeafe',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #3b82f6',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#1e40af', fontWeight: 600 }}>
-          Open & Active
-        </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#1e40af', marginTop: '0.25rem' }}>
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            In progress
+          </span>
+          <span className="w-2 h-2 rounded-full bg-[#1b6c80]" />
+        </div>
+        <div className="text-2xl font-normal text-[#131416] tabular-nums">
           {metrics.openAssignedCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#2563eb' }}>In investigation / progress</span>
-      </div>
+        <span className="text-[11px] text-[#5d5f60] block">Active resolution</span>
+      </Card>
 
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #d1fae5',
-          borderRadius: '8px',
-          padding: '1.25rem',
-          borderLeft: '4px solid #10b981',
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', color: '#065f46', fontWeight: 600 }}>
-          Resolved
-        </span>
-        <div style={{ fontSize: '2rem', fontWeight: 800, color: '#065f46', marginTop: '0.25rem' }}>
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            Resolved
+          </span>
+          <span className="w-2 h-2 rounded-full bg-[#1e7b4f]" />
+        </div>
+        <div className="text-2xl font-normal text-[#1e7b4f] tabular-nums">
           {metrics.resolvedCount}
         </div>
-        <span style={{ fontSize: '0.75rem', color: '#059669' }}>Ready for manager closing</span>
-      </div>
+        <span className="text-[11px] text-[#5d5f60] block">Closed and verified</span>
+      </Card>
     </div>
   );
 };

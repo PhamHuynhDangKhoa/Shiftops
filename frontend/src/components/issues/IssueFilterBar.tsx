@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconFilter } from '../ui/Icons';
 
 interface IssueFilterBarProps {
   statusFilter: string;
@@ -20,30 +21,16 @@ export const IssueFilterBar: React.FC<IssueFilterBarProps> = ({
   onPriorityChange,
 }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '1rem',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        backgroundColor: '#ffffff',
-        padding: '1rem',
-        borderRadius: '8px',
-        border: '1px solid #e5e7eb',
-        marginBottom: '1.5rem',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#4b5563' }}>Status:</label>
+    <div className="bg-white border border-[#e8eaec] rounded-lg p-3.5 mb-5 flex flex-wrap items-center gap-3 text-xs">
+      <div className="flex items-center gap-2">
+        <label className="text-xs font-medium text-[#5d5f60] flex items-center gap-1.5">
+          <IconFilter size={13} className="text-[#5d5f60]" />
+          Status:
+        </label>
         <select
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
-          style={{
-            padding: '0.4rem 0.6rem',
-            borderRadius: '6px',
-            border: '1px solid #d1d5db',
-            fontSize: '0.875rem',
-          }}
+          className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
         >
           <option value="ALL">All Statuses</option>
           <option value="OPEN">Open</option>
@@ -57,43 +44,33 @@ export const IssueFilterBar: React.FC<IssueFilterBarProps> = ({
 
       {!isStaff && onCategoryChange && onPriorityChange && (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#4b5563' }}>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-[#5d5f60]">
               Category:
             </label>
             <select
               value={categoryFilter}
               onChange={(e) => onCategoryChange(e.target.value)}
-              style={{
-                padding: '0.4rem 0.6rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-              }}
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
             >
               <option value="ALL">All Categories</option>
               <option value="EQUIPMENT">Equipment</option>
-              <option value="MAINTENANCE">Maintenance</option>
-              <option value="INVENTORY">Inventory</option>
-              <option value="SAFETY">Safety</option>
               <option value="FACILITY">Facility</option>
+              <option value="SAFETY">Safety</option>
+              <option value="INVENTORY">Inventory</option>
+              <option value="STAFFING">Staffing</option>
               <option value="OTHER">Other</option>
             </select>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#4b5563' }}>
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-medium text-[#5d5f60]">
               Priority:
             </label>
             <select
               value={priorityFilter}
               onChange={(e) => onPriorityChange(e.target.value)}
-              style={{
-                padding: '0.4rem 0.6rem',
-                borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                fontSize: '0.875rem',
-              }}
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
             >
               <option value="ALL">All Priorities</option>
               <option value="URGENT">Urgent</option>

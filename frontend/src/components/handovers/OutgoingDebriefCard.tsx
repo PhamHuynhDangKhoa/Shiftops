@@ -1,6 +1,7 @@
 import React from 'react';
 import { Shift } from '../../lib/types';
-import { Card, Badge, Button } from '../ui';
+import { IconClock, IconUser, IconPlus } from '../ui/Icons';
+import { formatHandoverTime } from './handoverUtils';
 
 interface OutgoingDebriefCardProps {
   shifts?: Shift[];
@@ -12,14 +13,14 @@ export const OutgoingDebriefCard: React.FC<OutgoingDebriefCardProps> = ({
   onOpenDebrief,
 }) => {
   return (
-    <Card className="p-6 md:p-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div className="border border-[#e8eaec] bg-white rounded-lg p-5 sm:p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#e8eaec]">
         <div>
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <span>📝</span> Outgoing Shift Debrief
+          <h2 className="text-[16px] font-semibold text-[#131416]">
+            Outgoing Shift Debrief
           </h2>
-          <p className="text-sm text-gray-500">
-            Prepare, update, and finalize the operational debrief for your current or completed shift.
+          <p className="text-[13px] text-[#5d5f60] mt-0.5">
+            Prepare, update, and submit turnover notes and checklist status for the next shift crew
           </p>
         </div>
       </div>
@@ -29,37 +30,55 @@ export const OutgoingDebriefCard: React.FC<OutgoingDebriefCardProps> = ({
           {shifts.map((shift) => (
             <div
               key={shift.id}
-              className="p-4 bg-gray-50 hover:bg-blue-50/40 rounded-xl border border-gray-200 transition-colors flex flex-col justify-between"
+              className="p-4 bg-[#f9fbfc] border border-[#e8eaec] rounded-lg flex flex-col justify-between gap-3 transition-colors hover:border-[#cdced1]"
             >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-gray-600">{shift.branchName}</span>
-                  <Badge variant={shift.status === 'PUBLISHED' ? 'brand' : 'neutral'}>{shift.status}</Badge>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[12px] text-[#5d5f60] font-medium">
+                    {shift.branchName}
+                  </span>
+                  <span className="text-[11px] font-medium px-2 py-0.5 rounded border border-[#cde5eb] bg-[#eef7f9] text-[#1b6c80] uppercase">
+                    {shift.status}
+                  </span>
                 </div>
-                <h3 className="text-base font-bold text-gray-900">{shift.name || 'Shift'}</h3>
-                <p className="text-xs text-gray-500 mt-1">
-                  {new Date(shift.startTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} -{' '}
-                  {new Date(shift.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  {shift.assignments.length} Staff Assigned: {shift.assignments.map((a) => a.userName).join(', ')}
-                </p>
+
+                <h3 className="text-[14px] font-semibold text-[#131416]">
+                  {shift.name || 'Operational Shift'}
+                </h3>
+
+                <div className="text-[13px] text-[#5d5f60] flex items-center gap-1.5 tabular-nums">
+                  <IconClock size={14} className="text-[#8c8f92] flex-shrink-0" />
+                  <span>
+                    {formatHandoverTime(shift.startTime)} – {formatHandoverTime(shift.endTime)}
+                  </span>
+                </div>
+
+                <div className="text-[13px] text-[#5d5f60] flex items-center gap-1.5 truncate">
+                  <IconUser size={14} className="text-[#8c8f92] flex-shrink-0" />
+                  <span className="truncate">
+                    Crew: {shift.assignments?.map((a) => a.userName).join(', ') || 'Unassigned'}
+                  </span>
+                </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-gray-200 flex justify-end">
-                <Button
-                  variant="outline"
+
+              <div className="pt-3 border-t border-[#e8eaec] flex justify-end">
+                <button
+                  type="button"
                   onClick={() => onOpenDebrief(shift.id)}
-                  className="text-xs font-bold"
+                  className="w-full h-8 text-xs font-medium rounded bg-[#1b6c80] text-white hover:bg-[#155464] border border-[#1b6c80] transition-colors inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                 >
-                  Manage Handover Debrief
-                </Button>
+                  <IconPlus size={13} />
+                  <span>Prepare Debrief</span>
+                </button>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-gray-500 text-center py-4">No recent or active shifts available to debrief.</p>
+        <div className="py-8 text-center text-[13px] text-[#5d5f60]">
+          No operational shifts currently awaiting handover debrief.
+        </div>
       )}
-    </Card>
+    </div>
   );
 };

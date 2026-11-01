@@ -1,5 +1,7 @@
 import React from 'react';
 import { Branch } from '../../lib/types';
+import { Button } from '../ui/Button';
+import { IconCalendar, IconPlus } from '../ui/Icons';
 
 interface ShiftFilterBarProps {
   isStaff: boolean;
@@ -27,43 +29,28 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
   onCreateClick,
 }) => {
   return (
-    <div>
-      {/* Header with Title and Branch/Create Controls */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
+    <div className="space-y-4">
+      {/* Title & Top Level Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-zinc-200/80">
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: 0, color: '#111827' }}>
-            {isStaff ? 'My Assigned Shifts' : 'Shift Scheduling'}
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 flex items-center gap-2.5">
+            <IconCalendar size={22} className="text-zinc-700" />
+            <span>{isStaff ? 'My Shift Schedule' : 'Shift Management & Scheduling'}</span>
           </h1>
-          <p style={{ margin: '0.25rem 0 0', color: '#6b7280', fontSize: '0.9rem' }}>
+          <p className="text-sm text-zinc-500 mt-1">
             {isStaff
-              ? 'View your upcoming published shifts and rosters'
-              : 'Create, assign, and manage daily and overnight staff schedules'}
+              ? 'View your upcoming published shifts and assigned hours.'
+              : 'Create shifts, assign staff members, and publish weekly schedules.'}
           </p>
         </div>
 
         {!isStaff && (
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <div className="flex items-center gap-2.5 flex-wrap">
             {isOwner && branches && branches.length > 0 && (
               <select
                 value={selectedBranchId}
                 onChange={(e) => onBranchChange(e.target.value)}
-                style={{
-                  padding: '0.5rem 0.75rem',
-                  borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#ffffff',
-                  fontWeight: 500,
-                  fontSize: '0.875rem',
-                }}
+                className="px-3 py-2 text-sm rounded-lg border border-zinc-300 bg-white text-zinc-900 focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 shadow-2xs font-medium"
               >
                 {branches.map((b) => (
                   <option key={b.id} value={b.id} disabled={!b.active}>
@@ -73,74 +60,79 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
               </select>
             )}
 
-            <button
+            <Button
+              variant="primary"
+              size="md"
               onClick={onCreateClick}
-              style={{
-                backgroundColor: '#2563eb',
-                color: '#ffffff',
-                border: 'none',
-                padding: '0.55rem 1.1rem',
-                borderRadius: '6px',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-              }}
+              className="gap-2 shadow-xs"
             >
-              <span>+</span> Create Shift
-            </button>
+              <IconPlus size={15} />
+              <span>Create Shift</span>
+            </Button>
           </div>
         )}
       </div>
 
-      {/* Date Window Inputs */}
-      <div
-        style={{
-          backgroundColor: '#ffffff',
-          borderRadius: '8px',
-          border: '1px solid #e5e7eb',
-          padding: '1rem 1.25rem',
-          marginBottom: '1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          flexWrap: 'wrap',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
-        }}
-      >
-        <span style={{ fontSize: '0.875rem', fontWeight: 600, color: '#374151' }}>Date Window:</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label style={{ fontSize: '0.8rem', color: '#6b7280' }}>From:</label>
-          <input
-            type="date"
-            value={startDate.slice(0, 10)}
-            onChange={(e) => onStartDateChange(e.target.value)}
-            style={{
-              padding: '0.35rem 0.6rem',
-              borderRadius: '4px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.85rem',
-            }}
-          />
+      {/* Date Window Toolbar */}
+      <div className="bg-white border border-[#e8eaec] rounded-lg p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-[#5d5f60]">
+              From:
+            </span>
+            <input
+              type="date"
+              value={startDate.slice(0, 10)}
+              onChange={(e) => onStartDateChange(e.target.value)}
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-[#5d5f60]">
+              To:
+            </span>
+            <input
+              type="date"
+              value={endDate.slice(0, 10)}
+              onChange={(e) => onEndDateChange(e.target.value)}
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
+            />
+          </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label style={{ fontSize: '0.8rem', color: '#6b7280' }}>To:</label>
-          <input
-            type="date"
-            value={endDate.slice(0, 10)}
-            onChange={(e) => onEndDateChange(e.target.value)}
-            style={{
-              padding: '0.35rem 0.6rem',
-              borderRadius: '4px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.85rem',
+
+        {/* Quick presets */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date();
+              d.setDate(d.getDate() - d.getDay());
+              d.setHours(0, 0, 0, 0);
+              onStartDateChange(d.toISOString().slice(0, 10));
+              const end = new Date(d);
+              end.setDate(end.getDate() + 7);
+              onEndDateChange(end.toISOString().slice(0, 10));
             }}
-          />
-        </div>
-        <div style={{ marginLeft: 'auto', fontSize: '0.8rem', color: '#6b7280' }}>
-          Showing shifts between {new Date(startDate).toLocaleDateString()} and {new Date(endDate).toLocaleDateString()}
+            className="px-2.5 py-1 text-xs font-medium rounded-md border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
+          >
+            This Week
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const d = new Date();
+              d.setDate(d.getDate() - d.getDay());
+              d.setHours(0, 0, 0, 0);
+              onStartDateChange(d.toISOString().slice(0, 10));
+              const end = new Date(d);
+              end.setDate(end.getDate() + 14);
+              onEndDateChange(end.toISOString().slice(0, 10));
+            }}
+            className="px-2.5 py-1 text-xs font-medium rounded-md border border-zinc-200 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
+          >
+            2 Weeks
+          </button>
         </div>
       </div>
     </div>

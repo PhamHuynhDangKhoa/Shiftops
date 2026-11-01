@@ -1,24 +1,74 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
+  --font-sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --color-status-urgent: #ef4444;
-  --color-status-high: #f97316;
-  --color-status-normal: #3b82f6;
-  --color-status-low: #6b7280;
+  --color-canvas: #f9fbfc;
+  --color-surface: #ffffff;
+  --color-raised: #f4f6f8;
+  --color-active: #ebedee;
+  --color-slate: #131416;
+  --color-slate-hover: #1f2326;
+  --color-border-subtle: #e8eaec;
+  --color-border-strong: #cdced1;
+  --color-rule: #f0f1f2;
+
+  --color-ink-primary: #131416;
+  --color-ink-secondary: #5d5f60;
+  --color-ink-muted: #727477;
+
+  --color-brand-primary: #1b6c80;
+  --color-brand-teal: #1b6c80;
+  --color-brand-wash: #e9f4f7;
+
+  --color-status-success: #1e7b4f;
+  --color-status-warning: #92400e;
+  --color-status-danger: #c4242a;
+  --color-status-info: #2f70bb;
 }
 
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --ground: #f9fbfc;
+  --surface: #ffffff;
+  --raised: #f4f6f8;
+  --active: #ebedee;
+  --border: #e8eaec;
+  --rule: #f0f1f2;
+  --control: #cdced1;
+  --text: #131416;
+  --muted: #5d5f60;
+  --faint: #727477;
+  --accent: #1b6c80;
+  --primary: #1b6c80;
+  --primary-ink: #ffffff;
+
+  --positive: #1e7b4f;
+  --negative: #c4242a;
+  --warning: #92400e;
+
+  --pill-positive-bg: #dcfae5;
+  --pill-positive-ink: #04250e;
+  --pill-negative-bg: #ffedea;
+  --pill-negative-ink: #831c1e;
+  --pill-warning-bg: #fffbeb;
+  --pill-warning-ink: #92400e;
+  --pill-neutral-bg: #ebedee;
+  --pill-neutral-ink: #353736;
+  --pill-accent-bg: #e9f4f7;
+  --pill-accent-ink: #1b6c80;
+
+  --radius-card: 12px;
+  --radius-control: 6px;
+
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #1f2937;
-  background-color: #f8fafc;
+  color: #131416;
+  background-color: #f9fbfc;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -28,66 +78,39 @@
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
-  background-color: #f8fafc;
+  min-height: 100dvh;
+  background-color: #f9fbfc;
+  color: #131416;
+  font-size: 14px;
 }
 
-.nav-link {
-  color: #4b5563;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  transition: all 0.15s ease-in-out;
+/* Monospace font for operational telemetry, timestamps, ratios, codes and tabular figures */
+.font-mono, [data-mono], .mono-num, pre, code, kbd, samp {
+  font-family: var(--font-mono, "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  font-feature-settings: "tnum" 1, "zero" 1;
 }
 
-.nav-link:hover {
-  color: #111827;
-  background-color: #f3f4f6;
+/* Tabular figures for operational timestamps, counts, ratios and currency */
+.num-tabular, time, [data-tabular], .kpi-value, table, .tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-.nav-link.active {
-  color: #2563eb;
-  background-color: #eff6ff;
-  font-weight: 600;
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f9fbfc;
+}
+::-webkit-scrollbar-thumb {
+  background: #cdced1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #1b6c80;
 }
 
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-}
-
-button {
+input, select, textarea, button {
   font-family: inherit;
-}
-
-.health-page {
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  background: #ffffff;
-}
-
-.health-success {
-  border-color: #4caf50;
-  background: #f1f8e9;
-}
-
-.health-error {
-  border-color: #f44336;
-  background: #ffebee;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-td {
-  padding: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
 }

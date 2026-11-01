@@ -19,99 +19,104 @@ function App() {
   return (
     <AuthProvider>
       <WebSocketProvider>
-        <Layout>
-          <Routes>
-            {/* Public login */}
-            <Route path="/login" element={<LoginPage />} />
+        <Routes>
+          {/* Dedicated full-viewport Login Portal */}
+          <Route path="/login" element={<LoginPage />} />
 
-          {/* Protected routes */}
+          {/* Authenticated Workspace Application */}
           <Route
-            path="/"
+            path="/*"
             element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
+              <Layout>
+                <Routes>
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <DashboardPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/health"
+                    element={
+                      <ProtectedRoute>
+                        <HealthPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/branches"
+                    element={
+                      <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
+                        <BranchesPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/staff"
+                    element={
+                      <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
+                        <StaffPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/shifts"
+                    element={
+                      <ProtectedRoute>
+                        <ShiftsPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/attendance"
+                    element={
+                      <ProtectedRoute>
+                        <AttendancePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/tasks"
+                    element={
+                      <ProtectedRoute>
+                        <TasksPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/issues"
+                    element={
+                      <ProtectedRoute>
+                        <IssuesPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/handovers"
+                    element={
+                      <ProtectedRoute>
+                        <HandoversPage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </Layout>
             }
           />
-          <Route
-            path="/health"
-            element={
-              <ProtectedRoute>
-                <HealthPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/branches"
-            element={
-              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
-                <BranchesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/staff"
-            element={
-              <ProtectedRoute allowedRoles={['OWNER', 'MANAGER']}>
-                <StaffPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/shifts"
-            element={
-              <ProtectedRoute>
-                <ShiftsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/attendance"
-            element={
-              <ProtectedRoute>
-                <AttendancePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <TasksPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/issues"
-            element={
-              <ProtectedRoute>
-                <IssuesPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/handovers"
-            element={
-              <ProtectedRoute>
-                <HandoversPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Catch-all redirect */}
-          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Layout>
-    </WebSocketProvider>
-  </AuthProvider>
+      </WebSocketProvider>
+    </AuthProvider>
   );
 }
 

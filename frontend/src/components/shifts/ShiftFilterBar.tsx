@@ -84,7 +84,7 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
               type="date"
               value={startDate.slice(0, 10)}
               onChange={(e) => onStartDateChange(e.target.value)}
-              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#131416]"
             />
           </div>
 
@@ -96,7 +96,7 @@ export const ShiftFilterBar: React.FC<ShiftFilterBarProps> = ({
               type="date"
               value={endDate.slice(0, 10)}
               onChange={(e) => onEndDateChange(e.target.value)}
-              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80]"
+              className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#131416]"
             />
           </div>
         </div>

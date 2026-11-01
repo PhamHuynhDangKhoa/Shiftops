@@ -59,7 +59,7 @@ export const ShiftRosterTable: React.FC<ShiftRosterTableProps> = ({
                     <span className="text-[11px] text-[#5d5f60] font-mono tabular-nums">
                       {formatTimeShort(shift.startTime)} – {formatTimeShort(shift.endTime)}
                       {shift.overnight && (
-                        <span className="ml-1 text-[11px] text-[#1b6c80] font-medium">
+                        <span className="ml-1 text-[11px] text-[#131416] font-medium">
                           (Overnight)
                         </span>
                       )}
@@ -139,7 +139,7 @@ export const ShiftRosterTable: React.FC<ShiftRosterTableProps> = ({
                             <button
                               type="button"
                               onClick={() => onAssignClick(shift)}
-                              className="h-7 px-2.5 rounded bg-[#1b6c80] text-white text-xs font-medium hover:bg-[#155464] border border-[#1b6c80] transition-colors cursor-pointer"
+                              className="h-7 px-2.5 rounded bg-[#131416] text-white text-xs font-medium hover:bg-[#2a2f33] border border-[#131416] transition-colors cursor-pointer"
                             >
                               Assign
                             </button>

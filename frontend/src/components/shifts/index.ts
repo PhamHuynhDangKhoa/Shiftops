@@ -9,3 +9,5 @@ export * from './WeeklyTimelineMatrix';
 export * from './ShiftRosterTable';
 export * from './ShiftDetailModal';
 export * from './shiftRosterUtils';
+export * from './StaffPersonalTelemetry';
+export * from './StaffPersonalAgenda';

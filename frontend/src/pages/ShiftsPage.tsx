@@ -13,12 +13,15 @@ import {
 } from '../lib/types';
 import {
   ShiftRosterHeader,
+  ShiftViewMode,
   ShiftRosterTelemetry,
   WeeklyTimelineMatrix,
   ShiftRosterTable,
   ShiftDetailModal,
   CreateShiftModal,
   AssignStaffModal,
+  StaffPersonalTelemetry,
+  StaffPersonalAgenda,
   getWeekDays,
   generateFallbackWeekShifts,
 } from '../components/shifts';
@@ -52,8 +55,17 @@ export const ShiftsPage: React.FC = () => {
     return d.toISOString();
   }, [weekDays]);
 
-  // View state
-  const [viewMode, setViewMode] = useState<'TIMELINE' | 'TABLE'>('TIMELINE');
+  // View state: Staff defaults to 'AGENDA' (personal schedule), Managers to 'TIMELINE'
+  const [viewMode, setViewMode] = useState<ShiftViewMode>(() =>
+    isStaff ? 'AGENDA' : 'TIMELINE'
+  );
+
+  useEffect(() => {
+    if (isStaff && viewMode === 'TABLE') {
+      setViewMode('AGENDA');
+    }
+  }, [isStaff]);
+
   const [statusFilter, setStatusFilter] = useState<
     'ALL' | 'DRAFT' | 'PUBLISHED' | 'COMPLETED'
   >('ALL');
@@ -140,6 +152,17 @@ export const ShiftsPage: React.FC = () => {
     if (queried && queried.length > 0) return queried;
     return fallbackShifts;
   }, [isStaff, myShifts, branchShifts, fallbackShifts]);
+
+  // Compute staff member's personal shifts (for staff view)
+  const staffPersonalShifts = useMemo(() => {
+    if (!isStaff) return [];
+    if (myShifts && myShifts.length > 0) return myShifts;
+    return activeRawShifts.filter((s) =>
+      s.assignments.some(
+        (a) => a.userId === user?.id || a.userId === 'u-staff-1'
+      )
+    );
+  }, [isStaff, myShifts, activeRawShifts, user?.id]);
 
   // Filter shifts by status tab
   const filteredShifts = useMemo(() => {
@@ -320,77 +343,96 @@ export const ShiftsPage: React.FC = () => {
         }}
       />
 
-      {/* 2. Roster Telemetry Strip (4 Cells) */}
-      <ShiftRosterTelemetry
-        shifts={activeRawShifts}
-        totalStaffCount={branchStaff?.length || 8}
-      />
+      {/* 2. Telemetry Strip: Personal metrics for staff, Branch metrics for managers */}
+      {isStaff ? (
+        <StaffPersonalTelemetry
+          myShifts={staffPersonalShifts}
+          allWeekShifts={activeRawShifts}
+          userName={user?.fullName || 'Jordan Kim'}
+          branchName={user?.primaryBranchName || 'Shibuya Flagship'}
+        />
+      ) : (
+        <ShiftRosterTelemetry
+          shifts={activeRawShifts}
+          totalStaffCount={branchStaff?.length || 8}
+        />
+      )}
 
-      {/* 3. Underline Filter Tabs on 1px Rule */}
-      <div className="flex items-center gap-4 border-b border-[#f0f1f2] text-[13px] font-medium text-[#5d5f60]">
-        <button
-          type="button"
-          onClick={() => setStatusFilter('ALL')}
-          className={`pb-2.5 transition-colors cursor-pointer relative ${
-            statusFilter === 'ALL'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
-          }`}
-        >
-          All Shifts ({activeRawShifts.length})
-          {statusFilter === 'ALL' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
-        </button>
+      {/* 3. Underline Filter Tabs (Shown on Store Roster or Manager View) */}
+      {(!isStaff || viewMode !== 'AGENDA') && (
+        <div className="flex items-center gap-4 border-b border-[#f0f1f2] text-[13px] font-medium text-[#5d5f60]">
+          <button
+            type="button"
+            onClick={() => setStatusFilter('ALL')}
+            className={`pb-2.5 transition-colors cursor-pointer relative ${
+              statusFilter === 'ALL'
+                ? 'text-[#131416] font-semibold'
+                : 'hover:text-[#131416]'
+            }`}
+          >
+            All Shifts ({activeRawShifts.length})
+            {statusFilter === 'ALL' && (
+              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
+            )}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setStatusFilter('DRAFT')}
-          className={`pb-2.5 transition-colors cursor-pointer relative ${
-            statusFilter === 'DRAFT'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
-          }`}
-        >
-          Draft ({countDraft})
-          {statusFilter === 'DRAFT' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
-        </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('DRAFT')}
+            className={`pb-2.5 transition-colors cursor-pointer relative ${
+              statusFilter === 'DRAFT'
+                ? 'text-[#131416] font-semibold'
+                : 'hover:text-[#131416]'
+            }`}
+          >
+            Draft ({countDraft})
+            {statusFilter === 'DRAFT' && (
+              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
+            )}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setStatusFilter('PUBLISHED')}
-          className={`pb-2.5 transition-colors cursor-pointer relative ${
-            statusFilter === 'PUBLISHED'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
-          }`}
-        >
-          Published ({countPublished})
-          {statusFilter === 'PUBLISHED' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
-        </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('PUBLISHED')}
+            className={`pb-2.5 transition-colors cursor-pointer relative ${
+              statusFilter === 'PUBLISHED'
+                ? 'text-[#131416] font-semibold'
+                : 'hover:text-[#131416]'
+            }`}
+          >
+            Published ({countPublished})
+            {statusFilter === 'PUBLISHED' && (
+              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
+            )}
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setStatusFilter('COMPLETED')}
-          className={`pb-2.5 transition-colors cursor-pointer relative ${
-            statusFilter === 'COMPLETED'
-              ? 'text-[#131416] font-semibold'
-              : 'hover:text-[#131416]'
-          }`}
-        >
-          Completed ({countCompleted})
-          {statusFilter === 'COMPLETED' && (
-            <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
-          )}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('COMPLETED')}
+            className={`pb-2.5 transition-colors cursor-pointer relative ${
+              statusFilter === 'COMPLETED'
+                ? 'text-[#131416] font-semibold'
+                : 'hover:text-[#131416]'
+            }`}
+          >
+            Completed ({countCompleted})
+            {statusFilter === 'COMPLETED' && (
+              <span className="absolute bottom-0 inset-x-0 h-0.5 bg-[#131416]" />
+            )}
+          </button>
+        </div>
+      )}
 
-      {/* 4. Main View Display: Timeline Matrix or Roster Table */}
-      {viewMode === 'TIMELINE' ? (
+      {/* 4. Main View Display: Staff Personal Agenda / Weekly Timeline Matrix / Roster Table */}
+      {viewMode === 'AGENDA' ? (
+        <StaffPersonalAgenda
+          weekDays={weekDays}
+          myShifts={staffPersonalShifts}
+          allWeekShifts={activeRawShifts}
+          currentUserId={user?.id || 'u-staff-1'}
+          onSelectShift={(shift) => setInspectingShift(shift)}
+        />
+      ) : viewMode === 'TIMELINE' ? (
         <WeeklyTimelineMatrix
           weekDays={weekDays}
           shifts={filteredShifts}

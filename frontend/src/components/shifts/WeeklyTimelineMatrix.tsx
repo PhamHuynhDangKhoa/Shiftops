@@ -106,6 +106,9 @@ export const WeeklyTimelineMatrix: React.FC<WeeklyTimelineMatrixProps> = ({
         s.roleTitle.toLowerCase().includes('manager')
     );
     const ops = allStaffRows.filter((s) => !leads.includes(s));
+    if (isStaff) {
+      ops.sort((a, b) => (a.userId === 'u-staff-1' ? -1 : b.userId === 'u-staff-1' ? 1 : 0));
+    }
     return { leadershipRows: leads, operationsRows: ops };
   }, [allStaffRows]);
 
@@ -273,7 +276,7 @@ export const WeeklyTimelineMatrix: React.FC<WeeklyTimelineMatrixProps> = ({
       <div className="p-3 border-t border-[#e8eaec] bg-[#f9fbfc] flex items-center justify-between gap-4 flex-wrap text-xs text-[#5d5f60]">
         <div className="flex items-center gap-4 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-[#e9f4f7] border border-[#1b6c80]/40" />
+            <span className="w-3 h-3 rounded bg-[#f1f5f9] border border-[#131416]/50" />
             <span className="text-[11px] text-[#131416] font-medium">
               Published shift
             </span>
@@ -319,7 +322,7 @@ export const WeeklyTimelineMatrix: React.FC<WeeklyTimelineMatrixProps> = ({
             </div>
             <div className="min-w-0">
               <span className="font-semibold text-xs text-[#131416] block truncate">
-                {staff.userName}
+                {staff.userName}{staff.userId === 'u-staff-1' && isStaff ? ' (You)' : ''}
               </span>
               <span className="text-[11px] text-[#5d5f60] font-mono tabular-nums">
                 {Math.round(staff.totalHours * 10) / 10}h scheduled · {staff.roleTitle}
@@ -354,7 +357,7 @@ export const WeeklyTimelineMatrix: React.FC<WeeklyTimelineMatrixProps> = ({
                           ? 'bg-[#fffbeb] border border-dashed border-[#92400e]/50 text-[#92400e] hover:border-[#92400e]'
                           : isCompleted
                           ? 'bg-[#f4f6f8] border border-[#e8eaec] text-[#5d5f60] hover:border-[#cdced1]'
-                          : 'bg-[#e9f4f7] border border-[#1b6c80]/30 text-[#1b6c80] hover:border-[#1b6c80]'
+                          : 'bg-[#f1f5f9] border border-[#131416]/30 text-[#131416] hover:border-[#131416] hover:bg-[#e2e8f0]'
                       }`}
                     >
                       <div className="font-semibold text-[11px] truncate leading-tight">

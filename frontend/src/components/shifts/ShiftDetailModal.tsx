@@ -90,7 +90,7 @@ export const ShiftDetailModal: React.FC<ShiftDetailModalProps> = ({
                   onClose();
                   onAssignClick(shift);
                 }}
-                className="text-xs text-[#1b6c80] hover:text-[#155464] font-medium cursor-pointer"
+                className="text-xs text-[#131416] hover:text-[#2a2f33] font-medium cursor-pointer"
               >
                 + Assign staff
               </button>
@@ -165,7 +165,7 @@ export const ShiftDetailModal: React.FC<ShiftDetailModalProps> = ({
                       onClose();
                       onAssignClick(shift);
                     }}
-                    className="h-8 px-3 rounded bg-[#1b6c80] text-white text-xs font-medium hover:bg-[#155464] border border-[#1b6c80] transition-colors cursor-pointer"
+                    className="h-8 px-3 rounded bg-[#131416] text-white text-xs font-medium hover:bg-[#2a2f33] border border-[#131416] transition-colors cursor-pointer"
                   >
                     Assign Staff
                   </button>

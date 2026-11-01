@@ -1,5 +1,7 @@
 import React from 'react';
 import { Branch } from '../../lib/types';
+import { Button } from '../ui/Button';
+import { IconRefresh, IconCalendar, IconFilter } from '../ui/Icons';
 
 interface AttendanceFilterBarProps {
   branches?: Branch[];
@@ -27,37 +29,17 @@ export const AttendanceFilterBar: React.FC<AttendanceFilterBarProps> = ({
   onRefresh,
 }) => {
   return (
-    <div
-      style={{
-        backgroundColor: '#ffffff',
-        border: '1px solid #e5e7eb',
-        borderRadius: '12px',
-        padding: '1.25rem',
-        marginBottom: '1.5rem',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '1rem',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
-    >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+    <div className="bg-white border border-[#e8eaec] rounded-lg p-3.5 mb-5 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="flex flex-wrap items-center gap-3">
         {/* Branch Selector */}
-        <div>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4b5563', marginBottom: '0.25rem' }}>
-            Branch
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-[#5d5f60]">
+            Branch:
           </label>
           <select
             value={selectedBranchId}
             onChange={(e) => onBranchChange(e.target.value)}
-            style={{
-              padding: '0.45rem 0.75rem',
-              borderRadius: '6px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.875rem',
-              minWidth: '180px',
-            }}
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           >
             {branches?.map((b) => (
               <option key={b.id} value={b.id}>
@@ -67,45 +49,42 @@ export const AttendanceFilterBar: React.FC<AttendanceFilterBarProps> = ({
           </select>
         </div>
 
-        {/* Date Filters */}
-        <div>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4b5563', marginBottom: '0.25rem' }}>
-            From
-          </label>
+        {/* Date Window */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-[#5d5f60] flex items-center gap-1">
+            <IconCalendar size={13} className="text-[#5d5f60]" />
+            From:
+          </span>
           <input
             type="date"
             value={startDate}
             onChange={(e) => onStartDateChange(e.target.value)}
-            style={{ padding: '0.45rem 0.6rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.875rem' }}
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           />
         </div>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4b5563', marginBottom: '0.25rem' }}>
-            To
-          </label>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-[#5d5f60]">
+            To:
+          </span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => onEndDateChange(e.target.value)}
-            style={{ padding: '0.45rem 0.6rem', borderRadius: '6px', border: '1px solid #d1d5db', fontSize: '0.875rem' }}
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           />
         </div>
 
         {/* Status Filter */}
-        <div>
-          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: '#4b5563', marginBottom: '0.25rem' }}>
-            Status
-          </label>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-[#5d5f60] flex items-center gap-1">
+            <IconFilter size={13} className="text-[#5d5f60]" />
+            Status:
+          </span>
           <select
             value={statusFilter}
             onChange={(e) => onStatusFilterChange(e.target.value)}
-            style={{
-              padding: '0.45rem 0.75rem',
-              borderRadius: '6px',
-              border: '1px solid #d1d5db',
-              fontSize: '0.875rem',
-            }}
+            className="h-8 px-2.5 text-xs rounded-md border border-[#cdced1] bg-white text-[#131416] focus:outline-none focus:border-[#1b6c80] focus:ring-1 focus:ring-[#1b6c80]"
           >
             <option value="ALL">All Statuses</option>
             <option value="PRESENT">Present</option>
@@ -116,21 +95,16 @@ export const AttendanceFilterBar: React.FC<AttendanceFilterBarProps> = ({
         </div>
       </div>
 
-      <button
+      {/* Refresh Trigger */}
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={onRefresh}
-        style={{
-          padding: '0.5rem 1rem',
-          borderRadius: '6px',
-          border: '1px solid #d1d5db',
-          backgroundColor: '#ffffff',
-          color: '#374151',
-          fontSize: '0.875rem',
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
+        className="gap-1.5 whitespace-nowrap"
       >
-        🔄 Refresh
-      </button>
+        <IconRefresh size={14} />
+        <span>Refresh</span>
+      </Button>
     </div>
   );
 };

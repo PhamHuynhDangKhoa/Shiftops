@@ -1,5 +1,6 @@
 import React from 'react';
 import { Attendance } from '../../lib/types';
+import { Card } from '../ui/Card';
 
 interface AttendanceMetricsSummaryProps {
   records?: Attendance[];
@@ -13,38 +14,63 @@ export const AttendanceMetricsSummary: React.FC<AttendanceMetricsSummaryProps> =
   const absent = records.filter((a) => a.status === 'ABSENT').length;
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '1rem',
-        marginBottom: '1.5rem',
-      }}
-    >
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.8rem', color: '#6b7280', textTransform: 'uppercase', fontWeight: 600 }}>Total Records</div>
-        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111827', marginTop: '0.25rem' }}>{total}</div>
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-5">
+      <Card compact className="space-y-1">
+        <span className="text-xs font-medium text-[#5d5f60] block">
+          Total logged
+        </span>
+        <div className="text-2xl font-normal text-[#131416] tabular-nums">
+          {total}
+        </div>
+      </Card>
 
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.8rem', color: '#059669', textTransform: 'uppercase', fontWeight: 600 }}>Present (On-Time)</div>
-        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#059669', marginTop: '0.25rem' }}>{present}</div>
-      </div>
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            On time
+          </span>
+          <span className="w-2 h-2 rounded-full bg-[#1e7b4f]" />
+        </div>
+        <div className="text-2xl font-normal text-[#1e7b4f] tabular-nums">
+          {present}
+        </div>
+      </Card>
 
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.8rem', color: '#d97706', textTransform: 'uppercase', fontWeight: 600 }}>Late Arrivals</div>
-        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#d97706', marginTop: '0.25rem' }}>{late}</div>
-      </div>
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            Late
+          </span>
+          <span className="w-2 h-2 rounded-full bg-[#92400e]" />
+        </div>
+        <div className="text-2xl font-normal text-[#92400e] tabular-nums">
+          {late}
+        </div>
+      </Card>
 
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.8rem', color: '#2563eb', textTransform: 'uppercase', fontWeight: 600 }}>Completed</div>
-        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#2563eb', marginTop: '0.25rem' }}>{completed}</div>
-      </div>
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            Completed
+          </span>
+          <span className="w-2 h-2 rounded-full bg-[#1b6c80]" />
+        </div>
+        <div className="text-2xl font-normal text-[#131416] tabular-nums">
+          {completed}
+        </div>
+      </Card>
 
-      <div style={{ backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '10px', padding: '1rem', textAlign: 'center' }}>
-        <div style={{ fontSize: '0.8rem', color: '#dc2626', textTransform: 'uppercase', fontWeight: 600 }}>Absent</div>
-        <div style={{ fontSize: '1.75rem', fontWeight: 700, color: '#dc2626', marginTop: '0.25rem' }}>{absent}</div>
-      </div>
+      <Card compact className="space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-[#5d5f60] block">
+            Absent
+          </span>
+          <span className="w-2 h-2 rounded-full bg-[#c4242a]" />
+        </div>
+        <div className="text-2xl font-normal text-[#c4242a] tabular-nums">
+          {absent}
+        </div>
+      </Card>
     </div>
   );
 };
